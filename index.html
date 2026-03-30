@@ -335,8 +335,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .btn-cancel:hover{border-color:var(--b2);color:var(--text)}
 
 /* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:11px 16px;font-size:11px;color:var(--accent);z-index:2000;opacity:0;transform:translateY(8px);transition:all .25s cubic-bezier(.22,1,.36,1);pointer-events:none}
-.toast.show{opacity:1;transform:translateY(0)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:11px 16px;font-size:11px;color:var(--accent);z-index:2000;opacity:0;transform:translateY(8px);transition:all .25s cubic-bezier(.22,1,.36,1);pointer-events:none;min-width:220px}
+.toast.show{opacity:1;transform:translateY(0);pointer-events:all}
+.toast-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.toast-undo{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 9px;border:1px solid var(--accent);border-radius:var(--rs);background:transparent;color:var(--accent);cursor:pointer;flex-shrink:0;transition:all .15s}
+.toast-undo:hover{background:var(--accent);color:#000}
+.toast-bar{height:2px;background:var(--accent);border-radius:1px;margin-top:8px;transform-origin:left;animation:toastBar 8s linear forwards}
+@keyframes toastBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 
 /* WHATSAPP PING */
 .wa-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:2099;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -625,7 +630,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"><div class="toast-row"><span id="toast-msg"></span></div></div>
 <div class="wa-backdrop" id="wa-backdrop" onclick="hideWaPing()"></div>
 <div class="wa-ping" id="wa-ping">
   <div class="wa-ping-label">
@@ -964,9 +969,32 @@ function copyAndSendWaPing(){
   setTimeout(hideWaPing, 800);
 }
 
+// ─── UNDO SYSTEM ─────────────────────────────────────────────────────────────
+let _undo = null;
+
+function commitUndo(){
+  if(!_undo) return;
+  clearTimeout(_undo.timer);
+  _undo.commit();
+  _undo = null;
+}
+
+function triggerUndo(){
+  if(!_undo) return;
+  clearTimeout(_undo.timer);
+  _undo.restore();
+  _undo = null;
+  document.getElementById('toast').classList.remove('show');
+}
+
+document.addEventListener('keydown', e => {
+  if((e.metaKey || e.ctrlKey) && e.key === 'z' && _undo){ e.preventDefault(); triggerUndo(); }
+});
+
 function toast(msg){
+  commitUndo(); // flush any pending delete before showing new toast
   const el = document.getElementById('toast');
-  el.textContent = msg;
+  el.innerHTML = `<div class="toast-row"><span>${msg}</span></div>`;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2800);
 }
@@ -1119,12 +1147,28 @@ async function moveBack(id){
 
 async function removeProject(id){
   const p = projects.find(x => x.id === id);
-  if(!p || !confirm(`Remove "${p.client} · ${p.name}"?\n\nThis cannot be undone.`)) return;
+  if(!p) return;
+  commitUndo();
+  const snapshot = JSON.parse(JSON.stringify(p));
   projects = projects.filter(x => x.id !== id);
   if(currentPanelId === id) closePanel();
   renderAll();
-  toast(`Removed: ${p.client} · ${p.name}`);
-  await db.from('projects').delete().eq('id', id);
+  const el = document.getElementById('toast');
+  el.innerHTML = `<div class="toast-row"><span>Removed: ${p.client} · ${p.name}</span><button class="toast-undo" onclick="triggerUndo()">UNDO ⌘Z</button></div><div class="toast-bar"></div>`;
+  el.classList.add('show');
+  _undo = {
+    timer: setTimeout(async () => {
+      el.classList.remove('show'); _undo = null;
+      await db.from('projects').delete().eq('id', id);
+    }, 8000),
+    commit: async () => { el.classList.remove('show'); await db.from('projects').delete().eq('id', id); },
+    restore: () => {
+      projects.push(snapshot);
+      projects.sort((a,b) => a.id - b.id);
+      renderAll();
+      toast(`Restored: ${p.client} · ${p.name}`);
+    }
+  };
 }
 
 function editDeadline(id, el){
@@ -1574,12 +1618,28 @@ async function removeVideo(projId, vidId){
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   const v = p.videos.find(x => x.id === vidId);
-  if(!v || !confirm(`Remove "${v.name}"?`)) return;
+  if(!v) return;
+  commitUndo();
+  const snapshot = JSON.parse(JSON.stringify(v));
   p.videos = p.videos.filter(x => x.id !== vidId);
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
-  toast(`Removed: ${v.name}`);
-  await db.from('videos').delete().eq('id', vidId);
+  const el = document.getElementById('toast');
+  el.innerHTML = `<div class="toast-row"><span>Removed: ${v.name}</span><button class="toast-undo" onclick="triggerUndo()">UNDO ⌘Z</button></div><div class="toast-bar"></div>`;
+  el.classList.add('show');
+  _undo = {
+    timer: setTimeout(async () => {
+      el.classList.remove('show'); _undo = null;
+      await db.from('videos').delete().eq('id', vidId);
+    }, 8000),
+    commit: async () => { el.classList.remove('show'); await db.from('videos').delete().eq('id', vidId); },
+    restore: () => {
+      p.videos.push(snapshot);
+      renderAll();
+      if(currentPanelId === projId) renderPanelBody(projId);
+      toast(`Restored: ${v.name}`);
+    }
+  };
 }
 
 function editVideoDl(projId, vidId, el){
