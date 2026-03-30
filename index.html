@@ -1694,10 +1694,27 @@ async function addEditPlan(projId){
 async function removeEditPlan(projId, idx){
   const p = projects.find(x => x.id === projId);
   if(!p) return;
+  commitUndo();
+  const snapshot = JSON.parse(JSON.stringify(p.editPlan));
+  const removed = p.editPlan[idx];
   p.editPlan.splice(idx, 1);
   renderKanban();
   renderPanelBody(projId);
   syncProject(p);
+  const el = document.getElementById('toast');
+  el.innerHTML = `<div class="toast-row"><span>Removed: ${EDIT_TYPES[removed.type]?.label||removed.type}</span><button class="toast-undo" onclick="triggerUndo()">UNDO ⌘Z</button></div><div class="toast-bar"></div>`;
+  el.classList.add('show');
+  _undo = {
+    timer: setTimeout(() => { el.classList.remove('show'); _undo = null; }, 8000),
+    commit: () => { el.classList.remove('show'); },
+    restore: () => {
+      p.editPlan = snapshot;
+      renderKanban();
+      renderPanelBody(projId);
+      syncProject(p);
+      toast(`Restored plan item`);
+    }
+  };
 }
 
 async function toggleSaroshReview(projId){
@@ -1793,10 +1810,26 @@ async function removeDraftVideo(projId, vidId){
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   const v = p.videos.find(x => x.id === vidId);
-  if(!v || !confirm(`Remove draft task "${v.name}"?`)) return;
+  if(!v) return;
+  commitUndo();
+  const snapshot = JSON.parse(JSON.stringify(v));
   p.videos = p.videos.filter(x => x.id !== vidId);
   renderPanelBody(projId);
-  await db.from('videos').delete().eq('id', vidId);
+  const el = document.getElementById('toast');
+  el.innerHTML = `<div class="toast-row"><span>Removed: ${v.name}</span><button class="toast-undo" onclick="triggerUndo()">UNDO ⌘Z</button></div><div class="toast-bar"></div>`;
+  el.classList.add('show');
+  _undo = {
+    timer: setTimeout(async () => {
+      el.classList.remove('show'); _undo = null;
+      await db.from('videos').delete().eq('id', vidId);
+    }, 8000),
+    commit: async () => { el.classList.remove('show'); await db.from('videos').delete().eq('id', vidId); },
+    restore: () => {
+      p.videos.push(snapshot);
+      renderPanelBody(projId);
+      toast(`Restored: ${v.name}`);
+    }
+  };
 }
 
 // ─── SHOOT DATE ──────────────────────────────────────────────────────────────
