@@ -1067,7 +1067,7 @@ function kCardHTML(p, si){
       <div class="card-actions" onclick="event.stopPropagation()">
         <button class="btn-sm" ${si===0?'disabled':''} onclick="moveBack(${p.id})">←</button>
         <button class="btn-sm adv" ${isLast?'disabled':''} onclick="advanceProject(${p.id})">${isLast?'✓':'→'}</button>
-        <button class="btn-sm del" onclick="removeProject(${p.id})">×</button>
+        ${isAdmin() ? `<button class="btn-sm del" onclick="removeProject(${p.id})">×</button>` : ''}
       </div>
     </div>
   </div>`;
@@ -1306,7 +1306,7 @@ function renderPanelBody(id){
               <span class="ep-count">${ep.count}</span>
               <span class="ep-label">video${ep.count>1?'s':''}</span>
               <span class="ep-hours">${ep.count * EDIT_TYPES[ep.type].hours}h</span>
-              <button class="btn-sm del" onclick="removeEditPlan(${p.id},${i})">×</button>
+              ${isAdmin() ? `<button class="btn-sm del" onclick="removeEditPlan(${p.id},${i})">×</button>` : ''}
             </div>`).join('')
           }
         </div>
@@ -1339,7 +1339,7 @@ function renderPanelBody(id){
                   <input class="panel-input" style="flex:1;font-size:11px" value="${v.name}" placeholder="Name this video…"
                     onchange="saveDraftName(${p.id},'${v.id}',this.value)"
                     onblur="saveDraftName(${p.id},'${v.id}',this.value)">
-                  <button class="btn-sm del" onclick="removeDraftVideo(${p.id},'${v.id}')">×</button>
+                  ${isAdmin() ? `<button class="btn-sm del" onclick="removeDraftVideo(${p.id},'${v.id}')">×</button>` : ''}
                 </div>
                 <div class="v-row-bot">
                   <select class="v-assignee-sel" onchange="assignDraftVideo(${p.id},'${v.id}',this.value)">
@@ -1479,7 +1479,7 @@ function videoRowHTML(p, v){
           : `<button class="btn-sm" ${v.stage===0?'disabled':''} onclick="moveVideoBack(${p.id},'${v.id}')">←</button>`
         }
         ${advBtn}
-        <button class="btn-sm del" onclick="removeVideo(${p.id},'${v.id}')">×</button>
+        ${isAdmin() ? `<button class="btn-sm del" onclick="removeVideo(${p.id},'${v.id}')">×</button>` : ''}
       </div>
     </div>
   </div>`;
