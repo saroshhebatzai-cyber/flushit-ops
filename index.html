@@ -508,7 +508,27 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <button onclick="playDeadlineChime()" title="Test notification sound" style="font-family:var(--mono);font-size:11px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--text)';this.style.borderColor='var(--b2)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">🔔</button>
   <div style="display:flex;align-items:center;gap:8px;border-left:1px solid var(--border);padding-left:12px">
     <span id="hdr-user" style="font-size:10px;color:var(--tm)"></span>
+    <button onclick="openChangePw()" title="Change password" style="font-family:var(--mono);font-size:10px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--text)';this.style.borderColor='var(--b2)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">PW</button>
     <button onclick="doLogout()" title="Sign out" style="font-family:var(--mono);font-size:10px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">Out</button>
+  </div>
+  <!-- Change Password Modal -->
+  <div id="changepw-ov" onclick="if(event.target===this)closeChangePw()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:3000;align-items:center;justify-content:center;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px 36px;width:320px;display:flex;flex-direction:column;gap:16px;">
+      <div style="font-family:var(--display);font-size:16px;font-weight:700;">Change Password</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:1px;">New Password</label>
+        <input id="pw-new" type="password" placeholder="Min 6 characters" style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;" />
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:1px;">Confirm Password</label>
+        <input id="pw-confirm" type="password" placeholder="Repeat password" style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;" onkeydown="if(event.key==='Enter')submitChangePw()" />
+      </div>
+      <div id="pw-error" style="font-size:11px;color:var(--red);min-height:16px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="closeChangePw()" style="flex:1;font-family:var(--mono);font-size:11px;padding:9px;background:transparent;color:var(--tm);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;">Cancel</button>
+        <button onclick="submitChangePw()" style="flex:1;font-family:var(--mono);font-size:11px;font-weight:700;padding:9px;background:var(--accent);color:#000;border:none;border-radius:var(--rs);cursor:pointer;">Update</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2811,6 +2831,29 @@ async function doLogin(){
     return;
   }
   await onSignedIn(data.user);
+}
+
+function openChangePw(){
+  document.getElementById('changepw-ov').style.display='flex';
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-confirm').value='';
+  document.getElementById('pw-error').textContent='';
+  setTimeout(()=>document.getElementById('pw-new').focus(),50);
+}
+function closeChangePw(){
+  document.getElementById('changepw-ov').style.display='none';
+}
+async function submitChangePw(){
+  const pw=document.getElementById('pw-new').value;
+  const confirm=document.getElementById('pw-confirm').value;
+  const errEl=document.getElementById('pw-error');
+  if(pw.length<6){errEl.textContent='Password must be at least 6 characters.';return;}
+  if(pw!==confirm){errEl.textContent='Passwords do not match.';return;}
+  errEl.textContent='';
+  const{error}=await db.auth.updateUser({password:pw});
+  if(error){errEl.textContent=error.message;return;}
+  closeChangePw();
+  toast('Password updated ✓');
 }
 
 async function doLogout(){
