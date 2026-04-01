@@ -1104,6 +1104,7 @@ function kCardHTML(p, si){
 // ─── PROJECT ACTIONS ─────────────────────────────────────────────────────────
 
 async function advanceProject(id){
+  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === id);
   if(!p || p.stage >= 7) return;
   p.stage++;
@@ -1136,6 +1137,7 @@ async function advanceProject(id){
 }
 
 async function moveBack(id){
+  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === id);
   if(!p || p.stage <= 0) return;
   p.stage--;
@@ -1659,6 +1661,7 @@ function editVideoDl(projId, vidId, el){
 }
 
 async function addVideos(projId){
+  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   const type = document.getElementById(`vadd-type-${projId}`)?.value;
@@ -1678,6 +1681,7 @@ async function addVideos(projId){
 // ─── EDIT PLAN ───────────────────────────────────────────────────────────────
 
 async function addEditPlan(projId){
+  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === projId);
   const type = document.getElementById(`ep-type-${projId}`)?.value;
   const count = parseInt(document.getElementById(`ep-count-${projId}`)?.value) || 1;
@@ -1718,6 +1722,7 @@ async function removeEditPlan(projId, idx){
 }
 
 async function toggleSaroshReview(projId){
+  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   p.saroshReview = !p.saroshReview;
@@ -1729,6 +1734,7 @@ async function toggleSaroshReview(projId){
 // ─── INLINE PANEL FIELD EDITING ──────────────────────────────────────────────
 
 async function editPanelField(field){
+  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   if(!currentPanelId) return;
   const p = projects.find(x => x.id === currentPanelId);
   if(!p) return;
@@ -1807,6 +1813,7 @@ async function assignDraftVideo(projId, vidId, editorId){
 }
 
 async function removeDraftVideo(projId, vidId){
+  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   const v = p.videos.find(x => x.id === vidId);
@@ -1835,6 +1842,7 @@ async function removeDraftVideo(projId, vidId){
 // ─── SHOOT DATE ──────────────────────────────────────────────────────────────
 
 function editShootDate(projId){
+  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   document.getElementById(`shoot-date-display-${projId}`).style.display = 'none';
   const input = document.getElementById(`shoot-date-input-${projId}`);
   input.style.display = 'block';
@@ -2479,6 +2487,7 @@ function openModal(){
 function closeModal(){ document.getElementById('modal-ov').classList.remove('open'); }
 
 async function createProject(){
+  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const client = document.getElementById('f-client').value.trim();
   const name = document.getElementById('f-project').value.trim();
   const managerId = parseInt(document.getElementById('f-manager').value);
