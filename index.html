@@ -335,13 +335,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .btn-cancel:hover{border-color:var(--b2);color:var(--text)}
 
 /* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:11px 16px;font-size:11px;color:var(--accent);z-index:2000;opacity:0;transform:translateY(8px);transition:all .25s cubic-bezier(.22,1,.36,1);pointer-events:none;min-width:220px}
-.toast.show{opacity:1;transform:translateY(0);pointer-events:all}
-.toast-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.toast-undo{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 9px;border:1px solid var(--accent);border-radius:var(--rs);background:transparent;color:var(--accent);cursor:pointer;flex-shrink:0;transition:all .15s}
-.toast-undo:hover{background:var(--accent);color:#000}
-.toast-bar{height:2px;background:var(--accent);border-radius:1px;margin-top:8px;transform-origin:left;animation:toastBar 8s linear forwards}
-@keyframes toastBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:11px 16px;font-size:11px;color:var(--accent);z-index:2000;opacity:0;transform:translateY(8px);transition:all .25s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
 
 /* WHATSAPP PING */
 .wa-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:2099;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -508,27 +503,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <button onclick="playDeadlineChime()" title="Test notification sound" style="font-family:var(--mono);font-size:11px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--text)';this.style.borderColor='var(--b2)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">🔔</button>
   <div style="display:flex;align-items:center;gap:8px;border-left:1px solid var(--border);padding-left:12px">
     <span id="hdr-user" style="font-size:10px;color:var(--tm)"></span>
-    <button onclick="openChangePw()" title="Change password" style="font-family:var(--mono);font-size:10px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--text)';this.style.borderColor='var(--b2)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">PW</button>
     <button onclick="doLogout()" title="Sign out" style="font-family:var(--mono);font-size:10px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">Out</button>
-  </div>
-  <!-- Change Password Modal -->
-  <div id="changepw-ov" onclick="if(event.target===this)closeChangePw()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:3000;align-items:center;justify-content:center;">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px 36px;width:320px;display:flex;flex-direction:column;gap:16px;">
-      <div style="font-family:var(--display);font-size:16px;font-weight:700;">Change Password</div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <label style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:1px;">New Password</label>
-        <input id="pw-new" type="password" placeholder="Min 6 characters" style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;" />
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <label style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:1px;">Confirm Password</label>
-        <input id="pw-confirm" type="password" placeholder="Repeat password" style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;" onkeydown="if(event.key==='Enter')submitChangePw()" />
-      </div>
-      <div id="pw-error" style="font-size:11px;color:var(--red);min-height:16px;"></div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="closeChangePw()" style="flex:1;font-family:var(--mono);font-size:11px;padding:9px;background:transparent;color:var(--tm);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;">Cancel</button>
-        <button onclick="submitChangePw()" style="flex:1;font-family:var(--mono);font-size:11px;font-weight:700;padding:9px;background:var(--accent);color:#000;border:none;border-radius:var(--rs);cursor:pointer;">Update</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -650,7 +625,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
 </div>
 
-<div class="toast" id="toast"><div class="toast-row"><span id="toast-msg"></span></div></div>
+<div class="toast" id="toast"></div>
 <div class="wa-backdrop" id="wa-backdrop" onclick="hideWaPing()"></div>
 <div class="wa-ping" id="wa-ping">
   <div class="wa-ping-label">
@@ -712,12 +687,13 @@ const CLIENT_COLORS = {
 };
 
 const TEAM = [
-  {id:1, name:'Sarosh',  role:'Founder',               initials:'SA', isEditor:false, ownedStages:[4],     waName:'Sarosh',  email:'sarosh.hebatzai@gmail.com',  isAdmin:true},
-  {id:3, name:'Ayesha',  role:'Social Media Manager',  initials:'AY', isEditor:false, ownedStages:[0],     waName:'Ayesha',  email:'saddiqa9211@gmail.com',      isAdmin:false},
-  {id:4, name:'Tanzeel', role:'Video Editor',          initials:'TZ', isEditor:true,  ownedStages:[],      waName:'Tanzeel', email:'tanzeeltariq2002@gmail.com',  isAdmin:false},
-  {id:5, name:'Osama',   role:'Video Editor',          initials:'OS', isEditor:true,  ownedStages:[],      waName:'Osama',   email:'osamairshad18@gmail.com',     isAdmin:false},
-  {id:6, name:'Kabeer',  role:'Video Editor',          initials:'KB', isEditor:true,  ownedStages:[],      waName:'Kabeer',  email:'ulhaqkabeer703@gmail.com',    isAdmin:false},
-  {id:7, name:'Arsal',   role:'Videographer',          initials:'AR', isEditor:false, ownedStages:[3,5],   waName:'Arsal',   email:'arsalmoizsp3@gmail.com',      isAdmin:false},
+  {id:1, name:'Sarosh Ahmed', role:'Founder',               initials:'SA', isEditor:false, ownedStages:[4], waName:'Sarosh',  email:'sarosh.hebatzai@gmail.com',  isAdmin:true},
+  {id:2, name:'Ahmed',        role:'Head of Ops',            initials:'AH', isEditor:false, ownedStages:[1,2,5], waName:'Ahmed',  email:'ahmed@flushit.com.pk',   isAdmin:true},
+  {id:3, name:'Ayesha',       role:'Social Media Manager',   initials:'AY', isEditor:false, ownedStages:[0], waName:'Ayesha', email:'ayesha@flushit.com.pk',  isAdmin:false},
+  {id:4, name:'Tanzeel',      role:'Video Editor',           initials:'TZ', isEditor:true,  ownedStages:[], waName:'Tanzeel', email:'tanzeel@flushit.com.pk', isAdmin:false},
+  {id:5, name:'Osama',        role:'Video Editor',           initials:'OS', isEditor:true,  ownedStages:[], waName:'Osama',   email:'osama@flushit.com.pk',   isAdmin:false},
+  {id:6, name:'Kabeer',       role:'Video Editor',           initials:'KB', isEditor:true,  ownedStages:[], waName:'Kabeer',  email:'kabeer@flushit.com.pk',  isAdmin:false},
+  {id:7, name:'Arsal',        role:'Videographer',           initials:'AR', isEditor:false, ownedStages:[3,5], waName:'Arsal',  email:'arsal@flushit.com.pk',   isAdmin:false},
 ];
 
 const EDITOR_HOURS = 8;
@@ -787,7 +763,9 @@ async function syncVideo(v, projId){
 
 let _realtimeDebounce;
 function subscribeRealtime(){
-  db.channel('db-changes')
+  const channelName = 'db-changes-' + Math.random().toString(36).slice(2);
+  console.log('[Realtime] subscribing on channel:', channelName);
+  db.channel(channelName)
     .on('postgres_changes', {event:'*', schema:'public', table:'projects'}, () => {
       clearTimeout(_realtimeDebounce);
       _realtimeDebounce = setTimeout(loadData, 400);
@@ -796,7 +774,11 @@ function subscribeRealtime(){
       clearTimeout(_realtimeDebounce);
       _realtimeDebounce = setTimeout(loadData, 400);
     })
-    .subscribe();
+    .subscribe((status, err) => {
+      console.log('[Realtime]', status, err || '');
+      if(status === 'SUBSCRIBED') toast('● Live');
+      if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') toast('⚠ Live sync offline');
+    });
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -989,37 +971,14 @@ function copyAndSendWaPing(){
   setTimeout(hideWaPing, 800);
 }
 
-// ─── UNDO SYSTEM ─────────────────────────────────────────────────────────────
-let _undo = null;
-
-function commitUndo(){
-  if(!_undo) return;
-  clearTimeout(_undo.timer);
-  _undo.commit();
-  _undo = null;
-}
-
-function triggerUndo(){
-  if(!_undo) return;
-  clearTimeout(_undo.timer);
-  _undo.restore();
-  _undo = null;
-  document.getElementById('toast').classList.remove('show');
-}
-
-document.addEventListener('keydown', e => {
-  if((e.metaKey || e.ctrlKey) && e.key === 'z' && _undo){ e.preventDefault(); triggerUndo(); }
-});
-
 function toast(msg){
-  commitUndo(); // flush any pending delete before showing new toast
   const el = document.getElementById('toast');
-  el.innerHTML = `<div class="toast-row"><span>${msg}</span></div>`;
+  el.textContent = msg;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); renderQueue(); updateStats(); }
+function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); renderQueue(); updateStats(); if(currentPanelId) renderPanelBody(currentPanelId); }
 
 function updateStats(){
   const active = projects.filter(p => p.stage < 7).length;
@@ -1115,7 +1074,7 @@ function kCardHTML(p, si){
       <div class="card-actions" onclick="event.stopPropagation()">
         <button class="btn-sm" ${si===0?'disabled':''} onclick="moveBack(${p.id})">←</button>
         <button class="btn-sm adv" ${isLast?'disabled':''} onclick="advanceProject(${p.id})">${isLast?'✓':'→'}</button>
-        ${isAdmin() ? `<button class="btn-sm del" onclick="removeProject(${p.id})">×</button>` : ''}
+        <button class="btn-sm del" onclick="removeProject(${p.id})">×</button>
       </div>
     </div>
   </div>`;
@@ -1124,7 +1083,6 @@ function kCardHTML(p, si){
 // ─── PROJECT ACTIONS ─────────────────────────────────────────────────────────
 
 async function advanceProject(id){
-  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === id);
   if(!p || p.stage >= 7) return;
   p.stage++;
@@ -1157,7 +1115,6 @@ async function advanceProject(id){
 }
 
 async function moveBack(id){
-  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === id);
   if(!p || p.stage <= 0) return;
   p.stage--;
@@ -1169,28 +1126,12 @@ async function moveBack(id){
 
 async function removeProject(id){
   const p = projects.find(x => x.id === id);
-  if(!p) return;
-  commitUndo();
-  const snapshot = JSON.parse(JSON.stringify(p));
+  if(!p || !confirm(`Remove "${p.client} · ${p.name}"?\n\nThis cannot be undone.`)) return;
   projects = projects.filter(x => x.id !== id);
   if(currentPanelId === id) closePanel();
   renderAll();
-  const el = document.getElementById('toast');
-  el.innerHTML = `<div class="toast-row"><span>Removed: ${p.client} · ${p.name}</span><button class="toast-undo" onclick="triggerUndo()">UNDO ⌘Z</button></div><div class="toast-bar"></div>`;
-  el.classList.add('show');
-  _undo = {
-    timer: setTimeout(async () => {
-      el.classList.remove('show'); _undo = null;
-      await db.from('projects').delete().eq('id', id);
-    }, 8000),
-    commit: async () => { el.classList.remove('show'); await db.from('projects').delete().eq('id', id); },
-    restore: () => {
-      projects.push(snapshot);
-      projects.sort((a,b) => a.id - b.id);
-      renderAll();
-      toast(`Restored: ${p.client} · ${p.name}`);
-    }
-  };
+  toast(`Removed: ${p.client} · ${p.name}`);
+  await db.from('projects').delete().eq('id', id);
 }
 
 function editDeadline(id, el){
@@ -1372,7 +1313,7 @@ function renderPanelBody(id){
               <span class="ep-count">${ep.count}</span>
               <span class="ep-label">video${ep.count>1?'s':''}</span>
               <span class="ep-hours">${ep.count * EDIT_TYPES[ep.type].hours}h</span>
-              ${isAdmin() ? `<button class="btn-sm del" onclick="removeEditPlan(${p.id},${i})">×</button>` : ''}
+              <button class="btn-sm del" onclick="removeEditPlan(${p.id},${i})">×</button>
             </div>`).join('')
           }
         </div>
@@ -1405,7 +1346,7 @@ function renderPanelBody(id){
                   <input class="panel-input" style="flex:1;font-size:11px" value="${v.name}" placeholder="Name this video…"
                     onchange="saveDraftName(${p.id},'${v.id}',this.value)"
                     onblur="saveDraftName(${p.id},'${v.id}',this.value)">
-                  ${isAdmin() ? `<button class="btn-sm del" onclick="removeDraftVideo(${p.id},'${v.id}')">×</button>` : ''}
+                  <button class="btn-sm del" onclick="removeDraftVideo(${p.id},'${v.id}')">×</button>
                 </div>
                 <div class="v-row-bot">
                   <select class="v-assignee-sel" onchange="assignDraftVideo(${p.id},'${v.id}',this.value)">
@@ -1545,7 +1486,7 @@ function videoRowHTML(p, v){
           : `<button class="btn-sm" ${v.stage===0?'disabled':''} onclick="moveVideoBack(${p.id},'${v.id}')">←</button>`
         }
         ${advBtn}
-        ${isAdmin() ? `<button class="btn-sm del" onclick="removeVideo(${p.id},'${v.id}')">×</button>` : ''}
+        <button class="btn-sm del" onclick="removeVideo(${p.id},'${v.id}')">×</button>
       </div>
     </div>
   </div>`;
@@ -1640,28 +1581,12 @@ async function removeVideo(projId, vidId){
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   const v = p.videos.find(x => x.id === vidId);
-  if(!v) return;
-  commitUndo();
-  const snapshot = JSON.parse(JSON.stringify(v));
+  if(!v || !confirm(`Remove "${v.name}"?`)) return;
   p.videos = p.videos.filter(x => x.id !== vidId);
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
-  const el = document.getElementById('toast');
-  el.innerHTML = `<div class="toast-row"><span>Removed: ${v.name}</span><button class="toast-undo" onclick="triggerUndo()">UNDO ⌘Z</button></div><div class="toast-bar"></div>`;
-  el.classList.add('show');
-  _undo = {
-    timer: setTimeout(async () => {
-      el.classList.remove('show'); _undo = null;
-      await db.from('videos').delete().eq('id', vidId);
-    }, 8000),
-    commit: async () => { el.classList.remove('show'); await db.from('videos').delete().eq('id', vidId); },
-    restore: () => {
-      p.videos.push(snapshot);
-      renderAll();
-      if(currentPanelId === projId) renderPanelBody(projId);
-      toast(`Restored: ${v.name}`);
-    }
-  };
+  toast(`Removed: ${v.name}`);
+  await db.from('videos').delete().eq('id', vidId);
 }
 
 function editVideoDl(projId, vidId, el){
@@ -1681,7 +1606,6 @@ function editVideoDl(projId, vidId, el){
 }
 
 async function addVideos(projId){
-  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   const type = document.getElementById(`vadd-type-${projId}`)?.value;
@@ -1701,7 +1625,6 @@ async function addVideos(projId){
 // ─── EDIT PLAN ───────────────────────────────────────────────────────────────
 
 async function addEditPlan(projId){
-  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === projId);
   const type = document.getElementById(`ep-type-${projId}`)?.value;
   const count = parseInt(document.getElementById(`ep-count-${projId}`)?.value) || 1;
@@ -1718,31 +1641,13 @@ async function addEditPlan(projId){
 async function removeEditPlan(projId, idx){
   const p = projects.find(x => x.id === projId);
   if(!p) return;
-  commitUndo();
-  const snapshot = JSON.parse(JSON.stringify(p.editPlan));
-  const removed = p.editPlan[idx];
   p.editPlan.splice(idx, 1);
   renderKanban();
   renderPanelBody(projId);
   syncProject(p);
-  const el = document.getElementById('toast');
-  el.innerHTML = `<div class="toast-row"><span>Removed: ${EDIT_TYPES[removed.type]?.label||removed.type}</span><button class="toast-undo" onclick="triggerUndo()">UNDO ⌘Z</button></div><div class="toast-bar"></div>`;
-  el.classList.add('show');
-  _undo = {
-    timer: setTimeout(() => { el.classList.remove('show'); _undo = null; }, 8000),
-    commit: () => { el.classList.remove('show'); },
-    restore: () => {
-      p.editPlan = snapshot;
-      renderKanban();
-      renderPanelBody(projId);
-      syncProject(p);
-      toast(`Restored plan item`);
-    }
-  };
 }
 
 async function toggleSaroshReview(projId){
-  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   p.saroshReview = !p.saroshReview;
@@ -1754,7 +1659,6 @@ async function toggleSaroshReview(projId){
 // ─── INLINE PANEL FIELD EDITING ──────────────────────────────────────────────
 
 async function editPanelField(field){
-  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   if(!currentPanelId) return;
   const p = projects.find(x => x.id === currentPanelId);
   if(!p) return;
@@ -1833,36 +1737,18 @@ async function assignDraftVideo(projId, vidId, editorId){
 }
 
 async function removeDraftVideo(projId, vidId){
-  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   const v = p.videos.find(x => x.id === vidId);
-  if(!v) return;
-  commitUndo();
-  const snapshot = JSON.parse(JSON.stringify(v));
+  if(!v || !confirm(`Remove draft task "${v.name}"?`)) return;
   p.videos = p.videos.filter(x => x.id !== vidId);
   renderPanelBody(projId);
-  const el = document.getElementById('toast');
-  el.innerHTML = `<div class="toast-row"><span>Removed: ${v.name}</span><button class="toast-undo" onclick="triggerUndo()">UNDO ⌘Z</button></div><div class="toast-bar"></div>`;
-  el.classList.add('show');
-  _undo = {
-    timer: setTimeout(async () => {
-      el.classList.remove('show'); _undo = null;
-      await db.from('videos').delete().eq('id', vidId);
-    }, 8000),
-    commit: async () => { el.classList.remove('show'); await db.from('videos').delete().eq('id', vidId); },
-    restore: () => {
-      p.videos.push(snapshot);
-      renderPanelBody(projId);
-      toast(`Restored: ${v.name}`);
-    }
-  };
+  await db.from('videos').delete().eq('id', vidId);
 }
 
 // ─── SHOOT DATE ──────────────────────────────────────────────────────────────
 
 function editShootDate(projId){
-  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   document.getElementById(`shoot-date-display-${projId}`).style.display = 'none';
   const input = document.getElementById(`shoot-date-input-${projId}`);
   input.style.display = 'block';
@@ -1892,7 +1778,8 @@ async function startVideo(projId, vidId){
   if(!v || v.stage !== 0 || v.startedAt) return;
   v.startedAt = new Date().toISOString();
   v.completedAt = null;
-  renderPanelBody(projId);
+  if(currentPanelId === projId) renderPanelBody(projId);
+  renderQueue();
   toast(`⏱ Timer started: ${v.name}`);
   syncVideo(v, projId);
 }
@@ -2507,7 +2394,6 @@ function openModal(){
 function closeModal(){ document.getElementById('modal-ov').classList.remove('open'); }
 
 async function createProject(){
-  if(!isAdmin()){ toast('⚠ Access restricted'); return; }
   const client = document.getElementById('f-client').value.trim();
   const name = document.getElementById('f-project').value.trim();
   const managerId = parseInt(document.getElementById('f-manager').value);
@@ -2719,6 +2605,7 @@ function renderQueue(){
         <thead><tr>
           <th>Video</th><th>Type</th><th>Client Due</th>
           <th>Internal Deadline</th><th>Buffer</th><th>Assigned To</th><th>Stage</th>
+          ${!isAdmin() ? '<th>Actions</th>' : ''}
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -2774,6 +2661,25 @@ function renderQueueRow(v){
           : `<span style="font-size:10px;color:var(--td)">Unassigned</span>`;
       })();
 
+  // Action buttons for the assigned editor (non-admin)
+  let actionsHtml = '';
+  if(!isAdmin() && currentUser && v.assigneeId === currentUser.id && v.stage < 3){
+    if(v.stage === 0){
+      if(!v.startedAt){
+        actionsHtml = `<button class="btn-sm start" onclick="startVideo('${v.projectId}','${v.id}')">▶ Start</button>`;
+      } else {
+        const hrs = workingHoursBetween(v.startedAt, new Date().toISOString());
+        const nowH = new Date().getHours() + new Date().getMinutes()/60;
+        const isWorkHours = nowH >= 10.5 && nowH < 19 && new Date().getDay() !== 0 && new Date().getDay() !== 6;
+        const workMins = Math.round(hrs * 60);
+        const hrsLabel = !isWorkHours ? 'paused' : hrs < 1 ? (workMins < 1 ? 'just started' : workMins + 'm in') : hrs.toFixed(1) + 'h in';
+        actionsHtml = `<span class="v-inprogress" style="margin-right:5px">⏱ ${hrsLabel}</span><button class="btn-sm submit" onclick="advanceVideo('${v.projectId}','${v.id}')">Submit ✓</button>`;
+      }
+    } else {
+      actionsHtml = `<button class="btn-sm adv" onclick="advanceVideo('${v.projectId}','${v.id}')">→ Done</button>`;
+    }
+  }
+
   return `<tr class="queue-row${isUnstarted?' unstarted':''}">
     <td class="queue-cell"><div class="queue-vid-name">${v.name}</div><div class="queue-vid-project">${v.projectName}</div></td>
     <td class="queue-cell"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span></td>
@@ -2782,6 +2688,7 @@ function renderQueueRow(v){
     <td class="queue-cell">${bufferHtml}</td>
     <td class="queue-cell">${assigneeHtml}</td>
     <td class="queue-cell">${stagePill}</td>
+    ${!isAdmin() ? `<td class="queue-cell">${actionsHtml}</td>` : ''}
   </tr>`;
 }
 
@@ -2831,29 +2738,6 @@ async function doLogin(){
     return;
   }
   await onSignedIn(data.user);
-}
-
-function openChangePw(){
-  document.getElementById('changepw-ov').style.display='flex';
-  document.getElementById('pw-new').value='';
-  document.getElementById('pw-confirm').value='';
-  document.getElementById('pw-error').textContent='';
-  setTimeout(()=>document.getElementById('pw-new').focus(),50);
-}
-function closeChangePw(){
-  document.getElementById('changepw-ov').style.display='none';
-}
-async function submitChangePw(){
-  const pw=document.getElementById('pw-new').value;
-  const confirm=document.getElementById('pw-confirm').value;
-  const errEl=document.getElementById('pw-error');
-  if(pw.length<6){errEl.textContent='Password must be at least 6 characters.';return;}
-  if(pw!==confirm){errEl.textContent='Passwords do not match.';return;}
-  errEl.textContent='';
-  const{error}=await db.auth.updateUser({password:pw});
-  if(error){errEl.textContent=error.message;return;}
-  closeChangePw();
-  toast('Password updated ✓');
 }
 
 async function doLogout(){
