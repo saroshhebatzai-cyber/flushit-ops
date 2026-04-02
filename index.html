@@ -688,8 +688,8 @@ const CLIENT_COLORS = {
 
 const TEAM = [
   {id:1, name:'Sarosh Ahmed', role:'Founder',               initials:'SA', isEditor:false, ownedStages:[4], waName:'Sarosh',  email:'sarosh.hebatzai@gmail.com',  isAdmin:true},
-  {id:2, name:'Ahmed',        role:'Head of Ops',            initials:'AH', isEditor:false, ownedStages:[1,2,5], waName:'Ahmed',  email:'ahmed@flushit.com.pk',   isAdmin:true},
-  {id:3, name:'Ayesha',       role:'Social Media Manager',   initials:'AY', isEditor:false, ownedStages:[0], waName:'Ayesha', email:'ayesha@flushit.com.pk',  isAdmin:false},
+  {id:2, name:'Ahmed',        role:'VP',                     initials:'AH', isEditor:false, ownedStages:[1,2,5], waName:'Ahmed',  email:'ahmed@flushit.com.pk',   isAdmin:true},
+  {id:3, name:'Ayesha',       role:'Social Media Manager',   initials:'AY', isEditor:true,  ownedStages:[0], waName:'Ayesha', email:'ayesha@flushit.com.pk',  isAdmin:false},
   {id:4, name:'Tanzeel',      role:'Video Editor',           initials:'TZ', isEditor:true,  ownedStages:[], waName:'Tanzeel', email:'tanzeel@flushit.com.pk', isAdmin:false},
   {id:5, name:'Osama',        role:'Video Editor',           initials:'OS', isEditor:true,  ownedStages:[], waName:'Osama',   email:'osama@flushit.com.pk',   isAdmin:false},
   {id:6, name:'Kabeer',       role:'Video Editor',           initials:'KB', isEditor:true,  ownedStages:[], waName:'Kabeer',  email:'kabeer@flushit.com.pk',  isAdmin:false},
@@ -699,6 +699,22 @@ const TEAM = [
 const EDITOR_HOURS = 8;
 const VERSION = 'v1.0';
 const today = new Date();
+
+// Stage advance permissions: stage index → array of team member IDs allowed to advance
+// Sarosh=1, Ahmed(VP)=2, Ayesha=3, Arsal=7
+const STAGE_ADVANCE_PERMS = {
+  0: [1, 2, 3],  // Brief → Ideation: Sarosh, VP, Ayesha
+  1: [1, 2, 3],  // Ideation → Discovery Deck: Sarosh, VP, Ayesha
+  2: [1, 2],     // Discovery → Shoot Plan: Sarosh, VP
+  3: [1, 2, 7],  // Shoot Plan → Sarosh Approval: Sarosh, VP, Arsal
+  4: [1],        // Sarosh Approval → Shoot Day: Sarosh only
+  5: [1, 2],     // Shoot Day → In Production: Sarosh, VP
+  6: [1, 2],     // In Production → Delivered: Sarosh, VP
+};
+const STAGE_BACK_PERMS = [1, 2]; // Only Sarosh + VP can move back
+
+function canAdvance(stage){ return !currentUser || STAGE_ADVANCE_PERMS[stage]?.includes(currentUser.id); }
+function canMoveBack(){ return !currentUser || STAGE_BACK_PERMS.includes(currentUser.id); }
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let projects = [];
@@ -1072,9 +1088,9 @@ function kCardHTML(p, si){
         <span style="font-size:8px;padding:2px 5px;border-radius:20px;font-weight:600;background:${dd<0?'var(--rdim)':dd<=3?'var(--ydim)':'var(--s3)'};color:${dd<0?'var(--red)':dd<=3?'var(--yellow)':'var(--td)'};border:1px solid ${dd<0?'rgba(255,77,94,.25)':dd<=3?'rgba(255,184,0,.25)':'var(--border)'}">${dd<0?Math.abs(dd)+'d late':dd===0?'today':'in '+dd+'d'}</span>
       </div>
       <div class="card-actions" onclick="event.stopPropagation()">
-        <button class="btn-sm" ${si===0?'disabled':''} onclick="moveBack(${p.id})">←</button>
-        <button class="btn-sm adv" ${isLast?'disabled':''} onclick="advanceProject(${p.id})">${isLast?'✓':'→'}</button>
-        <button class="btn-sm del" onclick="removeProject(${p.id})">×</button>
+        <button class="btn-sm" ${si===0||!canMoveBack()?'disabled':''} onclick="moveBack(${p.id})">←</button>
+        <button class="btn-sm adv" ${isLast||!canAdvance(si)?'disabled':''} onclick="advanceProject(${p.id})">${isLast?'✓':'→'}</button>
+        <button class="btn-sm del" ${!isAdmin()?'disabled':''} onclick="removeProject(${p.id})">×</button>
       </div>
     </div>
   </div>`;
@@ -1085,6 +1101,7 @@ function kCardHTML(p, si){
 async function advanceProject(id){
   const p = projects.find(x => x.id === id);
   if(!p || p.stage >= 7) return;
+  if(!canAdvance(p.stage)){ toast('⚠ You don\'t have permission to advance this stage'); return; }
   p.stage++;
   p.daysInStage = 0;
   if(p.stage === 6){
@@ -1117,6 +1134,7 @@ async function advanceProject(id){
 async function moveBack(id){
   const p = projects.find(x => x.id === id);
   if(!p || p.stage <= 0) return;
+  if(!canMoveBack()){ toast('⚠ Only VP or Sarosh can move stages back'); return; }
   p.stage--;
   p.daysInStage = 0;
   renderAll();
@@ -1170,8 +1188,8 @@ function openPanel(id){
     <span class="panel-dl${isOD?' od':''}">Due ${new Date(p.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
     <span style="font-size:10px;color:var(--td)">PM: ${mgr.name.split(' ')[0]}</span>`;
   document.getElementById('panel-actions').innerHTML = `
-    <button class="btn-sm" ${p.stage===0?'disabled':''} onclick="moveBack(${p.id});renderPanelBody(${p.id})">← Back</button>
-    <button class="btn-sm adv" ${p.stage===7?'disabled':''} onclick="advanceProject(${p.id});renderPanelBody(${p.id})">${p.stage===7?'✓ Done':'→ Advance'}</button>`;
+    <button class="btn-sm" ${p.stage===0||!canMoveBack()?'disabled':''} onclick="moveBack(${p.id});renderPanelBody(${p.id})">← Back</button>
+    <button class="btn-sm adv" ${p.stage===7||!canAdvance(p.stage)?'disabled':''} onclick="advanceProject(${p.id});renderPanelBody(${p.id})">${p.stage===7?'✓ Done':'→ Advance'}</button>`;
 
   renderPanelBody(id);
   document.getElementById('panel').classList.add('open');
