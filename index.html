@@ -689,7 +689,7 @@ const CLIENT_COLORS = {
 const TEAM = [
   {id:1, name:'Sarosh Ahmed', role:'Founder',               initials:'SA', isEditor:false, ownedStages:[4], waName:'Sarosh',  email:'sarosh.hebatzai@gmail.com',  isAdmin:true},
   {id:2, name:'Ahmed',        role:'VP',                     initials:'AH', isEditor:false, ownedStages:[1,2,5], waName:'Ahmed',  email:'ahmed@flushit.com.pk',   isAdmin:true},
-  {id:3, name:'Ayesha',       role:'Social Media Manager',   initials:'AY', isEditor:true,  ownedStages:[0], waName:'Ayesha', email:'ayesha@flushit.com.pk',  isAdmin:false},
+  {id:3, name:'Ayesha',       role:'Social Media Manager',   initials:'AY', isEditor:true,  partTime:true, ownedStages:[0], waName:'Ayesha', email:'ayesha@flushit.com.pk',  isAdmin:false},
   {id:4, name:'Tanzeel',      role:'Video Editor',           initials:'TZ', isEditor:true,  ownedStages:[], waName:'Tanzeel', email:'tanzeel@flushit.com.pk', isAdmin:false},
   {id:5, name:'Osama',        role:'Video Editor',           initials:'OS', isEditor:true,  ownedStages:[], waName:'Osama',   email:'osama@flushit.com.pk',   isAdmin:false},
   {id:6, name:'Kabeer',       role:'Video Editor',           initials:'KB', isEditor:true,  ownedStages:[], waName:'Kabeer',  email:'kabeer@flushit.com.pk',  isAdmin:false},
@@ -1382,7 +1382,7 @@ function renderPanelBody(id){
   // VIDEOS (In Production)
   if(isProduction){
     // Capacity mini-view
-    const editors = TEAM.filter(t => t.isEditor);
+    const editors = TEAM.filter(t => t.isEditor && !t.partTime);
     html += `
       <div class="panel-section">
         <div class="panel-section-title">Editor Capacity Today</div>
@@ -1531,11 +1531,18 @@ async function advanceVideo(projId, vidId){
   // Record timing when submitting from Edit stage
   if(v.stage === 0 && v.startedAt && !v.completedAt){
     v.completedAt = new Date().toISOString();
-    v.actualHours = workingHoursBetween(v.startedAt, v.completedAt);
-    const totalRevs = (v.revisions||0) + (v.clientRevs||0);
-    const weight = totalRevs === 0 ? 1.0 : totalRevs === 1 ? 0.5 : 0.75; // capped at 0.75 for rev 2+
-    const estimated = EDIT_TYPES[v.type].hours * weight;
-    v.latencyScore = (estimated > 0 && v.actualHours > 0) ? Math.round((v.actualHours / estimated) * 100) / 100 : null;
+    const assignee = TEAM.find(t => t.id === v.assigneeId);
+    if(assignee?.partTime){
+      // Part-time editors: skip latency scoring entirely
+      v.actualHours = null;
+      v.latencyScore = null;
+    } else {
+      v.actualHours = workingHoursBetween(v.startedAt, v.completedAt);
+      const totalRevs = (v.revisions||0) + (v.clientRevs||0);
+      const weight = totalRevs === 0 ? 1.0 : totalRevs === 1 ? 0.5 : 0.75;
+      const estimated = EDIT_TYPES[v.type].hours * weight;
+      v.latencyScore = (estimated > 0 && v.actualHours > 0) ? Math.round((v.actualHours / estimated) * 100) / 100 : null;
+    }
   }
   let next = v.stage + 1;
   if(next === 2 && !p.saroshReview) next = 3;
@@ -1923,7 +1930,7 @@ function renderMyStats(){
 function renderTeam(){
   renderMyStats();
   // Capacity section
-  const editors = TEAM.filter(t => t.isEditor);
+  const editors = TEAM.filter(t => t.isEditor && !t.partTime);
   document.getElementById('cap-section').innerHTML = `
     <div class="cap-section-title">Editor Capacity — Today</div>
     <div class="cap-grid">
@@ -2206,7 +2213,7 @@ function renderEfficiency(){
     : null;
 
   // Real editor on-time rate: delivered videos where deliveredAt <= deadline
-  const editors = TEAM.filter(t => t.isEditor);
+  const editors = TEAM.filter(t => t.isEditor && !t.partTime);
   const editorOnTime = editors.map(e => {
     const delivered = projects.flatMap(p => p.videos.filter(v =>
       v.assigneeId === e.id && v.stage === 3 && v.deliveredAt && v.deadline
@@ -2343,7 +2350,7 @@ function renderEfficiency(){
   const overdue = projects.filter(p => p.stage < 7 && daysFromNow(p.deadline) < 0);
 
   // 4. Top editor this week by deliveries
-  const editorDelsWeek = TEAM.filter(t => t.isEditor).map(e => ({
+  const editorDelsWeek = TEAM.filter(t => t.isEditor && !t.partTime).map(e => ({
     name: e.name.split(' ')[0],
     count: allVids.filter(v => v.assigneeId === e.id && v.stage === 3 && inWeek(v.deliveredAt)).length
   })).filter(e => e.count > 0).sort((a,b) => b.count - a.count);
