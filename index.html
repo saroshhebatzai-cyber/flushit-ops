@@ -1642,7 +1642,7 @@ async function addVideos(projId){
   for(let i = 1; i <= count; i++){
     const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[type].label} ${existing+i}`, type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
     p.videos.push(v);
-    syncVideo(v, projId);
+    await syncVideo(v, projId);
   }
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
@@ -2725,7 +2725,7 @@ async function updateQueueClientDue(projId, vidId, value){
   if(!v) return;
   v.clientDueDate = value || null;
   renderQueue();
-  syncVideo(v, p.id);
+  await syncVideo(v, p.id);
 }
 
 async function updateQueueDeadline(projId, vidId, value){
@@ -2734,7 +2734,7 @@ async function updateQueueDeadline(projId, vidId, value){
   if(!v) return;
   v.deadline = value || null;
   renderQueue();
-  syncVideo(v, p.id);
+  await syncVideo(v, p.id);
 }
 
 async function updateQueueAssignee(projId, vidId, value){
@@ -2745,7 +2745,7 @@ async function updateQueueAssignee(projId, vidId, value){
   v.assigneeId = editorId;
   if(editorId) showWaPing(`${waTag(editorId)} 📋 *Assigned:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — due ${fmtDue(v.deadline)}`);
   renderQueue();
-  syncVideo(v, p.id);
+  await syncVideo(v, p.id);
 }
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
