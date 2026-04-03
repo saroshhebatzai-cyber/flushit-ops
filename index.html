@@ -1107,17 +1107,17 @@ async function advanceProject(id){
     const drafts = p.videos.filter(v => v.draft);
     if(drafts.length > 0){
       // Activate named draft videos
-      drafts.forEach(v => { v.draft = false; syncVideo(v, p.id); });
+      for(const v of drafts){ v.draft = false; await syncVideo(v, p.id); }
       setTimeout(() => openPanel(p.id), 300);
     } else if(p.editPlan.length > 0 && p.videos.length === 0){
       // No drafts — create fresh from edit plan
-      p.editPlan.forEach(ep => {
+      for(const ep of p.editPlan){
         for(let i = 1; i <= ep.count; i++){
           const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[ep.type].label} ${i}`, type:ep.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
           p.videos.push(v);
-          syncVideo(v, p.id);
+          await syncVideo(v, p.id);
         }
-      });
+      }
       setTimeout(() => openPanel(p.id), 300);
     }
   }
