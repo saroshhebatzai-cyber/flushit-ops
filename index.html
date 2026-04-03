@@ -1079,10 +1079,7 @@ function kCardHTML(p, si){
         <div class="av">${t.initials}</div>
         <div class="k-aname">${t.name.split(' ')[0]}</div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-        <div class="${dayCls}">${p.daysInStage}d in stage</div>
-        ${p.createdAt ? `<div style="font-size:8px;color:var(--td)">since ${new Date(p.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>` : ''}
-      </div>
+      <div class="${dayCls}">${p.daysInStage}d in stage</div>
     </div>
     <div class="k-footer">
       <div class="k-dl" onclick="event.stopPropagation();editDeadline(${p.id},this)" style="display:flex;align-items:center;gap:5px">
