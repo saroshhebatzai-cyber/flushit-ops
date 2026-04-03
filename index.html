@@ -759,9 +759,9 @@ async function syncProject(p){
     id: p.id, client: p.client, name: p.name, stage: p.stage,
     manager_id: p.managerId, deadline: p.deadline, days_in_stage: p.daysInStage,
     sarosh_review: p.saroshReview, edit_plan: p.editPlan, stage_notes: p.stageNotes||{},
-    shoot_date: p.shootDate||null
+    shoot_date: p.shootDate||null, created_at: p.createdAt||null
   });
-  if(error) console.error('syncProject:', error);
+  if(error){ console.error('syncProject:', error); toast('⚠ Failed to save — check connection'); }
 }
 
 async function syncVideo(v, projId){
@@ -773,7 +773,7 @@ async function syncVideo(v, projId){
     actual_hours: v.actualHours||null, latency_score: v.latencyScore||null,
     draft: v.draft||false
   });
-  if(error) console.error('syncVideo:', error);
+  if(error){ console.error('syncVideo:', error); toast('⚠ Failed to save — check connection'); }
 }
 
 let _realtimeDebounce;
@@ -1113,7 +1113,7 @@ async function advanceProject(id){
       // No drafts — create fresh from edit plan
       p.editPlan.forEach(ep => {
         for(let i = 1; i <= ep.count; i++){
-          const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[ep.type].label} ${i}`, type:ep.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
+          const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[ep.type].label} ${i}`, type:ep.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
           p.videos.push(v);
           syncVideo(v, p.id);
         }
@@ -1515,13 +1515,14 @@ function videoRowHTML(p, v){
 
 async function assignVideo(projId, vidId, editorId){
   const p = projects.find(x => x.id === projId);
-  const v = p?.videos.find(x => x.id === vidId);
+  if(!p) return;
+  const v = p.videos.find(x => x.id === vidId);
   if(!v) return;
   v.assigneeId = editorId ? parseInt(editorId) : null;
   renderPanelBody(projId);
   renderTeam();
   toast(editorId ? `${v.name} → ${getTeam(parseInt(editorId)).name}` : `${v.name} unassigned`);
-  syncVideo(v, projId);
+  await syncVideo(v, projId);
   if(editorId) showWaPing(`${waTag(parseInt(editorId))} 📋 *Assigned:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — due ${fmtDue(v.deadline)}`);
 }
 
@@ -1562,7 +1563,7 @@ async function advanceVideo(projId, vidId){
   }
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
-  syncVideo(v, projId);
+  await syncVideo(v, projId);
 }
 
 async function moveVideoBack(projId, vidId){
@@ -1584,7 +1585,7 @@ async function moveVideoBack(projId, vidId){
   v.stage = prev;
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
-  syncVideo(v, projId);
+  await syncVideo(v, projId);
 }
 
 async function clientVideoRevision(projId, vidId){
@@ -1600,7 +1601,7 @@ async function clientVideoRevision(projId, vidId){
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
   toast(`↩ ${v.name} — client revision, back to Edit`);
-  syncVideo(v, projId);
+  await syncVideo(v, projId);
 }
 
 async function removeVideo(projId, vidId){
@@ -1639,7 +1640,7 @@ async function addVideos(projId){
   if(!type) return;
   const existing = p.videos.filter(v => v.type === type).length;
   for(let i = 1; i <= count; i++){
-    const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[type].label} ${existing+i}`, type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
+    const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[type].label} ${existing+i}`, type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
     p.videos.push(v);
     syncVideo(v, projId);
   }
@@ -1728,7 +1729,7 @@ async function generateDraftVideos(projId){
     else {
       // Count existing of this type to name correctly
       const typeCount = existingDrafts.filter(v => v.type === exp.type).length;
-      const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[exp.type].label} ${exp.idx}`, type:exp.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:true};
+      const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[exp.type].label} ${exp.idx}`, type:exp.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:true};
       p.videos.push(v);
       syncVideo(v, projId);
     }
@@ -1807,7 +1808,7 @@ async function startVideo(projId, vidId){
   if(currentPanelId === projId) renderPanelBody(projId);
   renderQueue();
   toast(`⏱ Timer started: ${v.name}`);
-  syncVideo(v, projId);
+  await syncVideo(v, projId);
 }
 
 // ─── STAGE NOTES ─────────────────────────────────────────────────────────────
@@ -2431,7 +2432,7 @@ async function createProject(){
     days_in_stage:0, sarosh_review:true, edit_plan:[], stage_notes:{}, shoot_date:shootDate
   }).select().single();
   if(error){ toast('⚠ Error creating project'); console.error(error); return; }
-  projects.push({id:data.id, client, name, stage:0, managerId, deadline, daysInStage:0, saroshReview:true, editPlan:[], videos:[], stageNotes:{}, shootDate});
+  projects.push({id:data.id, client, name, stage:0, managerId, deadline, daysInStage:0, saroshReview:true, editPlan:[], videos:[], stageNotes:{}, shootDate, createdAt:data.created_at||new Date().toISOString()});
   closeModal();
   renderAll();
   toast(`✓ Created: ${client} · ${name}`);
