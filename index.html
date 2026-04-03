@@ -738,7 +738,7 @@ async function loadData(){
     id: p.id, client: p.client, name: p.name, stage: p.stage,
     managerId: p.manager_id, deadline: p.deadline, daysInStage: p.days_in_stage,
     saroshReview: p.sarosh_review, editPlan: p.edit_plan||[], stageNotes: p.stage_notes||{},
-    shootDate: p.shoot_date||null,
+    shootDate: p.shoot_date||null, createdAt: p.created_at||null,
     videos: (vidData||[]).filter(v => v.project_id === p.id).map(v => ({
       id: v.id, name: v.name, type: v.type, assigneeId: v.assignee_id,
       stage: v.stage, deadline: v.deadline, clientDueDate: v.client_due_date||null, revisions: v.revisions, clientRevs: v.client_revisions||0,
@@ -1079,7 +1079,10 @@ function kCardHTML(p, si){
         <div class="av">${t.initials}</div>
         <div class="k-aname">${t.name.split(' ')[0]}</div>
       </div>
-      <div class="${dayCls}">${p.daysInStage}d here</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+        <div class="${dayCls}">${p.daysInStage}d in stage</div>
+        ${p.createdAt ? `<div style="font-size:8px;color:var(--td)">since ${new Date(p.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>` : ''}
+      </div>
     </div>
     <div class="k-footer">
       <div class="k-dl" onclick="event.stopPropagation();editDeadline(${p.id},this)" style="display:flex;align-items:center;gap:5px">
@@ -1182,10 +1185,12 @@ function openPanel(id){
   document.getElementById('panel-client').textContent = p.name;
   document.getElementById('panel-client').style.color = color;
   document.getElementById('panel-name').textContent = p.client;
+  const totalAge = p.createdAt ? Math.floor((today - new Date(p.createdAt)) / 86400000) : null;
   document.getElementById('panel-meta').innerHTML = `
     <span class="panel-stage-pill">${st.label}</span>
     <span class="panel-dl${isOD?' od':''}">Due ${new Date(p.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
-    <span style="font-size:10px;color:var(--td)">PM: ${mgr.name.split(' ')[0]}</span>`;
+    <span style="font-size:10px;color:var(--td)">PM: ${mgr.name.split(' ')[0]}</span>
+    ${totalAge !== null ? `<span style="font-size:10px;color:var(--td)">Created ${new Date(p.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · <span style="color:${totalAge>14?'var(--yellow)':'var(--td)'}">${totalAge}d old</span></span>` : ''}`;
   document.getElementById('panel-actions').innerHTML = `
     <button class="btn-sm" ${p.stage===0||!canMoveBack()?'disabled':''} onclick="moveBack(${p.id});renderPanelBody(${p.id})">← Back</button>
     <button class="btn-sm adv" ${p.stage===7||!canAdvance(p.stage)?'disabled':''} onclick="advanceProject(${p.id});renderPanelBody(${p.id})">${p.stage===7?'✓ Done':'→ Advance'}</button>`;
