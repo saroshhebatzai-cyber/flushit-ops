@@ -717,8 +717,10 @@ function canMoveBack(){ return !currentUser || STAGE_BACK_PERMS.includes(current
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let projects = [];
-let nextVidId = 1;
+let nextVidId = 1; // kept for legacy loadData parsing only
 let currentUser = null; // logged-in TEAM member
+
+function newVidId(){ return 'v' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
 
 function isAdmin(){ return currentUser?.isAdmin === true; }
 
@@ -727,13 +729,16 @@ function showLoading(on){
   document.getElementById('loading-ov').classList.toggle('hidden', !on);
 }
 
+let _loadDataInFlight = false;
 async function loadData(){
+  if(_loadDataInFlight) return;
+  _loadDataInFlight = true;
   showLoading(true);
   const [{ data: projData, error: pe }, { data: vidData, error: ve }] = await Promise.all([
     db.from('projects').select('*').order('id'),
     db.from('videos').select('*')
   ]);
-  if(pe || ve){ console.error(pe||ve); showLoading(false); toast('⚠ Failed to load data'); return; }
+  if(pe || ve){ console.error(pe||ve); showLoading(false); _loadDataInFlight = false; toast('⚠ Failed to load data'); return; }
   projects = (projData||[]).map(p => ({
     id: p.id, client: p.client, name: p.name, stage: p.stage,
     managerId: p.manager_id, deadline: p.deadline, daysInStage: p.days_in_stage,
@@ -747,8 +752,7 @@ async function loadData(){
       draft: v.draft||false
     }))
   }));
-  const nums = (vidData||[]).map(v => parseInt(v.id.replace('v',''))).filter(n => !isNaN(n));
-  nextVidId = nums.length ? Math.max(...nums)+1 : 1;
+  _loadDataInFlight = false;
   showLoading(false);
   renderAll();
   checkDeadlineNotifs();
@@ -1113,7 +1117,7 @@ async function advanceProject(id){
       // No drafts — create fresh from edit plan
       for(const ep of p.editPlan){
         for(let i = 1; i <= ep.count; i++){
-          const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[ep.type].label} ${i}`, type:ep.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
+          const v = {id:newVidId(), name:`${EDIT_TYPES[ep.type].label} ${i}`, type:ep.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
           p.videos.push(v);
           await syncVideo(v, p.id);
         }
@@ -1121,9 +1125,9 @@ async function advanceProject(id){
       setTimeout(() => openPanel(p.id), 300);
     }
   }
+  await syncProject(p);
   renderAll();
   toast(`${p.client} · ${p.name} → ${STAGES[p.stage].label}`);
-  syncProject(p);
   // WhatsApp pings on key stage transitions
   if(p.stage === 3) showWaPing(`${waTag(7)} 🎬 *Shoot Plan:* ${p.client} · ${p.name} — please add the shoot plan deck — due ${fmtDue(p.deadline)}`);
   if(p.stage === 5) showWaPing(`${waTag(7)} 📸 *Shoot Day:* ${p.client} · ${p.name} — shoot confirmed, all hands on deck — due ${fmtDue(p.deadline)}`);
@@ -1640,7 +1644,7 @@ async function addVideos(projId){
   if(!type) return;
   const existing = p.videos.filter(v => v.type === type).length;
   for(let i = 1; i <= count; i++){
-    const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[type].label} ${existing+i}`, type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
+    const v = {id:newVidId(), name:`${EDIT_TYPES[type].label} ${existing+i}`, type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
     p.videos.push(v);
     await syncVideo(v, projId);
   }
@@ -1720,20 +1724,18 @@ async function generateDraftVideos(projId){
 
   // Match existing drafts to expected slots by type+index, create missing ones
   const matched = new Set();
-  expected.forEach(exp => {
+  for(const exp of expected){
     const existing = existingDrafts.find(v =>
       v.type === exp.type && !matched.has(v.id) &&
       !existingDrafts.filter(x => x.type===exp.type && matched.has(x.id)).length
     );
     if(existing){ matched.add(existing.id); }
     else {
-      // Count existing of this type to name correctly
-      const typeCount = existingDrafts.filter(v => v.type === exp.type).length;
-      const v = {id:'v'+nextVidId++, name:`${EDIT_TYPES[exp.type].label} ${exp.idx}`, type:exp.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:true};
+      const v = {id:newVidId(), name:`${EDIT_TYPES[exp.type].label} ${exp.idx}`, type:exp.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:true};
       p.videos.push(v);
-      syncVideo(v, projId);
+      await syncVideo(v, projId);
     }
-  });
+  }
 
   // Remove drafts no longer in plan
   const toRemove = existingDrafts.filter(v => !matched.has(v.id));
