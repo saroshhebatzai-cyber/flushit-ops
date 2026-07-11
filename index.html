@@ -811,6 +811,12 @@ let projects = [];
 let nextVidId = 1; // kept for legacy loadData parsing only
 let currentUser = null; // logged-in TEAM member
 
+let tasks = [];   // Command Center
+let notes = [];
+let leads = [];
+let metaKV = {};  // key → value (jsonb)
+function newCmdId(prefix){ return prefix + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+
 function newVidId(){ return 'v' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
 
 function isAdmin(){ return currentUser?.isAdmin === true; }
@@ -871,7 +877,87 @@ async function syncVideo(v, projId){
   if(error){ console.error('syncVideo:', error); toast('⚠ Failed to save — check connection'); }
 }
 
+// ─── COMMAND DATA LAYER ───────────────────────────────────────────────────────
+async function loadCommandData(){
+  if(!isAdmin()) return;
+  const [t, n, l, m] = await Promise.all([
+    db.from('tasks').select('*').order('created_at'),
+    db.from('notes').select('*').order('updated_at', {ascending:false}),
+    db.from('leads').select('*').order('created_at'),
+    db.from('meta').select('*'),
+  ]);
+  if(t.error || n.error || l.error || m.error){
+    console.error(t.error||n.error||l.error||m.error);
+    toast('⚠ Failed to load command data'); return;
+  }
+  tasks = (t.data||[]).map(r => ({
+    id:r.id, title:r.title, notes:r.notes||'', ownerId:r.owner_id,
+    assigneeId:r.assignee_id, client:r.client, status:r.status,
+    scheduledFor:r.scheduled_for, createdAt:r.created_at, completedAt:r.completed_at
+  }));
+  notes = (n.data||[]).map(r => ({
+    id:r.id, client:r.client, title:r.title, body:r.body,
+    pinned:r.pinned, createdAt:r.created_at, updatedAt:r.updated_at
+  }));
+  leads = (l.data||[]).map(r => ({
+    id:r.id, name:r.name, contact:r.contact||'', source:r.source||'',
+    stage:r.stage, meetingAt:r.meeting_at, notes:r.notes||'', createdAt:r.created_at
+  }));
+  metaKV = {};
+  (m.data||[]).forEach(r => metaKV[r.key] = r.value);
+  renderCommand();
+}
+
+function renderCommand(){
+  const active = document.querySelector('.tab.active')?.id;
+  if(active === 'tab-today') renderToday();
+  if(active === 'tab-week') renderWeek();
+  if(active === 'tab-research') renderResearch();
+  if(active === 'tab-leads') renderLeads();
+}
+
+async function syncTask(t){
+  const { error } = await db.from('tasks').upsert({
+    id:t.id, title:t.title, notes:t.notes||null, owner_id:t.ownerId,
+    assignee_id:t.assigneeId, client:t.client, status:t.status,
+    scheduled_for:t.scheduledFor, created_at:t.createdAt, completed_at:t.completedAt
+  });
+  if(error){ console.error('syncTask:', error); toast('⚠ Failed to save — check connection'); }
+}
+async function deleteTask(id){
+  const { error } = await db.from('tasks').delete().eq('id', id);
+  if(error){ console.error('deleteTask:', error); toast('⚠ Failed to delete — check connection'); }
+}
+async function syncNote(n){
+  const { error } = await db.from('notes').upsert({
+    id:n.id, client:n.client, title:n.title, body:n.body,
+    pinned:n.pinned, created_at:n.createdAt, updated_at:new Date().toISOString()
+  });
+  if(error){ console.error('syncNote:', error); toast('⚠ Failed to save — check connection'); }
+}
+async function deleteNoteRow(id){
+  const { error } = await db.from('notes').delete().eq('id', id);
+  if(error){ console.error('deleteNoteRow:', error); toast('⚠ Failed to delete — check connection'); }
+}
+async function syncLead(l){
+  const { error } = await db.from('leads').upsert({
+    id:l.id, name:l.name, contact:l.contact||null, source:l.source||null,
+    stage:l.stage, meeting_at:l.meetingAt, notes:l.notes||null, created_at:l.createdAt
+  });
+  if(error){ console.error('syncLead:', error); toast('⚠ Failed to save — check connection'); }
+}
+async function deleteLeadRow(id){
+  const { error } = await db.from('leads').delete().eq('id', id);
+  if(error){ console.error('deleteLeadRow:', error); toast('⚠ Failed to delete — check connection'); }
+}
+async function syncMeta(key, value){
+  metaKV[key] = value;
+  const { error } = await db.from('meta').upsert({ key, value });
+  if(error){ console.error('syncMeta:', error); toast('⚠ Failed to save — check connection'); }
+}
+
 let _realtimeDebounce;
+let _cmdRealtimeDebounce;
 function subscribeRealtime(){
   const channelName = 'db-changes-' + Math.random().toString(36).slice(2);
   console.log('[Realtime] subscribing on channel:', channelName);
@@ -883,6 +969,18 @@ function subscribeRealtime(){
     .on('postgres_changes', {event:'*', schema:'public', table:'videos'}, () => {
       clearTimeout(_realtimeDebounce);
       _realtimeDebounce = setTimeout(loadData, 400);
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'tasks'}, () => {
+      clearTimeout(_cmdRealtimeDebounce);
+      _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'notes'}, () => {
+      clearTimeout(_cmdRealtimeDebounce);
+      _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'leads'}, () => {
+      clearTimeout(_cmdRealtimeDebounce);
+      _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
     })
     .subscribe((status, err) => {
       console.log('[Realtime]', status, err || '');
@@ -2903,6 +3001,7 @@ async function onSignedIn(user){
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('hdr-user').textContent = member.name;
   await loadData();
+  await loadCommandData();
   subscribeRealtime();
 }
 
