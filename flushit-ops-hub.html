@@ -1,0 +1,2827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flush It — Ops Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg:#060810;--surface:#0C1018;--s2:#131B26;--s3:#1A2436;
+  --border:#1C2840;--b2:#243450;
+  --accent:#00FF88;--adim:rgba(0,255,136,.12);--aglow:rgba(0,255,136,.25);
+  --cyan:#00D4FF;--cdim:rgba(0,212,255,.12);
+  --text:#E2EAF4;--tm:#6B7E99;--td:#3A4D66;
+  --red:#FF4D5E;--rdim:rgba(255,77,94,.12);
+  --yellow:#FFB800;--ydim:rgba(255,184,0,.12);
+  --orange:#FF6B35;--odim:rgba(255,107,53,.12);
+  --purple:#9B6DFF;--pdim:rgba(155,109,255,.12);
+  --display:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:8px;--rs:4px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:12px;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,136,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0}
+.login-screen.hidden{display:none}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px 44px;width:360px;display:flex;flex-direction:column;gap:20px;box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.login-logo{font-family:var(--display);font-weight:800;font-size:22px;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.login-logo-dot{width:10px;height:10px;background:var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent)}
+.login-subtitle{font-size:10px;color:var(--td);letter-spacing:1px;text-transform:uppercase}
+.login-field{display:flex;flex-direction:column;gap:6px}
+.login-field label{font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:1px}
+.login-field input{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:border-color .15s}
+.login-field input:focus{border-color:var(--accent)}
+.login-btn{background:var(--accent);color:#000;border:none;border-radius:var(--rs);padding:11px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.5px}
+.login-btn:hover{background:#00e87a;box-shadow:0 0 20px var(--aglow)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.login-error{font-size:11px;color:var(--red);text-align:center;min-height:16px}
+
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:100;background:rgba(6,8,16,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:20px;height:58px}
+.logo{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:-.5px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px var(--accent)}
+.hdr-stats{display:flex;gap:16px;flex:1}
+.hs{display:flex;flex-direction:column;gap:1px}
+.hs-l{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1.2px}
+.hs-v{font-size:13px;font-weight:500}
+.hs-v.g{color:var(--accent)}.hs-v.y{color:var(--yellow)}.hs-v.r{color:var(--red)}
+.nav{display:flex;gap:2px;background:var(--surface);padding:4px;border-radius:var(--r);border:1px solid var(--border)}
+.nav-btn{font-family:var(--mono);font-size:11px;padding:6px 14px;border:none;border-radius:var(--rs);cursor:pointer;background:transparent;color:var(--tm);transition:all .15s}
+.nav-btn:hover{color:var(--text);background:var(--s2)}
+.nav-btn.active{background:var(--accent);color:#000;font-weight:600}
+.btn-new{font-family:var(--mono);font-size:11px;padding:8px 16px;background:var(--accent);color:#000;border:none;border-radius:var(--r);cursor:pointer;font-weight:600;transition:all .15s;white-space:nowrap}
+.btn-new:hover{background:#00e87a;box-shadow:0 0 16px var(--aglow)}
+.hdr-date{font-size:10px;color:var(--td);white-space:nowrap}
+
+/* MAIN */
+.main{position:relative;z-index:1;padding:20px 24px}
+.tab{display:none}.tab.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.tab.active{animation:fadeUp .4s cubic-bezier(.22,1,.36,1)}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sec-title{font-family:var(--display);font-size:10px;font-weight:600;color:var(--td);text-transform:uppercase;letter-spacing:2px}
+
+/* KANBAN */
+.kanban-wrap{overflow-x:auto;padding-bottom:8px}
+.kanban-wrap::-webkit-scrollbar{height:3px}
+.kanban-wrap::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.kanban{display:flex;gap:10px;min-width:max-content}
+.k-col{width:200px;flex-shrink:0}
+.k-col-hdr{padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;border-bottom:none;display:flex;align-items:center;justify-content:space-between}
+.k-col-name{font-family:var(--display);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--tm)}
+.k-col-count{font-size:10px;background:var(--s3);color:var(--td);padding:1px 7px;border-radius:20px;border:1px solid var(--border)}
+.k-cards{display:flex;flex-direction:column;gap:8px;min-height:60px;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:0 0 var(--r) var(--r)}
+.k-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;cursor:pointer;transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s cubic-bezier(.22,1,.36,1),border-color .15s;position:relative;overflow:hidden}
+.k-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--client-color,var(--accent))}
+.k-card:hover{border-color:var(--b2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.k-card.overdue{border-color:rgba(255,77,94,.3);background:rgba(255,77,94,.04)}
+.k-card.overdue::before{background:var(--red)}
+.k-client{font-family:var(--display);font-size:13px;font-weight:700;margin-bottom:2px}
+.k-name{font-size:10px;color:var(--tm);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.k-assignee{display:flex;align-items:center;gap:5px}
+.av{width:20px;height:20px;border-radius:50%;background:var(--adim);border:1px solid rgba(0,255,136,.3);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:600;color:var(--accent);flex-shrink:0}
+.av.md{width:32px;height:32px;font-size:10px}
+.av.lg{width:44px;height:44px;font-size:13px}
+.k-aname{font-size:9px;color:var(--tm)}
+.k-days{font-size:9px;color:var(--td)}
+.k-days.w{color:var(--yellow)}.k-days.d{color:var(--red)}
+.k-footer{display:flex;align-items:center;justify-content:space-between}
+.k-dl{font-size:9px;color:var(--td);cursor:pointer;border-bottom:1px dashed transparent;transition:all .15s}
+.k-dl:hover{color:var(--tm);border-bottom-color:var(--b2)}
+.k-dl.od{color:var(--red)}
+.k-dl-input{font-family:var(--mono);font-size:9px;background:var(--s3);border:1px solid var(--accent);border-radius:var(--rs);color:var(--text);padding:2px 5px;outline:none;width:96px;color-scheme:dark}
+.card-actions{display:flex;align-items:center;gap:4px}
+.btn-sm{font-family:var(--mono);font-size:9px;padding:3px 7px;border-radius:var(--rs);cursor:pointer;transition:all .15s;border:1px solid var(--border);background:transparent;color:var(--td)}
+.btn-sm:hover{color:var(--tm);border-color:var(--b2)}
+.btn-sm.adv{background:var(--adim);color:var(--accent);border-color:rgba(0,255,136,.25)}
+.btn-sm.adv:hover{background:var(--accent);color:#000}
+.btn-sm.del:hover{color:var(--red);border-color:var(--red);background:var(--rdim)}
+.btn-sm:disabled{opacity:.2;cursor:not-allowed}
+.k-empty{border:1px dashed var(--border);border-radius:var(--r);height:60px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--td);font-style:italic}
+/* Video progress on In Production cards */
+.k-vprogress{margin-bottom:7px}
+.k-vprogress-label{display:flex;justify-content:space-between;font-size:9px;color:var(--td);margin-bottom:3px}
+.k-vprogress-track{height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
+.k-vprogress-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .5s cubic-bezier(.22,1,.36,1)}
+.k-type-pills{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px}
+
+/* TYPE BADGES */
+.type-badge{font-size:8px;padding:2px 6px;border-radius:20px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.type-badge.flush{background:rgba(0,255,136,.15);color:#00FF88;border:1px solid rgba(0,255,136,.3)}
+.type-badge.flicker{background:rgba(0,212,255,.15);color:#00D4FF;border:1px solid rgba(0,212,255,.3)}
+.type-badge.flare{background:rgba(255,184,0,.15);color:#FFB800;border:1px solid rgba(255,184,0,.3)}
+.type-badge.wedding{background:rgba(255,107,53,.15);color:#FF6B35;border:1px solid rgba(255,107,53,.3)}
+
+/* PROJECT DETAIL PANEL */
+.panel-backdrop{position:fixed;inset:0;top:58px;background:rgba(0,0,0,.5);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
+.panel-backdrop.open{opacity:1;pointer-events:all}
+.panel{position:fixed;right:0;top:58px;bottom:0;width:480px;background:var(--surface);border-left:1px solid var(--b2);z-index:201;transform:translateX(100%);transition:transform .35s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;overflow:hidden}
+.panel.open{transform:translateX(0)}
+.panel-hdr{padding:18px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.panel-client{font-family:var(--display);font-size:20px;font-weight:800;line-height:1}
+.panel-name{font-size:12px;color:var(--tm);margin-top:3px}
+.panel-meta{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.panel-stage-pill{font-size:9px;padding:3px 9px;border-radius:20px;background:var(--adim);color:var(--accent);border:1px solid rgba(0,255,136,.25)}
+.panel-dl{font-size:10px;color:var(--tm)}
+.panel-dl.od{color:var(--red)}
+.panel-close{font-family:var(--mono);font-size:13px;background:transparent;border:1px solid var(--border);color:var(--tm);width:28px;height:28px;border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.panel-close:hover{border-color:var(--red);color:var(--red)}
+.panel-actions{display:flex;gap:6px}
+.panel-body{flex:1;overflow-y:auto;padding:16px 20px}
+.panel-body::-webkit-scrollbar{width:3px}
+.panel-body::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.panel-section{margin-bottom:20px}
+.panel-section-title{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+
+/* SAROSH REVIEW TOGGLE */
+.toggle-wrap{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--tm)}
+.toggle{width:32px;height:18px;background:var(--s3);border:1px solid var(--border);border-radius:20px;cursor:pointer;position:relative;transition:background .2s}
+.toggle.on{background:var(--accent);border-color:var(--accent)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#000;transition:left .2s}
+.toggle.on::after{left:16px}
+
+/* EDIT PLAN */
+.edit-plan-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.ep-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs)}
+.ep-count{font-size:12px;font-weight:600;color:var(--text);min-width:16px}
+.ep-label{font-size:11px;color:var(--tm);flex:1}
+.ep-hours{font-size:10px;color:var(--td)}
+.add-plan-row{display:flex;gap:6px;align-items:center}
+.panel-select,.panel-input{font-family:var(--mono);font-size:11px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);padding:6px 9px;outline:none;transition:border-color .15s}
+.panel-select:focus,.panel-input:focus{border-color:var(--accent)}
+.panel-select option{background:var(--s2)}
+.btn-add{font-family:var(--mono);font-size:10px;padding:6px 12px;background:var(--adim);color:var(--accent);border:1px solid rgba(0,255,136,.25);border-radius:var(--rs);cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-add:hover{background:var(--accent);color:#000}
+
+/* VIDEO ROWS */
+.video-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.v-row{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;transition:border-color .15s}
+.v-row:hover{border-color:var(--b2)}
+.v-row.overdue{border-color:rgba(255,77,94,.3)}
+.v-row-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.v-name{font-size:11px;font-weight:500;color:var(--text);flex:1}
+.v-rev{font-size:9px;padding:2px 6px;border-radius:20px;background:var(--ydim);color:var(--yellow);border:1px solid rgba(255,184,0,.2)}
+.v-rev.max{background:var(--rdim);color:var(--red);border-color:rgba(255,77,94,.2)}
+.v-row-bot{display:flex;align-items:center;gap:6px}
+.v-stage-pill{font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap}
+.v-stage-pill.s0{background:rgba(0,212,255,.12);color:#00D4FF;border-color:rgba(0,212,255,.25)}
+.v-stage-pill.s1{background:rgba(255,184,0,.12);color:#FFB800;border-color:rgba(255,184,0,.25)}
+.v-stage-pill.s2{background:rgba(0,255,136,.12);color:#00FF88;border-color:rgba(0,255,136,.25)}
+.v-stage-pill.s3{background:rgba(155,109,255,.12);color:#9B6DFF;border-color:rgba(155,109,255,.25)}
+.v-dl{font-size:9px;color:var(--td);cursor:pointer;border-bottom:1px dashed transparent;transition:all .15s}
+.v-dl:hover{color:var(--tm);border-bottom-color:var(--b2)}
+.v-dl.od{color:var(--red)}
+.v-assignee-sel{font-family:var(--mono);font-size:10px;background:var(--s3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);padding:3px 6px;outline:none;cursor:pointer;transition:border-color .15s}
+.v-assignee-sel:focus{border-color:var(--accent)}
+.v-assignee-sel option{background:var(--s2)}
+.v-actions{display:flex;gap:4px;margin-left:auto}
+.unassigned-badge{font-size:9px;color:var(--td);font-style:italic}
+
+/* CAPACITY */
+.cap-grid{display:flex;flex-direction:column;gap:8px}
+.cap-row{display:flex;align-items:center;gap:10px}
+.cap-name{font-size:10px;color:var(--tm);width:70px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cap-track{flex:1;height:6px;background:var(--s3);border-radius:3px;overflow:hidden}
+.cap-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.22,1,.36,1)}
+.cap-fill.g{background:var(--accent)}.cap-fill.y{background:var(--yellow)}.cap-fill.r{background:var(--red)}
+.cap-label{font-size:9px;width:56px;text-align:right;flex-shrink:0}
+.cap-label.g{color:var(--accent)}.cap-label.y{color:var(--yellow)}.cap-label.r{color:var(--red)}
+
+/* CLIENTS */
+.clients-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px}
+.cl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .2s,box-shadow .2s;animation:cardIn .4s cubic-bezier(.22,1,.36,1) both}
+.cl-card:hover{border-color:var(--b2);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.cl-body{padding:18px}
+.cl-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.cl-av{width:42px;height:42px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:15px;font-weight:800;flex-shrink:0}
+.cl-name{font-family:var(--display);font-size:15px;font-weight:700}
+.cl-proj{font-size:10px;color:var(--tm);margin-top:2px}
+.sdot{width:7px;height:7px;border-radius:50%;margin-left:auto;flex-shrink:0}
+.sdot.g{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.sdot.y{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+.sdot.r{background:var(--red);box-shadow:0 0 6px var(--red)}
+.pipe-mini{display:flex;gap:2px;margin-bottom:12px}
+.ps{flex:1;height:3px;background:var(--s3);border-radius:2px;transition:background .3s}
+.ps.done{background:var(--accent)}
+.ps.cur{background:var(--accent);opacity:.4;animation:pb 2s infinite}
+@keyframes pb{0%,100%{opacity:.4}50%{opacity:.9}}
+.cl-details{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cl-det{background:var(--s2);border-radius:var(--rs);padding:8px 10px}
+.cl-det-lbl{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.cl-det-val{font-size:11px;color:var(--text);font-weight:500}
+
+/* TEAM */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.tm-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;animation:cardIn .4s cubic-bezier(.22,1,.36,1) both}
+.tm-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.tm-info{flex:1}
+.tm-name{font-family:var(--display);font-size:14px;font-weight:700}
+.tm-role{font-size:10px;color:var(--tm);margin-top:2px}
+.wl-badge{font-size:9px;padding:3px 8px;border-radius:20px;font-weight:600}
+.wl-badge.low{background:var(--adim);color:var(--accent)}
+.wl-badge.med{background:var(--ydim);color:var(--yellow)}
+.wl-badge.high{background:var(--rdim);color:var(--red)}
+.wl-wrap{margin-bottom:12px}
+.wl-lbl{display:flex;justify-content:space-between;font-size:9px;color:var(--td);margin-bottom:4px}
+.wl-track{height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
+.wl-fill{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.22,1,.36,1)}
+.wl-fill.low{background:var(--accent)}.wl-fill.med{background:var(--yellow)}.wl-fill.high{background:var(--red)}
+.tm-tasks{display:flex;flex-direction:column;gap:6px}
+.tm-task{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--s2);border-radius:var(--rs);border:1px solid var(--border)}
+.t-pill{font-size:8px;padding:2px 6px;border-radius:20px;background:var(--adim);color:var(--accent);border:1px solid rgba(0,255,136,.2);white-space:nowrap;flex-shrink:0}
+.t-name{font-size:10px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-dl{font-size:9px;color:var(--td);white-space:nowrap}
+.t-dl.od{color:var(--red)}
+.no-tasks{font-size:10px;color:var(--td);font-style:italic;padding:4px 0}
+
+/* CAPACITY SECTION IN TEAM TAB */
+.cap-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:20px}
+.cap-section-title{font-family:var(--display);font-size:10px;font-weight:600;color:var(--td);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px}
+
+/* EFFICIENCY */
+.eff-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;animation:cardIn .4s cubic-bezier(.22,1,.36,1) both}
+.stat-lbl{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.stat-val{font-family:var(--display);font-size:30px;font-weight:800;line-height:1;margin-bottom:4px}
+.stat-val.g{color:var(--accent)}.stat-val.y{color:var(--yellow)}.stat-val.c{color:var(--cyan)}
+.stat-sub{font-size:10px;color:var(--tm)}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ch-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;animation:cardIn .4s cubic-bezier(.22,1,.36,1) both}
+.ch-title{font-family:var(--display);font-size:10px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+.bar-chart{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:flex;align-items:center;gap:9px}
+.bar-lbl{font-size:10px;color:var(--tm);width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:7px;background:var(--s3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.22,1,.36,1)}
+.bar-fill.g{background:var(--accent)}.bar-fill.y{background:var(--yellow)}.bar-fill.r{background:var(--red)}.bar-fill.c{background:var(--cyan)}
+.bar-val{font-size:10px;color:var(--text);width:36px;text-align:right;flex-shrink:0}
+.weekly-btn{font-family:var(--mono);font-size:11px;padding:8px 14px;background:transparent;color:var(--tm);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;margin-bottom:20px}
+.weekly-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--adim)}
+.summary-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;display:none}
+.summary-panel.open{display:block;animation:fadeUp .3s cubic-bezier(.22,1,.36,1)}
+.summary-title{font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:14px}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sum-item{background:var(--s2);border-radius:var(--rs);padding:12px}
+.sum-item-lbl{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.sum-item-val{font-size:13px;font-weight:500}
+.sum-item-val.g{color:var(--accent)}.sum-item-val.y{color:var(--yellow)}.sum-item-val.r{color:var(--red)}
+
+/* TEAM PERFORMANCE DRILLDOWN */
+.perf-section{margin-top:20px}
+.perf-section-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+.perf-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.perf-chip{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;font-size:12px;color:var(--tm)}
+.perf-chip:hover{border-color:var(--accent);color:var(--fg)}
+.perf-chip.active{border-color:var(--accent);background:var(--adim);color:var(--fg)}
+.perf-chip-init{width:26px;height:26px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:600;flex-shrink:0}
+.perf-chip.active .perf-chip-init{background:rgba(0,255,136,.15);color:var(--accent)}
+.perf-drilldown{display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;animation:fadeUp .25s cubic-bezier(.22,1,.36,1)}
+.perf-drilldown.open{display:block}
+.pd-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.pd-avatar{width:40px;height:40px;border-radius:50%;background:var(--s3);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0}
+.pd-name{font-family:var(--display);font-size:18px;font-weight:700}
+.pd-role{font-size:11px;color:var(--tm);margin-top:2px}
+.pd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.pd-stat{background:var(--s2);border-radius:var(--rs);padding:12px}
+.pd-stat-lbl{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:var(--mono)}
+.pd-stat-val{font-size:18px;font-weight:600}
+.pd-stat-val.g{color:var(--accent)}.pd-stat-val.y{color:var(--yellow)}.pd-stat-val.r{color:var(--red)}
+.pd-stat-sub{font-size:10px;color:var(--td);margin-top:2px}
+.pd-list-title{font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:1px;font-family:var(--mono);margin-bottom:8px;margin-top:14px}
+.pd-list-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--s2);border-radius:var(--rs);margin-bottom:5px;font-size:12px;color:var(--tm)}
+.pd-list-item:last-child{margin-bottom:0}
+.pd-empty{font-size:11px;color:var(--td);font-style:italic;padding:8px 0}
+
+/* STAGE NOTES */
+.stage-note-box{margin-bottom:10px}
+.stage-note-textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:11px;padding:10px 12px;outline:none;resize:vertical;min-height:72px;transition:border-color .15s;line-height:1.55}
+.stage-note-textarea:focus{border-color:var(--accent)}
+.stage-note-url{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);color:var(--cyan);font-family:var(--mono);font-size:11px;padding:9px 12px;outline:none;transition:border-color .15s}
+.stage-note-url:focus{border-color:var(--cyan)}
+.stage-note-url::placeholder{color:var(--td)}
+.note-link{font-size:11px;color:var(--cyan);word-break:break-all;display:flex;align-items:flex-start;gap:6px;padding:8px 10px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.2);border-radius:var(--rs)}
+.note-link a{color:var(--cyan);text-decoration:none;flex:1}
+.note-link a:hover{text-decoration:underline}
+.note-link-edit{font-size:9px;color:var(--td);cursor:pointer;padding:2px 6px;border:1px solid var(--border);border-radius:var(--rs);background:transparent;flex-shrink:0;transition:all .15s}
+.note-link-edit:hover{color:var(--text);border-color:var(--b2)}
+.note-save-btn{font-family:var(--mono);font-size:10px;padding:5px 12px;background:var(--adim);color:var(--accent);border:1px solid rgba(0,255,136,.25);border-radius:var(--rs);cursor:pointer;transition:all .15s;margin-top:6px}
+.note-save-btn:hover{background:var(--accent);color:#000}
+.prev-notes{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.prev-note-item{padding:9px 11px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs)}
+.prev-note-stage{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.prev-note-val{font-size:10px;color:var(--tm);line-height:1.5;word-break:break-all}
+.prev-note-val a{color:var(--cyan);text-decoration:none}
+.prev-note-val a:hover{text-decoration:underline}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--b2);border-radius:12px;padding:26px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:18px}
+.fg{margin-bottom:14px}
+.fg label{font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;display:block}
+.fg input,.fg select{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:12px;padding:9px 12px;outline:none;transition:border-color .15s}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg select option{background:var(--s2)}
+.modal-footer{display:flex;gap:9px;justify-content:flex-end;margin-top:20px}
+.btn-cancel{font-family:var(--mono);font-size:11px;padding:8px 16px;background:transparent;color:var(--tm);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s}
+.btn-cancel:hover{border-color:var(--b2);color:var(--text)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:11px 16px;font-size:11px;color:var(--accent);z-index:2000;opacity:0;transform:translateY(8px);transition:all .25s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* WHATSAPP PING */
+.wa-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:2099;opacity:0;pointer-events:none;transition:opacity .25s}
+.wa-backdrop.show{opacity:1;pointer-events:all}
+.wa-ping{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.94);background:var(--s2);border:1px solid #25D366;border-radius:12px;padding:22px 24px;z-index:2100;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.22,1,.36,1);min-width:360px;max-width:500px;box-shadow:0 24px 64px rgba(0,0,0,.7),0 0 0 1px rgba(37,211,102,.15)}
+.wa-ping.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:all}
+.wa-ping-label{font-size:9px;color:#25D366;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.wa-ping-timer{width:80px;height:2px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:2px}
+.wa-ping-timer-bar{height:100%;background:#25D366;width:100%;transform-origin:left;transition:none}
+.wa-ping-timer-bar.running{transition:width 5s linear;width:0%}
+.wa-ping-msg{font-size:12px;color:var(--text);line-height:1.6;margin-bottom:16px;font-family:var(--mono);background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;white-space:pre-wrap}
+.wa-ping-actions{display:flex;gap:8px;align-items:center}
+.wa-ping-btn{font-family:var(--mono);font-size:11px;padding:8px 16px;background:#25D366;color:#000;border:none;border-radius:var(--rs);cursor:pointer;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:background .15s}
+.wa-ping-btn:hover{background:#20c05a}
+.wa-ping-skip{font-family:var(--mono);font-size:10px;padding:8px 12px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s;margin-left:auto}
+.wa-ping-skip:hover{color:var(--tm);border-color:var(--b2)}
+.wa-ping-copied{font-size:10px;color:#25D366;opacity:0;transition:opacity .2s;align-self:center}
+
+/* MY STATS STRIP */
+.my-stats-strip{background:var(--s2);border:1px solid var(--accent);border-radius:var(--r);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:0}
+.my-stats-greeting{flex:1;display:flex;flex-direction:column;gap:2px}
+.my-stats-greeting-name{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text)}
+.my-stats-greeting-sub{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1px}
+.my-stats-items{display:flex;gap:1px}
+.my-stat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 20px;border-left:1px solid var(--border)}
+.my-stat-val{font-family:var(--display);font-size:20px;font-weight:700}
+.my-stat-lbl{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+.my-stat-val.g{color:var(--accent)}.my-stat-val.y{color:var(--yellow)}.my-stat-val.r{color:var(--red)}.my-stat-val.d{color:var(--tm)}
+
+/* VIDEO QUEUE */
+.queue-client-group{margin-bottom:28px}
+.queue-client-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.queue-client-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.queue-client-name{font-family:var(--display);font-size:13px;font-weight:700}
+.queue-client-count{font-size:10px;color:var(--td)}
+.queue-table{width:100%;border-collapse:collapse}
+.queue-table th{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1px;padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.queue-row{border-bottom:1px solid rgba(28,40,64,.5);transition:background .12s}
+.queue-row:hover{background:var(--s2)}
+.queue-row.unstarted{opacity:.65}
+.queue-row.unstarted:hover{opacity:1}
+.queue-cell{padding:8px 10px;vertical-align:middle}
+.queue-vid-name{font-size:11px;color:var(--text);font-weight:500}
+.queue-vid-project{font-size:9px;color:var(--td);margin-top:1px}
+.queue-date-input{background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--tm);font-family:var(--mono);font-size:11px;padding:2px 4px;cursor:pointer;width:100px;color-scheme:dark}
+.queue-date-input:focus{outline:none;border-bottom-color:var(--accent);color:var(--text)}
+.queue-date-input.set{color:var(--text);border-bottom-color:transparent}
+.queue-date-input.set:hover{border-bottom-color:var(--border)}
+.queue-buffer{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;white-space:nowrap}
+.queue-buffer.g{background:var(--adim);color:var(--accent);border:1px solid rgba(0,255,136,.25)}
+.queue-buffer.y{background:var(--ydim);color:var(--yellow);border:1px solid rgba(255,184,0,.25)}
+.queue-buffer.r{background:var(--rdim);color:var(--red);border:1px solid rgba(255,77,94,.25)}
+.queue-buffer.d{background:var(--s2);color:var(--td);border:1px solid var(--border)}
+.queue-assignee-select{background:var(--s2);border:none;border-bottom:1px dashed var(--border);color:var(--tm);font-family:var(--mono);font-size:11px;padding:2px 4px;cursor:pointer;max-width:110px}
+.queue-assignee-select:focus{outline:none;border-bottom-color:var(--accent)}
+.queue-assignee-select.set{color:var(--text);border-bottom-color:transparent}
+.queue-assignee-select.set:hover{border-bottom-color:var(--border)}
+.queue-stage-pill{font-size:9px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
+.queue-stage-pill.s0{background:var(--cdim);color:var(--cyan);border:1px solid rgba(0,212,255,.25)}
+.queue-stage-pill.s1{background:var(--ydim);color:var(--yellow);border:1px solid rgba(255,184,0,.25)}
+.queue-stage-pill.s2{background:var(--adim);color:var(--accent);border:1px solid rgba(0,255,136,.25)}
+.queue-stage-pill.s3{background:var(--pdim);color:var(--purple);border:1px solid rgba(155,109,255,.25)}
+.queue-stage-pill.unstarted{background:var(--s3);color:var(--td);border:1px solid var(--border)}
+.queue-empty{text-align:center;padding:40px;color:var(--td);font-size:11px}
+
+/* LATENCY TRACKING */
+.v-latency{font-size:9px;padding:2px 7px;border-radius:20px;font-weight:600;border:1px solid;flex-shrink:0}
+.v-latency.fast{background:rgba(0,255,136,.12);color:#00FF88;border-color:rgba(0,255,136,.25)}
+.v-latency.ok{background:rgba(255,184,0,.12);color:#FFB800;border-color:rgba(255,184,0,.25)}
+.v-latency.slow{background:rgba(255,77,94,.12);color:#FF4D5E;border-color:rgba(255,77,94,.25)}
+.v-inprogress{font-size:9px;padding:2px 7px;border-radius:20px;background:rgba(0,212,255,.12);color:#00D4FF;border:1px solid rgba(0,212,255,.25);flex-shrink:0;animation:blink 1.8s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.6}50%{opacity:1}}
+.btn-sm.start{background:rgba(0,255,136,.12);color:#00FF88;border-color:rgba(0,255,136,.25)}
+.btn-sm.start:hover{background:#00FF88;color:#000}
+.btn-sm.submit{background:rgba(0,212,255,.12);color:#00D4FF;border-color:rgba(0,212,255,.25)}
+.btn-sm.submit:hover{background:#00D4FF;color:#000}
+.latency-section{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.latency-section-title{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+.latency-row{display:flex;align-items:center;gap:8px}
+.latency-score-big{font-family:var(--display);font-size:15px;font-weight:700}
+.latency-score-big.fast{color:var(--accent)}.latency-score-big.ok{color:var(--yellow)}.latency-score-big.slow{color:var(--red)}
+.latency-meta{font-size:9px;color:var(--td)}
+
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+
+/* LOADING */
+.loading-ov{position:fixed;inset:0;background:rgba(6,8,16,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(8px)}
+.loading-ov.hidden{display:none}
+.loading-spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:11px;color:var(--tm);letter-spacing:1px}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;gap:14px}
+.cal-month-label{font-family:var(--display);font-size:16px;font-weight:700;min-width:160px;text-align:center}
+.cal-nav-btn{font-family:var(--mono);font-size:13px;background:transparent;border:1px solid var(--border);color:var(--tm);width:28px;height:28px;border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cal-nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{text-align:center;font-size:9px;color:var(--td);padding:7px 4px;text-transform:uppercase;letter-spacing:1.2px}
+.cal-day{min-height:96px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:7px;transition:border-color .15s;overflow:hidden}
+.cal-day:hover{border-color:var(--b2)}
+.cal-day.today{border-color:var(--accent);background:rgba(0,255,136,.03)}
+.cal-day.other-month{opacity:.25;pointer-events:none}
+.cal-day.weekend .cal-day-num{color:var(--td)}
+.cal-day-num{font-size:10px;color:var(--tm);margin-bottom:5px;font-weight:600;line-height:1}
+.cal-day.today .cal-day-num{color:var(--accent);font-size:11px}
+.cal-event{font-size:8px;padding:2px 5px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;border-left:2px solid}
+.cal-event.proj-safe{background:rgba(0,255,136,.08);color:#00FF88;border-left-color:#00FF88}
+.cal-event.proj-warn{background:rgba(255,184,0,.12);color:#FFB800;border-left-color:#FFB800}
+.cal-event.proj-over{background:rgba(255,77,94,.12);color:#FF4D5E;border-left-color:#FF4D5E}
+.cal-event.vid-dl{background:rgba(0,212,255,.08);color:#00D4FF;border-left-color:#00D4FF}
+.cal-event.shoot-day{background:rgba(155,109,255,.12);color:#9B6DFF;border-left-color:#9B6DFF}
+.cal-more{font-size:8px;color:var(--td);padding:1px 3px}
+.cal-legend{display:flex;gap:14px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--td)}
+.cal-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div>
+      <div class="login-logo"><div class="login-logo-dot"></div>Flush It</div>
+      <div class="login-subtitle">Ops Hub — Sign In</div>
+    </div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@flushit.com.pk" autocomplete="email" />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<div class="hdr">
+  <div class="logo"><div class="logo-dot"></div>Flush It</div>
+  <div class="hdr-stats">
+    <div class="hs"><div class="hs-l">Active</div><div class="hs-v g" id="stat-active">0</div></div>
+    <div class="hs"><div class="hs-l">On Track</div><div class="hs-v g" id="stat-ontrack">0</div></div>
+    <div class="hs"><div class="hs-l">At Risk</div><div class="hs-v y" id="stat-atrisk">0</div></div>
+    <div class="hs"><div class="hs-l">Overdue</div><div class="hs-v r" id="stat-overdue">0</div></div>
+    <div class="hs"><div class="hs-l">In Production</div><div class="hs-v" id="stat-prod">0</div></div>
+    <div class="hs"><div class="hs-l">Delivered</div><div class="hs-v" id="stat-delivered">0</div></div>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="switchTab('projects',this)">Projects</button>
+    <button class="nav-btn" onclick="switchTab('clients',this)">Clients</button>
+    <button class="nav-btn" onclick="switchTab('team',this)">Team</button>
+    <button class="nav-btn" id="nav-efficiency" onclick="switchTab('efficiency',this)">Efficiency</button>
+    <button class="nav-btn" onclick="switchTab('calendar',this)">Calendar</button>
+    <button class="nav-btn" onclick="switchTab('queue',this)">Queue</button>
+  </nav>
+  <button class="btn-new" id="btn-new-project" onclick="openModal()">+ New Project</button>
+  <div class="hdr-date" id="hdr-date"></div>
+  <div style="font-family:var(--mono);font-size:9px;color:var(--td);white-space:nowrap;border-left:1px solid var(--border);padding-left:12px;display:flex;flex-direction:column;gap:2px;text-align:right">
+    <span id="hdr-version" style="color:var(--accent);opacity:.7"></span>
+    <span id="hdr-month"></span>
+  </div>
+  <button onclick="playDeadlineChime()" title="Test notification sound" style="font-family:var(--mono);font-size:11px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--text)';this.style.borderColor='var(--b2)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">🔔</button>
+  <div style="display:flex;align-items:center;gap:8px;border-left:1px solid var(--border);padding-left:12px">
+    <span id="hdr-user" style="font-size:10px;color:var(--tm)"></span>
+    <button onclick="doLogout()" title="Sign out" style="font-family:var(--mono);font-size:10px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">Out</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="tab active" id="tab-projects">
+    <div class="sec-hdr"><div class="sec-title">Pipeline Board</div><div style="font-size:10px;color:var(--td)">Click any card to manage</div></div>
+    <div class="kanban-wrap"><div class="kanban" id="kanban"></div></div>
+  </div>
+  <div class="tab" id="tab-clients">
+    <div class="sec-hdr"><div class="sec-title">Active Clients</div></div>
+    <div class="clients-grid" id="clients-grid"></div>
+  </div>
+  <div class="tab" id="tab-team">
+    <div class="sec-hdr"><div class="sec-title">Team & Capacity</div></div>
+    <div id="my-stats-strip"></div>
+    <div class="cap-section" id="cap-section"></div>
+    <div class="team-grid" id="team-grid"></div>
+  </div>
+  <div class="tab" id="tab-queue">
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-title">Video Queue</div>
+        <span id="queue-stats" style="font-size:10px;color:var(--td)"></span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="queue-sort" onchange="renderQueue()" style="font-family:var(--mono);font-size:11px;padding:5px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--tm);cursor:pointer">
+          <option value="client-due">Sort: Client Due Date</option>
+          <option value="internal">Sort: Internal Deadline</option>
+          <option value="stage">Sort: Stage</option>
+        </select>
+        <select id="queue-filter-client" onchange="renderQueue()" style="font-family:var(--mono);font-size:11px;padding:5px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--tm);cursor:pointer">
+          <option value="">All Clients</option>
+        </select>
+        <span id="queue-controls-hint" style="font-size:10px;color:var(--td)"></span>
+      </div>
+    </div>
+    <div id="queue-body"></div>
+  </div>
+
+  <div class="tab" id="tab-calendar">
+    <div class="sec-hdr">
+      <div class="sec-title">Calendar</div>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calPrev()">←</button>
+        <div class="cal-month-label" id="cal-month-label"></div>
+        <button class="cal-nav-btn" onclick="calNext()">→</button>
+      </div>
+    </div>
+    <div class="cal-grid" id="cal-wrap"></div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#00FF88"></div>Project deadline (on track)</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#FFB800"></div>Project deadline (≤3 days)</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#FF4D5E"></div>Project deadline (overdue)</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#00D4FF"></div>Video deadline</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#9B6DFF"></div>Shoot day</div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-efficiency">
+    <div class="sec-hdr">
+      <div class="sec-title">Efficiency Metrics</div>
+      <button class="weekly-btn" onclick="toggleSummary()">↓ Weekly Summary</button>
+    </div>
+    <div class="summary-panel" id="summary-panel">
+      <div class="summary-title" id="summary-title"></div>
+      <div class="summary-grid" id="summary-grid"></div>
+    </div>
+    <div class="eff-stats" id="eff-stats"></div>
+    <div class="perf-section">
+      <div class="perf-section-title">Team Performance</div>
+      <div class="perf-chips" id="perf-chips"></div>
+      <div class="perf-drilldown" id="perf-drilldown"></div>
+    </div>
+    <div class="charts-grid" id="charts-grid"></div>
+  </div>
+</div>
+
+<!-- PROJECT DETAIL PANEL -->
+<div class="panel-backdrop" id="panel-backdrop" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <div class="panel-hdr">
+    <div class="panel-hdr-top">
+      <div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <div class="panel-client" id="panel-client"></div>
+          <button onclick="editPanelField('client')" style="font-family:var(--mono);font-size:10px;padding:2px 8px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--rs);color:var(--tm);cursor:pointer;transition:all .15s" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--tm)';this.style.borderColor='var(--b2)'">✎ rename</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;margin-top:3px">
+          <div class="panel-name" id="panel-name"></div>
+          <button onclick="editPanelField('name')" style="font-family:var(--mono);font-size:10px;padding:2px 8px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--rs);color:var(--tm);cursor:pointer;transition:all .15s" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--tm)';this.style.borderColor='var(--b2)'">✎ rename</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div class="panel-actions" id="panel-actions"></div>
+        <button class="panel-close" onclick="closePanel()">×</button>
+      </div>
+    </div>
+    <div class="panel-meta" id="panel-meta"></div>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<!-- NEW PROJECT MODAL -->
+<div class="modal-ov" id="modal-ov" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">New Project</div>
+    <div class="fg"><label>Client Name</label><input id="f-client" placeholder="e.g. Oraan" /></div>
+    <div class="fg"><label>Project Name</label><input id="f-project" placeholder="e.g. Ramzan Campaign" /></div>
+    <div class="fg">
+      <label>Project Manager</label>
+      <select id="f-manager"></select>
+    </div>
+    <div class="fg"><label>Client Deadline</label><input type="date" id="f-deadline" style="color-scheme:dark" /></div>
+    <div class="fg"><label>Shoot Date <span style="color:var(--td);font-size:9px">(optional)</span></label><input type="date" id="f-shootdate" style="color-scheme:dark" /></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-new" onclick="createProject()">Create Project</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="wa-backdrop" id="wa-backdrop" onclick="hideWaPing()"></div>
+<div class="wa-ping" id="wa-ping">
+  <div class="wa-ping-label">
+    <span>↗ WhatsApp Ping</span>
+    <div class="wa-ping-timer"><div class="wa-ping-timer-bar" id="wa-ping-timer-bar"></div></div>
+  </div>
+  <div class="wa-ping-msg" id="wa-ping-msg"></div>
+  <div class="wa-ping-actions">
+    <button class="wa-ping-btn" id="wa-ping-copy-btn" onclick="copyAndSendWaPing()">📋 Copy + Send</button>
+    <span class="wa-ping-copied" id="wa-ping-copied">✓ Copied!</span>
+    <button class="wa-ping-skip" onclick="hideWaPing()">Dismiss</button>
+  </div>
+</div>
+<div class="loading-ov" id="loading-ov">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Connecting to Supabase…</div>
+</div>
+
+<script>
+// ─── SUPABASE ────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://kdfwrjjbpfoweokofjdq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkZndyampicGZvd2Vva29mamRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjEwNjEsImV4cCI6MjA4OTQzNzA2MX0.LrkuoAo9g0WJ3dpq9CEHsE1dHmaKadcE21n6GinpgA8';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+
+const STAGES = [
+  {key:'brief',      label:'Brief',            owner:'SMM'},
+  {key:'ideation',   label:'Ideation',          owner:'Ops'},
+  {key:'discovery',  label:'Discovery Deck',    owner:'Ops'},
+  {key:'shootplan',  label:'Shoot Plan',        owner:'VG'},
+  {key:'approval',   label:'Sarosh Approval',   owner:'Founder'},
+  {key:'shootday',   label:'Shoot Day',         owner:'Ops'},
+  {key:'production', label:'In Production',     owner:'Editors'},
+  {key:'delivered',  label:'Delivered',         owner:''},
+];
+
+const VIDEO_STAGES = ['Edit','QC','Sarosh Review','Delivered'];
+
+const EDIT_TYPES = {
+  flush:   {label:'Flush',   hours:2,    color:'#00FF88'},
+  flicker: {label:'Flicker', hours:4,    color:'#00D4FF'},
+  flare:   {label:'Flare',   hours:6.5,  color:'#FFB800'},
+  wedding: {label:'Wedding', hours:12,   color:'#FF6B35'},
+};
+
+const STAGE_NOTE_CONFIG = {
+  brief:     {label:'Brief',           hint:'Describe the client brief, goals, deliverables, references…',         type:'text'},
+  ideation:  {label:'Ideation Goal',   hint:'Creative direction, key themes, what we\'re trying to achieve…',      type:'text'},
+  discovery: {label:'Discovery Deck',  hint:'Paste Canva link after the deck is built…',                           type:'url'},
+  shootplan: {label:'Shoot Plan Deck', hint:'Paste shoot plan deck link (Arsal to fill in)…',                      type:'url'},
+  approval:  {label:'Approval Notes',  hint:'Notes from Sarosh review before shoot…',                              type:'text'},
+  shootday:  {label:'Shoot Day Notes', hint:'Locations, call times, equipment, special instructions…',             type:'text'},
+};
+
+const CLIENT_COLORS = {
+  'Oraan':'#FFB800','Eterna':'#00D4FF','Shine':'#FF6B35',
+  'Safepay':'#9B6DFF','Paymob':'#00FF88','WearZane':'#FF4D5E','default':'#00FF88'
+};
+
+const TEAM = [
+  {id:1, name:'Sarosh Ahmed', role:'Founder',               initials:'SA', isEditor:false, ownedStages:[4], waName:'Sarosh',  email:'sarosh.hebatzai@gmail.com',  isAdmin:true},
+  {id:3, name:'Ayesha',       role:'Social Media Manager',   initials:'AY', isEditor:true,  partTime:true, ownedStages:[0], waName:'Ayesha', email:'saddiqa9211@gmail.com',  isAdmin:false},
+  {id:4, name:'Tanzeel',      role:'Video Editor',           initials:'TZ', isEditor:true,  ownedStages:[], waName:'Tanzeel', email:'tanzeeltariq2002@gmail.com', isAdmin:false},
+  {id:5, name:'Osama',        role:'Video Editor',           initials:'OS', isEditor:true,  ownedStages:[], waName:'Osama',   email:'osamairshad18@gmail.com',    isAdmin:false},
+  {id:6, name:'Kabeer',       role:'Video Editor',           initials:'KB', isEditor:true,  ownedStages:[], waName:'Kabeer',  email:'ulhaqkabeer703@gmail.com',   isAdmin:false},
+  {id:7, name:'Arsal',        role:'Videographer',           initials:'AR', isEditor:false, ownedStages:[3,5], waName:'Arsal',  email:'arsalmoizsp3@gmail.com',  isAdmin:false},
+];
+
+const EDITOR_HOURS = 8;
+const VERSION = 'v1.0';
+const today = new Date();
+
+// Stage advance permissions: stage index → array of team member IDs allowed to advance
+// Sarosh=1, Ahmed(VP)=2, Ayesha=3, Arsal=7
+const STAGE_ADVANCE_PERMS = {
+  0: [1, 2, 3],  // Brief → Ideation: Sarosh, VP, Ayesha
+  1: [1, 2, 3],  // Ideation → Discovery Deck: Sarosh, VP, Ayesha
+  2: [1, 2],     // Discovery → Shoot Plan: Sarosh, VP
+  3: [1, 2, 7],  // Shoot Plan → Sarosh Approval: Sarosh, VP, Arsal
+  4: [1],        // Sarosh Approval → Shoot Day: Sarosh only
+  5: [1, 2],     // Shoot Day → In Production: Sarosh, VP
+  6: [1, 2],     // In Production → Delivered: Sarosh, VP
+};
+const STAGE_BACK_PERMS = [1, 2]; // Only Sarosh + VP can move back
+
+function canAdvance(stage){ return !currentUser || STAGE_ADVANCE_PERMS[stage]?.includes(currentUser.id); }
+function canMoveBack(){ return !currentUser || STAGE_BACK_PERMS.includes(currentUser.id); }
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let projects = [];
+let nextVidId = 1; // kept for legacy loadData parsing only
+let currentUser = null; // logged-in TEAM member
+
+function newVidId(){ return 'v' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+
+function isAdmin(){ return currentUser?.isAdmin === true; }
+
+// ─── SUPABASE DATA LAYER ──────────────────────────────────────────────────────
+function showLoading(on){
+  document.getElementById('loading-ov').classList.toggle('hidden', !on);
+}
+
+let _loadDataInFlight = false;
+async function loadData(){
+  if(_loadDataInFlight) return;
+  _loadDataInFlight = true;
+  showLoading(true);
+  const [{ data: projData, error: pe }, { data: vidData, error: ve }] = await Promise.all([
+    db.from('projects').select('*').order('id'),
+    db.from('videos').select('*')
+  ]);
+  if(pe || ve){ console.error(pe||ve); showLoading(false); _loadDataInFlight = false; toast('⚠ Failed to load data'); return; }
+  projects = (projData||[]).map(p => ({
+    id: p.id, client: p.client, name: p.name, stage: p.stage,
+    managerId: p.manager_id, deadline: p.deadline, daysInStage: p.days_in_stage,
+    saroshReview: p.sarosh_review, editPlan: p.edit_plan||[], stageNotes: p.stage_notes||{},
+    shootDate: p.shoot_date||null, createdAt: p.created_at||null,
+    videos: (vidData||[]).filter(v => v.project_id === p.id).map(v => ({
+      id: v.id, name: v.name, type: v.type, assigneeId: v.assignee_id,
+      stage: v.stage, deadline: v.deadline, clientDueDate: v.client_due_date||null, revisions: v.revisions, clientRevs: v.client_revisions||0,
+      deliveredAt: v.delivered_at, startedAt: v.started_at||null, completedAt: v.completed_at||null,
+      actualHours: v.actual_hours||null, latencyScore: v.latency_score||null,
+      draft: v.draft||false
+    }))
+  }));
+  _loadDataInFlight = false;
+  showLoading(false);
+  renderAll();
+  checkDeadlineNotifs();
+}
+
+async function syncProject(p){
+  const { error } = await db.from('projects').upsert({
+    id: p.id, client: p.client, name: p.name, stage: p.stage,
+    manager_id: p.managerId, deadline: p.deadline, days_in_stage: p.daysInStage,
+    sarosh_review: p.saroshReview, edit_plan: p.editPlan, stage_notes: p.stageNotes||{},
+    shoot_date: p.shootDate||null, created_at: p.createdAt||null
+  });
+  if(error){ console.error('syncProject:', error); toast('⚠ Failed to save — check connection'); }
+}
+
+async function syncVideo(v, projId){
+  const { error } = await db.from('videos').upsert({
+    id: v.id, project_id: projId, name: v.name, type: v.type,
+    assignee_id: v.assigneeId, stage: v.stage, deadline: v.deadline, client_due_date: v.clientDueDate||null,
+    revisions: v.revisions, client_revisions: v.clientRevs||0, delivered_at: v.deliveredAt,
+    started_at: v.startedAt||null, completed_at: v.completedAt||null,
+    actual_hours: v.actualHours||null, latency_score: v.latencyScore||null,
+    draft: v.draft||false
+  });
+  if(error){ console.error('syncVideo:', error); toast('⚠ Failed to save — check connection'); }
+}
+
+let _realtimeDebounce;
+function subscribeRealtime(){
+  const channelName = 'db-changes-' + Math.random().toString(36).slice(2);
+  console.log('[Realtime] subscribing on channel:', channelName);
+  db.channel(channelName)
+    .on('postgres_changes', {event:'*', schema:'public', table:'projects'}, () => {
+      clearTimeout(_realtimeDebounce);
+      _realtimeDebounce = setTimeout(loadData, 400);
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'videos'}, () => {
+      clearTimeout(_realtimeDebounce);
+      _realtimeDebounce = setTimeout(loadData, 400);
+    })
+    .subscribe((status, err) => {
+      console.log('[Realtime]', status, err || '');
+      if(status === 'SUBSCRIBED') toast('● Live');
+      if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') toast('⚠ Live sync offline');
+    });
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+const cColor = c => CLIENT_COLORS[c] || CLIENT_COLORS['default'];
+const getTeam = id => TEAM.find(t => t.id === id) || {name:'Unassigned', initials:'?'};
+
+function daysFromNow(dateStr){
+  return Math.ceil((new Date(dateStr) - today) / 86400000);
+}
+
+function daysLabel(n){
+  if(n === 0) return 'today';
+  if(n < 0) return Math.abs(n) + 'd overdue';
+  return 'in ' + n + 'd';
+}
+
+function workingDaysFromNow(dateStr){
+  let count = 0, d = new Date(today);
+  const target = new Date(dateStr);
+  while(d < target){ d.setDate(d.getDate()+1); if(d.getDay()!==0&&d.getDay()!==6) count++; }
+  return count;
+}
+
+// Working hours between two ISO timestamps (10:30am–7pm, skip weekends)
+function workingHoursBetween(startISO, endISO){
+  const WS_H=10, WS_M=30, WE_H=19, WE_M=0;
+  let total = 0;
+  let cursor = new Date(startISO);
+  const finish = new Date(endISO);
+  while(cursor < finish){
+    const dow = cursor.getDay();
+    if(dow !== 0 && dow !== 6){
+      const wStart = new Date(cursor); wStart.setHours(WS_H, WS_M, 0, 0);
+      const wEnd   = new Date(cursor); wEnd.setHours(WE_H, WE_M, 0, 0);
+      const fromMs = Math.max(cursor.getTime(), wStart.getTime());
+      const toMs   = Math.min(finish.getTime(), wEnd.getTime());
+      if(toMs > fromMs) total += (toMs - fromMs);
+    }
+    cursor = new Date(cursor.getTime());
+    cursor.setDate(cursor.getDate() + 1);
+    cursor.setHours(0, 0, 0, 0);
+  }
+  return Math.round((total / 3600000) * 10) / 10;
+}
+
+function workingHoursSince(startISO){
+  return workingHoursBetween(startISO, new Date().toISOString());
+}
+
+function remainingWorkHoursToday(){
+  const now = new Date();
+  const dow = now.getDay();
+  if(dow === 0 || dow === 6) return 0;
+  const h = now.getHours() + now.getMinutes()/60;
+  if(h >= 19) return 0;
+  if(h < 10.5) return 8.5;
+  return Math.round((19 - h) * 10) / 10;
+}
+
+function projectStatus(p){
+  const dd = daysFromNow(p.deadline);
+  if(dd < 0) return 'r';
+  if(dd <= 3) return 'y';
+  return 'g';
+}
+
+// ─── WHATSAPP ─────────────────────────────────────────────────────────────────
+let _waPingTimer; let _waPingMsg = '';
+
+// ── AUDIO ──────────────────────────────────────────────────────────────────
+let _audioCtx;
+function getAudioCtx(){
+  if(!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+
+function playDeadlineChime(){
+  try {
+    const ctx = getAudioCtx();
+    // Two-tone descending chime — urgent but clean
+    [[880, 0, 0.15], [660, 0.18, 0.22], [440, 0.42, 0.35]].forEach(([freq, start, dur]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(0.28, ctx.currentTime + start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    });
+  } catch(e) {}
+}
+
+// ── BROWSER NOTIFICATIONS ──────────────────────────────────────────────────
+function requestNotifPermission(){
+  if('Notification' in window && Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
+}
+
+function fireNotif(title, body, tag){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  if(document.hasFocus()) return; // tab is active — modal is already visible
+  const n = new Notification(title, {
+    body, tag: tag||undefined, icon: '',
+    badge: '', silent: false
+  });
+  n.onclick = () => { window.focus(); n.close(); };
+}
+
+function checkDeadlineNotifs(){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  const todayStr = today.toISOString().slice(0,10);
+  const fired = JSON.parse(sessionStorage.getItem('notif-fired')||'[]');
+  const toFire = [];
+
+  projects.forEach(p => {
+    // project deadline today
+    if(p.deadline === todayStr && p.stage < 7){
+      const key = `proj-dl-${p.id}`;
+      if(!fired.includes(key)){
+        toFire.push({ key, title: `📅 Deadline Today: ${p.client}`, body: `${p.name} — due today` });
+      }
+    }
+    // video deadlines today
+    (p.videos||[]).forEach(v => {
+      if(v.deadline === todayStr && v.stage < 3){
+        const key = `vid-dl-${v.id}`;
+        if(!fired.includes(key)){
+          const editor = TEAM.find(t => t.id === v.assigneeId);
+          toFire.push({ key, title: `🎞️ Video Due Today: ${p.client}`, body: `${v.name}${editor ? ` · ${editor.name}` : ''}` });
+        }
+      }
+    });
+  });
+
+  // stagger so they don't all fire at once
+  toFire.forEach(({ key, title, body }, i) => {
+    setTimeout(() => { fireNotif(title, body, key); playDeadlineChime(); }, i * 800);
+    fired.push(key);
+  });
+  if(toFire.length) sessionStorage.setItem('notif-fired', JSON.stringify(fired));
+}
+
+function fmtDue(dateStr){
+  return new Date(dateStr).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+function waTag(memberId){ const m = TEAM.find(t => t.id === memberId); return m ? `@${m.waName}` : ''; }
+
+function showWaPing(msg){
+  clearTimeout(_waPingTimer);
+  _waPingMsg = msg;
+  // fire browser notification for this action
+  const firstLine = msg.split('\n')[0].replace(/\*/g,'').replace(/@\w+\s*/,'').trim();
+  fireNotif('↗ Flush It — Action Required', firstLine);
+  const el = document.getElementById('wa-ping');
+  const backdrop = document.getElementById('wa-backdrop');
+  const msgEl = document.getElementById('wa-ping-msg');
+  const bar = document.getElementById('wa-ping-timer-bar');
+  const copied = document.getElementById('wa-ping-copied');
+  msgEl.textContent = msg;
+  copied.style.opacity = '0';
+  // reset + animate timer bar
+  bar.classList.remove('running');
+  void bar.offsetWidth; // reflow
+  el.classList.add('show');
+  backdrop.classList.add('show');
+  requestAnimationFrame(() => { bar.classList.add('running'); });
+  _waPingTimer = setTimeout(hideWaPing, 5000);
+}
+
+function hideWaPing(){
+  clearTimeout(_waPingTimer);
+  document.getElementById('wa-ping').classList.remove('show');
+  document.getElementById('wa-backdrop').classList.remove('show');
+  const bar = document.getElementById('wa-ping-timer-bar');
+  bar.classList.remove('running');
+}
+
+function copyAndSendWaPing(){
+  navigator.clipboard.writeText(_waPingMsg).then(() => {
+    const copied = document.getElementById('wa-ping-copied');
+    copied.style.opacity = '1';
+    setTimeout(() => { copied.style.opacity = '0'; }, 1500);
+  });
+  window.open('https://wa.me/?text=' + encodeURIComponent(_waPingMsg), '_blank', 'noopener');
+  setTimeout(hideWaPing, 800);
+}
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); renderQueue(); updateStats(); if(currentPanelId) renderPanelBody(currentPanelId); }
+
+function updateStats(){
+  const active = projects.filter(p => p.stage < 7).length;
+  const overdue = projects.filter(p => p.stage < 7 && daysFromNow(p.deadline) < 0).length;
+  const atRisk = projects.filter(p => { const d = daysFromNow(p.deadline); return p.stage < 7 && d >= 0 && d <= 3; }).length;
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-ontrack').textContent = Math.max(0, active - overdue - atRisk);
+  document.getElementById('stat-atrisk').textContent = atRisk;
+  document.getElementById('stat-overdue').textContent = overdue;
+  document.getElementById('stat-prod').textContent = projects.filter(p => p.stage === 6).length;
+  document.getElementById('stat-delivered').textContent = projects.filter(p => p.stage === 7).length;
+}
+
+// Editor capacity today (hours of Edit-stage videos assigned)
+function editorLoad(editorId){
+  let h = 0;
+  projects.forEach(p => p.videos.forEach(v => {
+    if(v.assigneeId === editorId && v.stage === 0 && !v.draft) h += EDIT_TYPES[v.type].hours;
+  }));
+  return h;
+}
+
+// ─── KANBAN ──────────────────────────────────────────────────────────────────
+
+function renderKanban(){
+  const wrap = document.getElementById('kanban');
+  wrap.innerHTML = '';
+  STAGES.forEach((stage, si) => {
+    const cards = projects.filter(p => p.stage === si);
+    const col = document.createElement('div');
+    col.className = 'k-col';
+    col.innerHTML = `
+      <div class="k-col-hdr">
+        <div class="k-col-name">${stage.label}</div>
+        <div class="k-col-count">${cards.length}</div>
+      </div>
+      <div class="k-cards">
+        ${cards.length === 0 ? '<div class="k-empty">Empty</div>' : cards.map(p => kCardHTML(p, si)).join('')}
+      </div>`;
+    wrap.appendChild(col);
+  });
+}
+
+function kCardHTML(p, si){
+  const t = getTeam(p.managerId);
+  const dd = daysFromNow(p.deadline);
+  const isOD = dd < 0 && si < 7;
+  const dayCls = dd < 0 ? 'k-days d' : dd <= 3 ? 'k-days w' : 'k-days';
+  const isLast = si === 7;
+  const isProduction = si === 6;
+
+  let videoHTML = '';
+  if(isProduction && p.videos.filter(v=>!v.draft).length > 0){
+    const liveVids = p.videos.filter(v=>!v.draft);
+    const delivered = liveVids.filter(v => v.stage === 3).length;
+    const pct = Math.round((delivered / liveVids.length) * 100);
+    const typeSummary = Object.entries(
+      liveVids.reduce((acc,v) => { acc[v.type] = (acc[v.type]||0)+1; return acc; }, {})
+    ).map(([t,n]) => `<span class="type-badge ${t}">${n} ${EDIT_TYPES[t].label}</span>`).join('');
+    videoHTML = `
+      <div class="k-type-pills">${typeSummary}</div>
+      <div class="k-vprogress">
+        <div class="k-vprogress-label"><span>${delivered}/${liveVids.length} videos done</span><span>${pct}%</span></div>
+        <div class="k-vprogress-track"><div class="k-vprogress-fill" style="width:${pct}%"></div></div>
+      </div>`;
+  } else if(isProduction && p.videos.length === 0){
+    videoHTML = `<div style="font-size:9px;color:var(--yellow);margin-bottom:6px">⚠ No videos assigned yet</div>`;
+  }
+
+  // Edit plan pills for pre-production
+  let planHTML = '';
+  if(!isProduction && !isLast && p.editPlan.length > 0){
+    planHTML = `<div class="k-type-pills" style="margin-bottom:6px">${p.editPlan.map(ep => `<span class="type-badge ${ep.type}">${ep.count}× ${EDIT_TYPES[ep.type].label}</span>`).join('')}</div>`;
+  }
+
+  return `
+  <div class="k-card${isOD?' overdue':''}" style="--client-color:${cColor(p.client)}" onclick="openPanel(${p.id})">
+    <div class="k-client">${p.name}</div>
+    <div class="k-name">${p.client}</div>
+    ${planHTML}${videoHTML}
+    <div class="k-meta">
+      <div class="k-assignee">
+        <div class="av">${t.initials}</div>
+        <div class="k-aname">${t.name.split(' ')[0]}</div>
+      </div>
+      <div class="${dayCls}">${p.daysInStage}d in stage</div>
+    </div>
+    <div class="k-footer">
+      <div class="k-dl" onclick="event.stopPropagation();editDeadline(${p.id},this)" style="display:flex;align-items:center;gap:5px">
+        <span style="color:var(--tm)">${new Date(p.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>
+        <span style="font-size:8px;padding:2px 5px;border-radius:20px;font-weight:600;background:${dd<0?'var(--rdim)':dd<=3?'var(--ydim)':'var(--s3)'};color:${dd<0?'var(--red)':dd<=3?'var(--yellow)':'var(--td)'};border:1px solid ${dd<0?'rgba(255,77,94,.25)':dd<=3?'rgba(255,184,0,.25)':'var(--border)'}">${dd<0?Math.abs(dd)+'d late':dd===0?'today':'in '+dd+'d'}</span>
+      </div>
+      <div class="card-actions" onclick="event.stopPropagation()">
+        <button class="btn-sm" ${si===0||!canMoveBack()?'disabled':''} onclick="moveBack(${p.id})">←</button>
+        <button class="btn-sm adv" ${isLast||!canAdvance(si)?'disabled':''} onclick="advanceProject(${p.id})">${isLast?'✓':'→'}</button>
+        <button class="btn-sm del" ${!isAdmin()?'disabled':''} onclick="removeProject(${p.id})">×</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── PROJECT ACTIONS ─────────────────────────────────────────────────────────
+
+async function advanceProject(id){
+  const p = projects.find(x => x.id === id);
+  if(!p || p.stage >= 7) return;
+  if(!canAdvance(p.stage)){ toast('⚠ You don\'t have permission to advance this stage'); return; }
+  p.stage++;
+  p.daysInStage = 0;
+  if(p.stage === 6){
+    const drafts = p.videos.filter(v => v.draft);
+    if(drafts.length > 0){
+      // Activate named draft videos
+      for(const v of drafts){ v.draft = false; await syncVideo(v, p.id); }
+      setTimeout(() => openPanel(p.id), 300);
+    } else if(p.editPlan.length > 0 && p.videos.length === 0){
+      // No drafts — create fresh from edit plan
+      for(const ep of p.editPlan){
+        for(let i = 1; i <= ep.count; i++){
+          const v = {id:newVidId(), name:`${EDIT_TYPES[ep.type].label} ${i}`, type:ep.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
+          p.videos.push(v);
+          await syncVideo(v, p.id);
+        }
+      }
+      setTimeout(() => openPanel(p.id), 300);
+    }
+  }
+  await syncProject(p);
+  renderAll();
+  toast(`${p.client} · ${p.name} → ${STAGES[p.stage].label}`);
+  // WhatsApp pings on key stage transitions
+  if(p.stage === 3) showWaPing(`${waTag(7)} 🎬 *Shoot Plan:* ${p.client} · ${p.name} — please add the shoot plan deck — due ${fmtDue(p.deadline)}`);
+  if(p.stage === 5) showWaPing(`${waTag(7)} 📸 *Shoot Day:* ${p.client} · ${p.name} — shoot confirmed, all hands on deck — due ${fmtDue(p.deadline)}`);
+  if(p.stage === 6) showWaPing(`🎞️ *In Production:* ${p.client} · ${p.name} — footage in, editors please check your assignments — due ${fmtDue(p.deadline)}`);
+}
+
+async function moveBack(id){
+  const p = projects.find(x => x.id === id);
+  if(!p || p.stage <= 0) return;
+  if(!canMoveBack()){ toast('⚠ Only VP or Sarosh can move stages back'); return; }
+  p.stage--;
+  p.daysInStage = 0;
+  renderAll();
+  toast(`${p.client} · ${p.name} ← ${STAGES[p.stage].label}`);
+  syncProject(p);
+}
+
+async function removeProject(id){
+  const p = projects.find(x => x.id === id);
+  if(!p || !confirm(`Remove "${p.client} · ${p.name}"?\n\nThis cannot be undone.`)) return;
+  projects = projects.filter(x => x.id !== id);
+  if(currentPanelId === id) closePanel();
+  renderAll();
+  toast(`Removed: ${p.client} · ${p.name}`);
+  await db.from('projects').delete().eq('id', id);
+}
+
+function editDeadline(id, el){
+  const p = projects.find(x => x.id === id);
+  if(!p) return;
+  const input = document.createElement('input');
+  input.type = 'date'; input.className = 'k-dl-input'; input.value = p.deadline;
+  el.replaceWith(input); input.focus(); input.showPicker?.();
+  function save(){
+    if(input.value){ p.deadline = input.value; toast(`Deadline updated`); syncProject(p); }
+    renderKanban(); renderClients(); updateStats();
+  }
+  input.addEventListener('change', save);
+  input.addEventListener('blur', () => { if(!input.value) renderKanban(); else save(); });
+}
+
+// ─── PROJECT DETAIL PANEL ────────────────────────────────────────────────────
+
+let currentPanelId = null;
+
+function openPanel(id){
+  const p = projects.find(x => x.id === id);
+  if(!p) return;
+  currentPanelId = id;
+  const dd = daysFromNow(p.deadline);
+  const isOD = dd < 0;
+  const st = STAGES[p.stage];
+  const mgr = getTeam(p.managerId);
+  const color = cColor(p.client);
+
+  document.getElementById('panel-client').textContent = p.name;
+  document.getElementById('panel-client').style.color = color;
+  document.getElementById('panel-name').textContent = p.client;
+  const totalAge = p.createdAt ? Math.floor((today - new Date(p.createdAt)) / 86400000) : null;
+  document.getElementById('panel-meta').innerHTML = `
+    <span class="panel-stage-pill">${st.label}</span>
+    <span class="panel-dl${isOD?' od':''}">Due ${new Date(p.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
+    <span style="font-size:10px;color:var(--td)">PM: ${mgr.name.split(' ')[0]}</span>
+    ${totalAge !== null ? `<span style="font-size:10px;color:var(--td)">Created ${new Date(p.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · <span style="color:${totalAge>14?'var(--yellow)':'var(--td)'}">${totalAge}d old</span></span>` : ''}`;
+  document.getElementById('panel-actions').innerHTML = `
+    <button class="btn-sm" ${p.stage===0||!canMoveBack()?'disabled':''} onclick="moveBack(${p.id});renderPanelBody(${p.id})">← Back</button>
+    <button class="btn-sm adv" ${p.stage===7||!canAdvance(p.stage)?'disabled':''} onclick="advanceProject(${p.id});renderPanelBody(${p.id})">${p.stage===7?'✓ Done':'→ Advance'}</button>`;
+
+  renderPanelBody(id);
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('panel-backdrop').classList.add('open');
+}
+
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('panel-backdrop').classList.remove('open');
+  currentPanelId = null;
+}
+
+function renderPanelBody(id){
+  const p = projects.find(x => x.id === id);
+  if(!p) return;
+  const body = document.getElementById('panel-body');
+  const isProduction = p.stage === 6;
+  const showEditPlan = p.stage >= 2 && p.stage <= 5; // Discovery Deck through Shoot Day
+
+  if(!p.stageNotes) p.stageNotes = {};
+  let html = '';
+
+  // ── CURRENT STAGE NOTES ──
+  const stageKey = STAGES[p.stage]?.key;
+  const noteCfg = stageKey ? STAGE_NOTE_CONFIG[stageKey] : null;
+  if(noteCfg && p.stage < 7){
+    const val = p.stageNotes[stageKey] || '';
+    const isUrl = noteCfg.type === 'url';
+    let inputHTML;
+    if(isUrl && val && (val.startsWith('http://') || val.startsWith('https://'))){
+      inputHTML = `
+        <div class="note-link">
+          <a href="${val}" target="_blank" rel="noopener">${val}</a>
+          <button class="note-link-edit" onclick="editStageNoteLink(${p.id},'${stageKey}')">Edit</button>
+        </div>`;
+    } else if(isUrl){
+      inputHTML = `
+        <div class="stage-note-box">
+          <input type="url" class="stage-note-url" id="sn-${p.id}-${stageKey}" value="${val}" placeholder="${noteCfg.hint}">
+          <button class="note-save-btn" onclick="saveStageNote(${p.id},'${stageKey}')">Save link</button>
+        </div>`;
+    } else {
+      inputHTML = `
+        <div class="stage-note-box">
+          <textarea class="stage-note-textarea" id="sn-${p.id}-${stageKey}" placeholder="${noteCfg.hint}">${val}</textarea>
+          <button class="note-save-btn" onclick="saveStageNote(${p.id},'${stageKey}')">Save</button>
+        </div>`;
+    }
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title">${noteCfg.label}</div>
+        ${inputHTML}
+      </div>`;
+  }
+
+  // ── PREVIOUS STAGE NOTES (read-only log) ──
+  const stageOrder = ['brief','ideation','discovery','shootplan','approval','shootday'];
+  const currentKeyIdx = stageOrder.indexOf(stageKey);
+  const prevNotes = stageOrder.slice(0, currentKeyIdx).filter(k => p.stageNotes[k]);
+  if(prevNotes.length > 0){
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title">Stage History</div>
+        <div class="prev-notes">
+          ${prevNotes.map(k => {
+            const v = p.stageNotes[k];
+            const cfg = STAGE_NOTE_CONFIG[k];
+            const isLink = v.startsWith('http://') || v.startsWith('https://');
+            const display = isLink ? `<a href="${v}" target="_blank" rel="noopener">${v}</a>` : v.replace(/\n/g,'<br>');
+            return `<div class="prev-note-item">
+              <div class="prev-note-stage">${cfg.label}</div>
+              <div class="prev-note-val">${display}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ── IN PRODUCTION: show all notes as reference ──
+  if(p.stage === 6){
+    const allFilled = stageOrder.filter(k => p.stageNotes[k]);
+    if(allFilled.length > 0){
+      html += `
+        <div class="panel-section">
+          <div class="panel-section-title">Project Notes</div>
+          <div class="prev-notes">
+            ${allFilled.map(k => {
+              const v = p.stageNotes[k];
+              const cfg = STAGE_NOTE_CONFIG[k];
+              const isLink = v.startsWith('http://') || v.startsWith('https://');
+              const display = isLink ? `<a href="${v}" target="_blank" rel="noopener">${v}</a>` : v.replace(/\n/g,'<br>');
+              return `<div class="prev-note-item">
+                <div class="prev-note-stage">${cfg.label}</div>
+                <div class="prev-note-val">${display}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+  }
+
+  // SHOOT DATE (visible from Shoot Plan stage onwards)
+  if(p.stage >= 3 && p.stage <= 6){
+    const sdVal = p.shootDate || '';
+    const sdDisplay = sdVal ? new Date(sdVal).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) : 'Not set';
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title">Shoot Date
+          <button class="note-link-edit" onclick="editShootDate(${p.id})">Edit</button>
+        </div>
+        <div id="shoot-date-display-${p.id}" style="font-size:12px;color:${sdVal?'var(--text)':'var(--td)'};font-style:${sdVal?'normal':'italic'}">${sdDisplay}</div>
+        <input type="date" id="shoot-date-input-${p.id}" style="display:none;color-scheme:dark" class="panel-input" value="${sdVal}" onchange="saveShootDate(${p.id})" onblur="cancelShootDate(${p.id})">
+      </div>`;
+  }
+
+  // SAROSH REVIEW TOGGLE (always visible)
+  html += `
+    <div class="panel-section">
+      <div class="panel-section-title">
+        Sarosh Review
+        <div class="toggle-wrap">
+          <span>${p.saroshReview ? 'On' : 'Off'}</span>
+          <div class="toggle ${p.saroshReview?'on':''}" onclick="toggleSaroshReview(${p.id})"></div>
+        </div>
+      </div>
+    </div>`;
+
+  // EDIT PLAN (shown during Discovery Deck → Shoot Day)
+  if(showEditPlan || (!isProduction && p.editPlan.length > 0)){
+    const totalH = p.editPlan.reduce((s,ep) => s + ep.count * EDIT_TYPES[ep.type].hours, 0);
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title">Edit Plan ${p.editPlan.length ? `<span style="color:var(--tm)">${totalH}h total</span>` : ''}</div>
+        <div class="edit-plan-list">
+          ${p.editPlan.length === 0 ? `<div style="font-size:10px;color:var(--td);font-style:italic;padding:4px 0">No edit plan yet</div>` :
+            p.editPlan.map((ep,i) => `
+            <div class="ep-row">
+              <span class="type-badge ${ep.type}">${EDIT_TYPES[ep.type].label}</span>
+              <span class="ep-count">${ep.count}</span>
+              <span class="ep-label">video${ep.count>1?'s':''}</span>
+              <span class="ep-hours">${ep.count * EDIT_TYPES[ep.type].hours}h</span>
+              <button class="btn-sm del" onclick="removeEditPlan(${p.id},${i})">×</button>
+            </div>`).join('')
+          }
+        </div>
+        <div class="add-plan-row">
+          <select class="panel-select" id="ep-type-${p.id}">
+            ${Object.entries(EDIT_TYPES).map(([k,v]) => `<option value="${k}">${v.label} (${v.hours}h)</option>`).join('')}
+          </select>
+          <input type="number" class="panel-input" id="ep-count-${p.id}" value="1" min="1" max="20" style="width:60px">
+          <button class="btn-add" onclick="addEditPlan(${p.id})">+ Add</button>
+        </div>
+      </div>`;
+  }
+
+  // DRAFT VIDEO TASKS (Shoot Plan stage onwards, pre-production)
+  if(p.stage >= 3 && p.stage <= 5){
+    const drafts = p.videos.filter(v => v.draft);
+    const editors = TEAM.filter(t => t.isEditor);
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title">Video Tasks
+          <button class="btn-add" style="font-size:9px;padding:3px 9px" onclick="generateDraftVideos(${p.id})">↻ Sync from plan</button>
+        </div>
+        ${drafts.length === 0
+          ? `<div style="font-size:10px;color:var(--td);font-style:italic;padding:4px 0">No draft tasks yet — add an edit plan above then click Sync</div>`
+          : `<div class="video-list">${drafts.map(v => {
+              const editorOpts = editors.map(e => `<option value="${e.id}" ${v.assigneeId===e.id?'selected':''}>${e.name}</option>`).join('');
+              return `<div class="v-row">
+                <div class="v-row-top">
+                  <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
+                  <input class="panel-input" style="flex:1;font-size:11px" value="${v.name}" placeholder="Name this video…"
+                    onchange="saveDraftName(${p.id},'${v.id}',this.value)"
+                    onblur="saveDraftName(${p.id},'${v.id}',this.value)">
+                  <button class="btn-sm del" onclick="removeDraftVideo(${p.id},'${v.id}')">×</button>
+                </div>
+                <div class="v-row-bot">
+                  <select class="v-assignee-sel" onchange="assignDraftVideo(${p.id},'${v.id}',this.value)">
+                    <option value="" ${!v.assigneeId?'selected':''}>Assign editor (optional)…</option>
+                    ${editorOpts}
+                  </select>
+                  <span style="font-size:9px;color:var(--td);font-style:italic;margin-left:auto">draft · activates on production</span>
+                </div>
+              </div>`;
+            }).join('')}</div>`
+        }
+      </div>`;
+  }
+
+  // VIDEOS (In Production)
+  if(isProduction){
+    // Capacity mini-view
+    const editors = TEAM.filter(t => t.isEditor && !t.partTime);
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title">Editor Capacity Today</div>
+        <div class="cap-grid">
+          ${editors.map(e => {
+            const h = editorLoad(e.id);
+            const rem = remainingWorkHoursToday();
+            const cap = rem > 0 ? rem : EDITOR_HOURS;
+            const pct = Math.min(100, Math.round((h/cap)*100));
+            const cls = pct < 60 ? 'g' : pct < 100 ? 'y' : 'r';
+            const free = Math.max(0, Math.round((cap - h) * 10) / 10);
+            const label = rem === 0 ? (h > 0 ? `${h}h queued` : 'off hours') : pct >= 100 ? 'FULL' : `${free}h left today`;
+            return `<div class="cap-row">
+              <div class="cap-name">${e.name}</div>
+              <div class="cap-track"><div class="cap-fill ${cls}" style="width:${pct}%"></div></div>
+              <div class="cap-label ${cls}">${label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+
+    // Video list
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title">Videos <span style="color:var(--tm)">${p.videos.filter(v=>!v.draft).length} total · ${p.videos.filter(v=>v.stage===3).length} delivered</span></div>
+        <div class="video-list">
+          ${p.videos.filter(v=>!v.draft).length === 0
+            ? `<div style="font-size:10px;color:var(--td);font-style:italic;padding:6px 0">No videos yet — add below</div>`
+            : p.videos.filter(v=>!v.draft).map(v => videoRowHTML(p, v)).join('')}
+        </div>
+        <div class="add-plan-row" style="margin-top:4px">
+          <select class="panel-select" id="vadd-type-${p.id}">
+            ${Object.entries(EDIT_TYPES).map(([k,v]) => `<option value="${k}">${v.label} (${v.hours}h)</option>`).join('')}
+          </select>
+          <input type="number" class="panel-input" id="vadd-count-${p.id}" value="1" min="1" max="10" style="width:60px">
+          <button class="btn-add" onclick="addVideos(${p.id})">+ Add Videos</button>
+        </div>
+      </div>`;
+  }
+
+  body.innerHTML = html;
+
+  // Animate capacity bars
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    body.querySelectorAll('.cap-fill[style]').forEach(el => {
+      const w = el.style.width; el.style.width = '0';
+      requestAnimationFrame(() => { el.style.width = w; });
+    });
+  }));
+}
+
+function videoRowHTML(p, v){
+  const dd = daysFromNow(v.deadline);
+  const isOD = dd < 0 && v.stage < 3;
+  const stageCls = ['s0','s1','s2','s3'][v.stage];
+
+  const editors = TEAM.filter(t => t.isEditor);
+  const editorOpts = editors.map(e => {
+    const h = editorLoad(e.id);
+    const rem = remainingWorkHoursToday();
+    const cap = rem > 0 ? rem : EDITOR_HOURS;
+    const free = Math.max(0, Math.round((cap - h) * 10) / 10);
+    const avail = rem === 0 ? ` · ${h}h loaded` : h >= cap ? ' · full' : ` · ${free}h left today`;
+    return `<option value="${e.id}" ${v.assigneeId===e.id?'selected':''}>${e.name}${avail}</option>`;
+  }).join('');
+
+  // Latency badge (shows after submission)
+  let latencyBadge = '';
+  if(v.latencyScore != null){
+    const cls = v.latencyScore <= 1.0 ? 'fast' : v.latencyScore <= 1.3 ? 'ok' : 'slow';
+    const icon = v.latencyScore <= 1.0 ? '↑' : v.latencyScore <= 1.3 ? '=' : '↓';
+    latencyBadge = `<span class="v-latency ${cls}" title="${v.actualHours}h actual / ${EDIT_TYPES[v.type].hours}h est">${icon} ${v.latencyScore.toFixed(1)}×</span>`;
+  }
+
+  // Start / Submit / In-progress UI for Edit stage
+  let timingBadge = '';
+  let advBtn = `<button class="btn-sm adv" ${v.stage===3?'disabled':''} onclick="advanceVideo(${p.id},'${v.id}')">→</button>`;
+  if(v.stage === 0){
+    if(!v.startedAt){
+      timingBadge = `<button class="btn-sm start" onclick="startVideo(${p.id},'${v.id}')">▶ Start</button>`;
+    } else if(!v.completedAt){
+      const hrs = workingHoursBetween(v.startedAt, new Date().toISOString());
+      const nowH = new Date().getHours() + new Date().getMinutes()/60;
+      const isWorkHours = nowH >= 10.5 && nowH < 19 && new Date().getDay() !== 0 && new Date().getDay() !== 6;
+      const workMins = Math.round(hrs * 60);
+      const hrsLabel = !isWorkHours ? 'paused (off hours)' : hrs < 1 ? (workMins < 1 ? 'just started' : workMins + ' min in') : hrs.toFixed(1) + 'h in';
+      timingBadge = `<span class="v-inprogress">⏱ ${hrsLabel}</span>`;
+      advBtn = `<button class="btn-sm submit" onclick="advanceVideo(${p.id},'${v.id}')">Submit ✓</button>`;
+    }
+  }
+
+  return `
+  <div class="v-row${isOD?' overdue':''}">
+    <div class="v-row-top">
+      <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
+      <span class="v-name">${v.name}</span>
+      ${(()=>{
+        const ir = v.revisions||0, cr = v.clientRevs||0;
+        if(ir === 0 && cr === 0) return '';
+        const intPart = ir > 2 ? `⚠ ${ir} int` : ir > 0 ? `${ir}/2 int` : '';
+        const clientPart = cr > 0 ? `${cr} client` : '';
+        const label = [intPart, clientPart].filter(Boolean).join(' · ');
+        const isFlagged = ir > 2;
+        return `<span class="v-rev${isFlagged?' max':ir>=2?' max':''}" title="${isFlagged?'⚠ Exceeded internal revision limit':'Revisions'}">${isFlagged?'⚠ ':''}${label}</span>`;
+      })()}
+      ${latencyBadge}
+    </div>
+    <div class="v-row-bot">
+      <select class="v-assignee-sel" onchange="assignVideo(${p.id},'${v.id}',this.value)">
+        <option value="" ${!v.assigneeId?'selected':''}>Assign editor…</option>
+        ${editorOpts}
+      </select>
+      <span class="v-stage-pill ${stageCls}">${VIDEO_STAGES[v.stage]}</span>
+      <span class="v-dl${isOD?' od':''}" onclick="editVideoDl(${p.id},'${v.id}',this)">${daysLabel(dd)}</span>
+      ${timingBadge}
+      <div class="v-actions">
+        ${v.stage === 3
+          ? `<button class="btn-sm" onclick="clientVideoRevision(${p.id},'${v.id}')">↩ Client</button>`
+          : `<button class="btn-sm" ${v.stage===0?'disabled':''} onclick="moveVideoBack(${p.id},'${v.id}')">←</button>`
+        }
+        ${advBtn}
+        <button class="btn-sm del" onclick="removeVideo(${p.id},'${v.id}')">×</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── VIDEO ACTIONS ───────────────────────────────────────────────────────────
+
+async function assignVideo(projId, vidId, editorId){
+  const p = projects.find(x => x.id === projId);
+  if(!p) return;
+  const v = p.videos.find(x => x.id === vidId);
+  if(!v) return;
+  v.assigneeId = editorId ? parseInt(editorId) : null;
+  renderPanelBody(projId);
+  renderTeam();
+  toast(editorId ? `${v.name} → ${getTeam(parseInt(editorId)).name}` : `${v.name} unassigned`);
+  await syncVideo(v, projId);
+  if(editorId) showWaPing(`${waTag(parseInt(editorId))} 📋 *Assigned:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — due ${fmtDue(v.deadline)}`);
+}
+
+async function advanceVideo(projId, vidId){
+  const p = projects.find(x => x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v || v.stage >= 3) return;
+  // Record timing when submitting from Edit stage
+  if(v.stage === 0 && v.startedAt && !v.completedAt){
+    v.completedAt = new Date().toISOString();
+    const assignee = TEAM.find(t => t.id === v.assigneeId);
+    if(assignee?.partTime){
+      // Part-time editors: skip latency scoring entirely
+      v.actualHours = null;
+      v.latencyScore = null;
+    } else {
+      v.actualHours = workingHoursBetween(v.startedAt, v.completedAt);
+      const totalRevs = (v.revisions||0) + (v.clientRevs||0);
+      const weight = totalRevs === 0 ? 1.0 : totalRevs === 1 ? 0.5 : 0.75;
+      const estimated = EDIT_TYPES[v.type].hours * weight;
+      v.latencyScore = (estimated > 0 && v.actualHours > 0) ? Math.round((v.actualHours / estimated) * 100) / 100 : null;
+    }
+  }
+  let next = v.stage + 1;
+  if(next === 2 && !p.saroshReview) next = 3;
+  v.stage = next;
+  if(v.stage === 3){ v.deliveredAt = today.toISOString().split('T')[0]; }
+  if(p.videos.length > 0 && p.videos.every(x => x.stage === 3)){
+    p.stage = 7;
+    closePanel();
+    toast(`🎉 ${p.client} · ${p.name} — all videos delivered!`);
+    syncProject(p);
+    showWaPing(`🎉 *Delivered:* ${p.client} · ${p.name} — all videos done and sent to client!`);
+  } else {
+    toast(`${v.name} → ${VIDEO_STAGES[v.stage]}`);
+    if(v.stage === 1) showWaPing(`${waTag(2)} ✅ *QC Ready:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — ready for QC — due ${fmtDue(v.deadline)}`);
+    if(v.stage === 2) showWaPing(`${waTag(1)} 👀 *Sarosh Review:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — ready for your review — due ${fmtDue(v.deadline)}`);
+  }
+  renderAll();
+  if(currentPanelId === projId) renderPanelBody(projId);
+  await syncVideo(v, projId);
+}
+
+async function moveVideoBack(projId, vidId){
+  const p = projects.find(x => x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v || v.stage <= 0 || v.stage === 3) return; // Delivered uses clientVideoRevision
+  let prev = v.stage - 1;
+  if(prev === 2 && !p.saroshReview) prev = 1;
+  // Return to Edit = internal revision
+  if(prev === 0){
+    const warning = v.revisions >= 2 ? `\n\n⚠️ This is internal revision ${v.revisions + 1} — flagged for review.` : '';
+    if(!confirm(`Send "${v.name}" back for internal revision? (${v.revisions}/2 standard)${warning}`)) return;
+    v.revisions++;
+    v.deliveredAt = null;
+    v.startedAt = null;
+    v.completedAt = null;
+    if(v.revisions > 2) showWaPing(`${waTag(v.assigneeId)} ⚠️ *Internal Rev ${v.revisions}:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — flagged, ${v.revisions} internal revisions`);
+  }
+  v.stage = prev;
+  renderAll();
+  if(currentPanelId === projId) renderPanelBody(projId);
+  await syncVideo(v, projId);
+}
+
+async function clientVideoRevision(projId, vidId){
+  const p = projects.find(x => x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v || v.stage !== 3) return;
+  if(!confirm(`Mark "${v.name}" as a client revision? This sends it back to Edit.`)) return;
+  v.clientRevs = (v.clientRevs||0) + 1;
+  v.stage = 0;
+  v.deliveredAt = null;
+  v.startedAt = null;
+  v.completedAt = null;
+  renderAll();
+  if(currentPanelId === projId) renderPanelBody(projId);
+  toast(`↩ ${v.name} — client revision, back to Edit`);
+  await syncVideo(v, projId);
+}
+
+async function removeVideo(projId, vidId){
+  const p = projects.find(x => x.id === projId);
+  if(!p) return;
+  const v = p.videos.find(x => x.id === vidId);
+  if(!v || !confirm(`Remove "${v.name}"?`)) return;
+  p.videos = p.videos.filter(x => x.id !== vidId);
+  renderAll();
+  if(currentPanelId === projId) renderPanelBody(projId);
+  toast(`Removed: ${v.name}`);
+  await db.from('videos').delete().eq('id', vidId);
+}
+
+function editVideoDl(projId, vidId, el){
+  const p = projects.find(x => x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v) return;
+  const input = document.createElement('input');
+  input.type = 'date'; input.className = 'k-dl-input'; input.value = v.deadline;
+  el.replaceWith(input); input.focus(); input.showPicker?.();
+  function save(){
+    if(input.value){ v.deadline = input.value; toast(`${v.name} deadline updated`); syncVideo(v, projId); }
+    renderAll();
+    if(currentPanelId === projId) renderPanelBody(projId);
+  }
+  input.addEventListener('change', save);
+  input.addEventListener('blur', () => { if(!input.value) renderPanelBody(projId); else save(); });
+}
+
+async function addVideos(projId){
+  const p = projects.find(x => x.id === projId);
+  if(!p) return;
+  const type = document.getElementById(`vadd-type-${projId}`)?.value;
+  const count = parseInt(document.getElementById(`vadd-count-${projId}`)?.value) || 1;
+  if(!type) return;
+  const existing = p.videos.filter(v => v.type === type).length;
+  for(let i = 1; i <= count; i++){
+    const v = {id:newVidId(), name:`${EDIT_TYPES[type].label} ${existing+i}`, type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:false};
+    p.videos.push(v);
+    await syncVideo(v, projId);
+  }
+  renderAll();
+  if(currentPanelId === projId) renderPanelBody(projId);
+  toast(`Added ${count}× ${EDIT_TYPES[type].label}`);
+}
+
+// ─── EDIT PLAN ───────────────────────────────────────────────────────────────
+
+async function addEditPlan(projId){
+  const p = projects.find(x => x.id === projId);
+  const type = document.getElementById(`ep-type-${projId}`)?.value;
+  const count = parseInt(document.getElementById(`ep-count-${projId}`)?.value) || 1;
+  if(!p || !type) return;
+  const existing = p.editPlan.find(ep => ep.type === type);
+  if(existing) existing.count += count;
+  else p.editPlan.push({type, count});
+  renderKanban();
+  renderPanelBody(projId);
+  toast(`Plan: ${count}× ${EDIT_TYPES[type].label} added`);
+  syncProject(p);
+}
+
+async function removeEditPlan(projId, idx){
+  const p = projects.find(x => x.id === projId);
+  if(!p) return;
+  p.editPlan.splice(idx, 1);
+  renderKanban();
+  renderPanelBody(projId);
+  syncProject(p);
+}
+
+async function toggleSaroshReview(projId){
+  const p = projects.find(x => x.id === projId);
+  if(!p) return;
+  p.saroshReview = !p.saroshReview;
+  renderPanelBody(projId);
+  toast(`Sarosh Review ${p.saroshReview?'enabled':'disabled'} for ${p.name}`);
+  syncProject(p);
+}
+
+// ─── INLINE PANEL FIELD EDITING ──────────────────────────────────────────────
+
+async function editPanelField(field){
+  if(!currentPanelId) return;
+  const p = projects.find(x => x.id === currentPanelId);
+  if(!p) return;
+  const current = field === 'client' ? p.client : p.name;
+  const label = field === 'client' ? 'Client name' : 'Project name';
+  const val = prompt(`Edit ${label}:`, current);
+  if(!val || !val.trim() || val.trim() === current) return;
+  p[field] = val.trim();
+  toast(`${label} updated to "${val.trim()}"`);
+  syncProject(p);
+  renderAll();
+  // Refresh panel header
+  const el = document.getElementById(field === 'client' ? 'panel-client' : 'panel-name');
+  if(el){
+    el.textContent = p[field];
+    if(field === 'client') el.style.color = cColor(p.client);
+  }
+}
+
+// ─── DRAFT VIDEO TASKS ───────────────────────────────────────────────────────
+
+async function generateDraftVideos(projId){
+  const p = projects.find(x => x.id === projId);
+  if(!p || p.stage >= 6) return;
+  const existingDrafts = p.videos.filter(v => v.draft);
+
+  // Build expected slots from edit plan
+  const expected = [];
+  p.editPlan.forEach(ep => {
+    for(let i = 1; i <= ep.count; i++) expected.push({type: ep.type, idx: i});
+  });
+
+  // Match existing drafts to expected slots by type+index, create missing ones
+  const matched = new Set();
+  for(const exp of expected){
+    const existing = existingDrafts.find(v =>
+      v.type === exp.type && !matched.has(v.id) &&
+      !existingDrafts.filter(x => x.type===exp.type && matched.has(x.id)).length
+    );
+    if(existing){ matched.add(existing.id); }
+    else {
+      const v = {id:newVidId(), name:`${EDIT_TYPES[exp.type].label} ${exp.idx}`, type:exp.type, assigneeId:null, stage:0, deadline:p.deadline, clientDueDate:null, revisions:0, clientRevs:0, deliveredAt:null, startedAt:null, completedAt:null, actualHours:null, latencyScore:null, draft:true};
+      p.videos.push(v);
+      await syncVideo(v, projId);
+    }
+  }
+
+  // Remove drafts no longer in plan
+  const toRemove = existingDrafts.filter(v => !matched.has(v.id));
+  for(const v of toRemove){
+    p.videos = p.videos.filter(x => x.id !== v.id);
+    await db.from('videos').delete().eq('id', v.id);
+  }
+
+  renderPanelBody(projId);
+  toast(`Video tasks synced from plan`);
+}
+
+async function saveDraftName(projId, vidId, name){
+  const p = projects.find(x => x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v || !name.trim()) return;
+  v.name = name.trim();
+  syncVideo(v, projId);
+}
+
+async function assignDraftVideo(projId, vidId, editorId){
+  const p = projects.find(x => x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v) return;
+  v.assigneeId = editorId ? parseInt(editorId) : null;
+  syncVideo(v, projId);
+  toast(editorId ? `${v.name} pre-assigned to ${getTeam(parseInt(editorId)).name}` : `${v.name} unassigned`);
+}
+
+async function removeDraftVideo(projId, vidId){
+  const p = projects.find(x => x.id === projId);
+  if(!p) return;
+  const v = p.videos.find(x => x.id === vidId);
+  if(!v || !confirm(`Remove draft task "${v.name}"?`)) return;
+  p.videos = p.videos.filter(x => x.id !== vidId);
+  renderPanelBody(projId);
+  await db.from('videos').delete().eq('id', vidId);
+}
+
+// ─── SHOOT DATE ──────────────────────────────────────────────────────────────
+
+function editShootDate(projId){
+  document.getElementById(`shoot-date-display-${projId}`).style.display = 'none';
+  const input = document.getElementById(`shoot-date-input-${projId}`);
+  input.style.display = 'block';
+  input.focus(); input.showPicker?.();
+}
+
+async function saveShootDate(projId){
+  const p = projects.find(x => x.id === projId);
+  if(!p) return;
+  const val = document.getElementById(`shoot-date-input-${projId}`)?.value || null;
+  p.shootDate = val;
+  renderPanelBody(projId);
+  renderCalendar();
+  toast(`Shoot date ${val ? 'set to ' + new Date(val).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : 'cleared'}`);
+  syncProject(p);
+}
+
+function cancelShootDate(projId){
+  renderPanelBody(projId);
+}
+
+// ─── LATENCY TRACKING ────────────────────────────────────────────────────────
+
+async function startVideo(projId, vidId){
+  const p = projects.find(x => x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v || v.stage !== 0 || v.startedAt) return;
+  v.startedAt = new Date().toISOString();
+  v.completedAt = null;
+  if(currentPanelId === projId) renderPanelBody(projId);
+  renderQueue();
+  toast(`⏱ Timer started: ${v.name}`);
+  await syncVideo(v, projId);
+}
+
+// ─── STAGE NOTES ─────────────────────────────────────────────────────────────
+
+async function saveStageNote(projId, stageKey){
+  const p = projects.find(x => x.id === projId);
+  if(!p) return;
+  if(!p.stageNotes) p.stageNotes = {};
+  const cfg = STAGE_NOTE_CONFIG[stageKey];
+  const el = document.getElementById(`sn-${projId}-${stageKey}`);
+  if(!el) return;
+  p.stageNotes[stageKey] = el.value.trim();
+  renderPanelBody(projId);
+  toast(`${cfg.label} saved`);
+  syncProject(p);
+}
+
+function editStageNoteLink(projId, stageKey){
+  const p = projects.find(x => x.id === projId);
+  if(!p || !p.stageNotes) return;
+  p.stageNotes[stageKey] = '';  // clear so textarea shows
+  renderPanelBody(projId);
+  setTimeout(() => document.getElementById(`sn-${projId}-${stageKey}`)?.focus(), 50);
+}
+
+// ─── CLIENTS ─────────────────────────────────────────────────────────────────
+
+function renderClients(){
+  const wrap = document.getElementById('clients-grid');
+  const active = [...new Set(projects.filter(p => p.stage < 7).map(p => p.client))];
+  wrap.innerHTML = active.map((client, idx) => {
+    const cps = projects.filter(p => p.client === client && p.stage < 7);
+    const proj = cps[0];
+    const color = cColor(client);
+    const dd = daysFromNow(proj.deadline);
+    const status = dd<0?'r':dd<=3?'y':'g';
+    const si = proj.stage;
+    const cid = client.replace(/\s+/g,'_');
+    const nextActions = {0:'Pull references',1:'Build ideation deck',2:'Finalise discovery deck',3:'Arsal to complete shoot plan',4:'Awaiting Sarosh approval',5:'Execute shoot day',6:'Videos in edit pipeline'};
+    const totalVids = cps.reduce((s,p) => s + p.videos.length, 0);
+    const deliveredVids = cps.reduce((s,p) => s + p.videos.filter(v=>v.stage===3).length, 0);
+    return `
+    <div class="cl-card" style="animation-delay:${idx*.07}s">
+      <div class="cl-body">
+        <div class="cl-top">
+          <div class="cl-av" style="background:${color}22;color:${color};border:1px solid ${color}44">${client.substring(0,2).toUpperCase()}</div>
+          <div>
+            <div class="cl-name">${client}</div>
+            <div class="cl-proj">${cps.length} project${cps.length>1?'s':''} · ${STAGES[si].label}</div>
+          </div>
+          <div class="sdot ${status}"></div>
+        </div>
+        <div class="pipe-mini">
+          ${STAGES.slice(0,7).map((_,i) => `<div class="ps${i<si?' done':i===si?' cur':''}"></div>`).join('')}
+        </div>
+        <div class="cl-details">
+          <div class="cl-det"><div class="cl-det-lbl">Active Project</div><div class="cl-det-val">${proj.name}</div></div>
+          <div class="cl-det"><div class="cl-det-lbl">Deadline</div><div class="cl-det-val" style="color:${dd<0?'var(--red)':dd<=3?'var(--yellow)':'var(--text)'}">${new Date(proj.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${dd<0?Math.abs(dd)+'d late':dd===0?'today':'in '+dd+'d'}</div></div>
+          <div class="cl-det"><div class="cl-det-lbl">Next Action</div><div class="cl-det-val" style="font-size:10px">${nextActions[si]||'—'}</div></div>
+          <div class="cl-det"><div class="cl-det-lbl">Videos</div><div class="cl-det-val">${totalVids>0?`${deliveredVids}/${totalVids} delivered`:'—'}</div></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+// ─── TEAM ────────────────────────────────────────────────────────────────────
+
+function renderMyStats(){
+  const strip = document.getElementById('my-stats-strip');
+  if(!currentUser || isAdmin()){ strip.innerHTML = ''; return; }
+
+  const m = currentUser;
+  const curMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+
+  // On-time rate (editors only) — delivered this month
+  let onTimeHtml = '';
+  if(m.isEditor){
+    const delivered = projects.flatMap(p => p.videos.filter(v =>
+      v.assigneeId === m.id && v.stage === 3 && v.deliveredAt && v.deadline &&
+      v.deliveredAt.startsWith(curMonth)
+    ));
+    const onTime = delivered.filter(v => v.deliveredAt <= v.deadline).length;
+    const rate = delivered.length ? Math.round((onTime/delivered.length)*100) : null;
+    const cls = rate === null ? 'd' : rate >= 80 ? 'g' : rate >= 60 ? 'y' : 'r';
+    const val = rate === null ? '—' : rate + '%';
+    onTimeHtml = `<div class="my-stat"><div class="my-stat-val ${cls}">${val}</div><div class="my-stat-lbl">On-time rate</div></div>`;
+  }
+
+  // Active videos in progress
+  const active = projects.flatMap(p => p.videos.filter(v => v.assigneeId === m.id && v.stage < 3)).length;
+  const activeCls = active === 0 ? 'd' : active <= 2 ? 'g' : active <= 4 ? 'y' : 'r';
+
+  // Revision flags (internal > 2, active)
+  const flags = projects.flatMap(p => p.videos.filter(v => v.assigneeId === m.id && v.revisions > 2 && v.stage < 3)).length;
+  const flagCls = flags === 0 ? 'g' : flags === 1 ? 'y' : 'r';
+
+  // Delivered this month
+  const deliveredCount = projects.flatMap(p => p.videos.filter(v =>
+    v.assigneeId === m.id && v.stage === 3 && v.deliveredAt && v.deliveredAt.startsWith(curMonth)
+  )).length;
+
+  const hour = today.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  strip.innerHTML = `<div class="my-stats-strip">
+    <div class="my-stats-greeting">
+      <div class="my-stats-greeting-name">${greeting}, ${m.name.split(' ')[0]}</div>
+      <div class="my-stats-greeting-sub">${m.role} · ${today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}</div>
+    </div>
+    <div class="my-stats-items">
+      <div class="my-stat"><div class="my-stat-val ${activeCls}">${active}</div><div class="my-stat-lbl">In progress</div></div>
+      <div class="my-stat"><div class="my-stat-val ${flagCls}">${flags}</div><div class="my-stat-lbl">Flagged</div></div>
+      <div class="my-stat"><div class="my-stat-val g">${deliveredCount}</div><div class="my-stat-lbl">Delivered this month</div></div>
+      ${onTimeHtml}
+    </div>
+  </div>`;
+}
+
+function renderTeam(){
+  renderMyStats();
+  // Capacity section
+  const editors = TEAM.filter(t => t.isEditor && !t.partTime);
+  document.getElementById('cap-section').innerHTML = `
+    <div class="cap-section-title">Editor Capacity — Today</div>
+    <div class="cap-grid">
+      ${editors.map((e,i) => {
+        const h = editorLoad(e.id);
+        const rem = remainingWorkHoursToday();
+        const cap = rem > 0 ? rem : EDITOR_HOURS;
+        const pct = Math.min(110, Math.round((h/cap)*100));
+        const cls = pct < 60 ? 'g' : pct < 100 ? 'y' : 'r';
+        const free = Math.max(0, Math.round((cap - h) * 10) / 10);
+        const badge = rem === 0 ? (h > 0 ? `${h}h queued` : 'off hours') : pct >= 100 ? 'FULL' : `${free}h left today`;
+        // List their assigned videos
+        const vids = projects.flatMap(p => p.videos.filter(v => v.assigneeId === e.id && v.stage < 3).map(v => ({...v, client:p.client})));
+        const vidList = vids.map(v => `<span class="type-badge ${v.type}" style="margin-right:3px">${v.client} ${EDIT_TYPES[v.type].label}</span>`).join('');
+        return `<div class="cap-row" style="animation-delay:${i*.06}s">
+          <div class="cap-name">${e.name}</div>
+          <div class="cap-track"><div class="cap-fill ${cls}" data-w="${pct}" style="width:0"></div></div>
+          <div class="cap-label ${cls}">${badge}</div>
+          <div style="margin-left:8px;display:flex;flex-wrap:wrap;gap:3px">${vidList}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  // Team cards
+  document.getElementById('team-grid').innerHTML = TEAM.map((member, idx) => {
+    // Stage-owned projects for non-editors
+    const stageProjects = member.ownedStages.length
+      ? projects.filter(p => member.ownedStages.includes(p.stage))
+      : [];
+    const cap = member.isEditor ? EDITOR_HOURS : 5;
+    const load = member.isEditor ? editorLoad(member.id) : stageProjects.length;
+    const pct = member.isEditor
+      ? Math.min(100, Math.round((load/cap)*100))
+      : Math.min(100, Math.round((stageProjects.length/cap)*100));
+    const wl = pct < 40 ? 'low' : pct < 80 ? 'med' : 'high';
+    const wlLabel = pct < 40 ? 'Light' : pct < 80 ? 'Moderate' : 'Heavy';
+
+    const taskItems = member.isEditor
+      ? [
+          // Active: currently editing (stage 0)
+          ...projects.flatMap(p => p.videos.filter(v => v.assigneeId === member.id && v.stage === 0 && !v.draft).map(v => {
+            const dd = daysFromNow(v.deadline);
+            return `<div class="tm-task">
+              <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
+              <div class="t-name">${p.client} · ${v.name}</div>
+              <div class="t-dl${dd<0?' od':''}">${daysLabel(dd)}</div>
+            </div>`;
+          })),
+          // Submitted: in QC or Sarosh Review (stage 1–2)
+          ...projects.flatMap(p => p.videos.filter(v => v.assigneeId === member.id && v.stage >= 1 && v.stage <= 2).map(v => {
+            return `<div class="tm-task" style="opacity:.45">
+              <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
+              <div class="t-name">${p.client} · ${v.name}</div>
+              <div style="font-size:9px;color:var(--td)">${VIDEO_STAGES[v.stage]}</div>
+            </div>`;
+          }))
+        ]
+      : [
+          // Stage-owned projects
+          ...stageProjects.map(p => {
+            const dd = daysFromNow(p.deadline);
+            const urgent = dd <= 2;
+            return `<div class="tm-task${urgent?' overdue':''}">
+              <div class="t-pill" style="${urgent?'background:var(--rdim);color:var(--red);border-color:rgba(255,77,94,.25)':''}">${STAGES[p.stage].label}</div>
+              <div class="t-name">${p.client} · ${p.name}</div>
+              <div class="t-dl${dd<0?' od':''}">${daysLabel(dd)}</div>
+            </div>`;
+          }),
+          // Video-level Sarosh Review (v.stage === 2) for Sarosh only
+          ...(member.id === 1 ? projects.flatMap(p => p.videos.filter(v => v.stage === 2).map(v => {
+            const dd = daysFromNow(v.deadline);
+            return `<div class="tm-task">
+              <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
+              <div class="t-name">${p.client} · ${v.name}</div>
+              <div class="t-dl${dd<0?' od':''}">${daysLabel(dd)}</div>
+            </div>`;
+          })) : [])
+        ];
+
+    // Flagged videos (excess revisions) for editors
+    let flagSection = '';
+    if(member.isEditor){
+      const flagged = projects.flatMap(p => p.videos.filter(v =>
+        v.assigneeId === member.id && v.revisions > 2 && v.stage < 3
+      ).map(v => ({...v, client: p.client})));
+      if(flagged.length > 0){
+        flagSection = `<div class="latency-section">
+          <div class="latency-section-title" style="color:var(--red)">⚠ Excess Revisions</div>
+          ${flagged.map(v => `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;padding:5px 8px;background:var(--rdim);border:1px solid rgba(255,77,94,.2);border-radius:var(--rs)">
+            <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
+            <span style="font-size:10px;color:var(--text);flex:1">${v.client} · ${v.name}</span>
+            <span style="font-size:9px;color:var(--red);font-weight:600">${v.revisions} int${v.clientRevs>0?` · ${v.clientRevs} client`:''}</span>
+          </div>`).join('')}
+        </div>`;
+      }
+    }
+
+    // Latency rating for editors
+    let latencySection = '';
+    if(member.isEditor){
+      const curMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+      const completedVids = projects.flatMap(p => p.videos.filter(v =>
+        v.assigneeId === member.id && v.latencyScore != null &&
+        v.completedAt && v.completedAt.startsWith(curMonth)
+      ));
+      if(completedVids.length > 0){
+        const avg = completedVids.reduce((s,v) => s + v.latencyScore, 0) / completedVids.length;
+        const avgR = Math.round(avg * 100) / 100;
+        const cls = avgR <= 1.0 ? 'fast' : avgR <= 1.3 ? 'ok' : 'slow';
+        const label = avgR <= 1.0 ? 'On time' : avgR <= 1.3 ? 'Slightly slow' : 'Needs attention';
+        latencySection = `<div class="latency-section">
+          <div class="latency-section-title">Latency — this month</div>
+          <div class="latency-row">
+            <span class="latency-score-big ${cls}">${avgR.toFixed(1)}×</span>
+            <div>
+              <div style="font-size:10px;color:var(--tm)">${label}</div>
+              <div class="latency-meta">${completedVids.length} video${completedVids.length>1?'s':''} tracked</div>
+            </div>
+          </div>
+        </div>`;
+      } else {
+        latencySection = `<div class="latency-section">
+          <div class="latency-section-title">Latency — this month</div>
+          <div style="font-size:10px;color:var(--td);font-style:italic">No completed videos tracked yet</div>
+        </div>`;
+      }
+    }
+
+    return `<div class="tm-card" style="animation-delay:${idx*.05}s">
+      <div class="tm-top">
+        <div class="av lg">${member.initials}</div>
+        <div class="tm-info"><div class="tm-name">${member.name}</div><div class="tm-role">${member.role}</div></div>
+        <div class="wl-badge ${wl}">${wlLabel}</div>
+      </div>
+      <div class="wl-wrap">
+        <div class="wl-lbl"><span>Workload</span><span>${member.isEditor ? load+'h/'+cap+'h' : (member.id === 1 ? stageProjects.length + projects.flatMap(p=>p.videos.filter(v=>v.stage===2)).length : stageProjects.length)+' active'}</span></div>
+        <div class="wl-track"><div class="wl-fill ${wl}" data-w="${pct}" style="width:0"></div></div>
+      </div>
+      <div class="tm-tasks">${taskItems.length ? taskItems.join('') : '<div class="no-tasks">No active tasks</div>'}</div>
+      ${flagSection}
+      ${latencySection}
+    </div>`;
+  }).join('');
+
+  animateBars();
+}
+
+// ─── EFFICIENCY ──────────────────────────────────────────────────────────────
+
+let activePerfChip = null;
+
+function renderPerfChips(){
+  document.getElementById('perf-chips').innerHTML = TEAM.map(m =>
+    `<div class="perf-chip${activePerfChip===m.id?' active':''}" onclick="showPersonDrilldown(${m.id})">
+      <div class="perf-chip-init">${m.initials}</div>
+      <div>
+        <div style="font-weight:500;color:var(--fg)">${m.name.split(' ')[0]}</div>
+        <div style="font-size:10px;color:var(--td)">${m.role}</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function showPersonDrilldown(id){
+  if(activePerfChip === id){ activePerfChip = null; renderPerfChips(); document.getElementById('perf-drilldown').classList.remove('open'); return; }
+  activePerfChip = id;
+  renderPerfChips();
+  const m = TEAM.find(t => t.id === id);
+  const allVids = projects.flatMap(p => p.videos.map(v => ({...v, client:p.client, projName:p.name, projStage:p.stage})));
+  const curMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+
+  let statsHTML = '', listsHTML = '';
+
+  if(m.isEditor){
+    // ── EDITOR DRILLDOWN ──
+    const myVids = allVids.filter(v => v.assigneeId === id);
+    const deliveredMonth = myVids.filter(v => v.stage === 3 && v.deliveredAt?.startsWith(curMonth));
+    const scoredMonth = myVids.filter(v => v.latencyScore != null && v.completedAt?.startsWith(curMonth));
+    const avgLatency = scoredMonth.length ? Math.round(scoredMonth.reduce((s,v)=>s+v.latencyScore,0)/scoredMonth.length*100)/100 : null;
+    const totalIntRevs = myVids.reduce((s,v)=>s+(v.revisions||0),0);
+    const totalClientRevs = myVids.reduce((s,v)=>s+(v.clientRevs||0),0);
+    const flagged = myVids.filter(v => v.revisions > 2);
+    const active = myVids.filter(v => v.stage === 0 && !v.draft);
+    const inReview = myVids.filter(v => v.stage >= 1 && v.stage <= 2);
+
+    const latCls = avgLatency == null ? '' : avgLatency <= 1.0 ? 'g' : avgLatency <= 1.3 ? 'y' : 'r';
+    statsHTML = `
+      <div class="pd-stat"><div class="pd-stat-lbl">Delivered This Month</div><div class="pd-stat-val g">${deliveredMonth.length}</div></div>
+      <div class="pd-stat"><div class="pd-stat-lbl">Avg Latency (Month)</div><div class="pd-stat-val ${latCls}">${avgLatency != null ? avgLatency.toFixed(1)+'×' : '—'}</div><div class="pd-stat-sub">${scoredMonth.length} scored</div></div>
+      <div class="pd-stat"><div class="pd-stat-lbl">Internal Revisions</div><div class="pd-stat-val ${totalIntRevs > 4 ? 'r' : totalIntRevs > 1 ? 'y' : 'g'}">${totalIntRevs}</div><div class="pd-stat-sub">all time</div></div>
+      <div class="pd-stat"><div class="pd-stat-lbl">Client Revisions</div><div class="pd-stat-val ${totalClientRevs > 2 ? 'y' : ''}">${totalClientRevs}</div><div class="pd-stat-sub">all time</div></div>
+      <div class="pd-stat"><div class="pd-stat-lbl">Flagged Videos</div><div class="pd-stat-val ${flagged.length > 0 ? 'r' : 'g'}">${flagged.length}</div><div class="pd-stat-sub">3+ internal revs</div></div>
+      <div class="pd-stat"><div class="pd-stat-lbl">Currently Active</div><div class="pd-stat-val">${active.length}</div><div class="pd-stat-sub">${inReview.length} in QC/Review</div></div>`;
+
+    const activeList = active.map(v=>`<div class="pd-list-item"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span><span style="flex:1">${v.client} · ${v.name}</span>${v.startedAt?`<span style="font-size:10px;color:var(--accent)">⏱ ${workingHoursBetween(v.startedAt,new Date().toISOString()).toFixed(1)}h in</span>`:'<span style="font-size:10px;color:var(--td)">not started</span>'}</div>`).join('') || `<div class="pd-empty">No active edits</div>`;
+    const flagList = flagged.map(v=>`<div class="pd-list-item"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span><span style="flex:1">${v.client} · ${v.name}</span><span style="font-size:10px;color:var(--red)">${v.revisions} int${v.clientRevs>0?` · ${v.clientRevs} cl`:''}</span><span style="font-size:10px;color:var(--td);margin-left:6px">${v.stage===3?'Delivered':VIDEO_STAGES[v.stage]}</span></div>`).join('') || '';
+
+    listsHTML = `
+      <div class="pd-list-title">Active Edits</div>${activeList}
+      ${flagged.length ? `<div class="pd-list-title" style="color:var(--red)">⚠ Flagged</div>${flagList}` : ''}`;
+
+  } else if(m.id === 1){
+    // ── SAROSH DRILLDOWN ──
+    const pendingReview = allVids.filter(v => v.stage === 2);
+    const pendingApproval = projects.filter(p => p.stage === 4);
+    const sentBack = allVids.filter(v => (v.revisions||0) > 0); // videos that came back from review (proxy)
+    const deliveredAll = allVids.filter(v => v.stage === 3 && v.deliveredAt?.startsWith(curMonth));
+
+    statsHTML = `
+      <div class="pd-stat"><div class="pd-stat-lbl">Pending His Review</div><div class="pd-stat-val ${pendingReview.length > 2 ? 'r' : pendingReview.length > 0 ? 'y' : 'g'}">${pendingReview.length}</div><div class="pd-stat-sub">in Sarosh Review now</div></div>
+      <div class="pd-stat"><div class="pd-stat-lbl">Pending Approval</div><div class="pd-stat-val ${pendingApproval.length > 0 ? 'y' : 'g'}">${pendingApproval.length}</div><div class="pd-stat-sub">at Sarosh Approval stage</div></div>
+      <div class="pd-stat"><div class="pd-stat-lbl">Delivered This Month</div><div class="pd-stat-val g">${deliveredAll.length}</div><div class="pd-stat-sub">across all projects</div></div>`;
+
+    const reviewList = pendingReview.map(v=>`<div class="pd-list-item"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span><span style="flex:1">${v.client} · ${v.name}</span><span style="font-size:10px;color:var(--yellow)">${v.deadline ? daysLabel(daysFromNow(v.deadline)) : ''}</span></div>`).join('') || `<div class="pd-empty">Nothing waiting on Sarosh</div>`;
+    const approvalList = pendingApproval.map(p=>`<div class="pd-list-item"><span style="flex:1;font-weight:500">${p.client} · ${p.name}</span><span style="font-size:10px;color:var(--yellow)">${daysLabel(daysFromNow(p.deadline))}</span></div>`).join('') || `<div class="pd-empty">No projects awaiting approval</div>`;
+
+    listsHTML = `
+      <div class="pd-list-title">Videos Waiting on Review</div>${reviewList}
+      <div class="pd-list-title">Projects Waiting on Approval</div>${approvalList}`;
+
+  } else {
+    // ── NON-EDITOR / NON-SAROSH DRILLDOWN (Ops, SMM, Arsal) ──
+    const ownedStageProjects = projects.filter(p => m.ownedStages.includes(p.stage));
+    const avgDays = ownedStageProjects.length ? Math.round(ownedStageProjects.reduce((s,p)=>s+(p.daysInStage||0),0)/ownedStageProjects.length*10)/10 : null;
+    const overdue = ownedStageProjects.filter(p => daysFromNow(p.deadline) < 0);
+    const upcoming = projects.filter(p => m.ownedStages.includes(p.stage - 1)); // next up
+
+    statsHTML = `
+      <div class="pd-stat"><div class="pd-stat-lbl">Active in Owned Stages</div><div class="pd-stat-val ${ownedStageProjects.length > 3 ? 'y' : 'g'}">${ownedStageProjects.length}</div><div class="pd-stat-sub">${m.ownedStages.map(s=>STAGES[s].label).join(', ') || '—'}</div></div>
+      <div class="pd-stat"><div class="pd-stat-lbl">Avg Days in Stage</div><div class="pd-stat-val ${avgDays == null ? '' : avgDays > 3 ? 'r' : avgDays > 1.5 ? 'y' : 'g'}">${avgDays != null ? avgDays+'d' : '—'}</div><div class="pd-stat-sub">current projects only</div></div>
+      <div class="pd-stat"><div class="pd-stat-lbl">Overdue in Stage</div><div class="pd-stat-val ${overdue.length > 0 ? 'r' : 'g'}">${overdue.length}</div><div class="pd-stat-sub">past project deadline</div></div>`;
+
+    // Arsal: also show upcoming shoots
+    if(m.id === 7){
+      const shoots = projects.filter(p => p.shootDate).map(p => ({...p, shootD: new Date(p.shootDate)})).filter(p => p.shootD >= new Date(today)).sort((a,b)=>a.shootD-b.shootD).slice(0,5);
+      const shootList = shoots.map(p=>`<div class="pd-list-item"><span style="flex:1;font-weight:500">${p.client} · ${p.name}</span><span style="font-size:10px;color:var(--accent)">${new Date(p.shootDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span></div>`).join('') || `<div class="pd-empty">No upcoming shoots logged</div>`;
+      listsHTML += `<div class="pd-list-title">Upcoming Shoots</div>${shootList}`;
+    }
+
+    const stageList = ownedStageProjects.map(p=>`<div class="pd-list-item"><span style="font-size:10px;color:var(--accent);font-family:var(--mono);margin-right:4px">${STAGES[p.stage].label}</span><span style="flex:1">${p.client} · ${p.name}</span><span style="font-size:10px;color:var(--td)">${p.daysInStage||0}d in stage</span><span style="font-size:10px;color:${daysFromNow(p.deadline)<0?'var(--red)':daysFromNow(p.deadline)<3?'var(--yellow)':'var(--td)'};margin-left:8px">${daysLabel(daysFromNow(p.deadline))}</span></div>`).join('') || `<div class="pd-empty">No active projects in owned stages</div>`;
+    listsHTML = `<div class="pd-list-title">Current Projects in Stage</div>${stageList}` + listsHTML;
+  }
+
+  document.getElementById('perf-drilldown').innerHTML = `
+    <div class="pd-header">
+      <div class="pd-avatar">${m.initials}</div>
+      <div><div class="pd-name">${m.name}</div><div class="pd-role">${m.role}</div></div>
+    </div>
+    <div class="pd-grid">${statsHTML}</div>
+    ${listsHTML}`;
+  document.getElementById('perf-drilldown').classList.add('open');
+  animateBars();
+}
+
+function renderEfficiency(){
+  const totalFlagged = projects.flatMap(p => p.videos.filter(v => v.revisions > 2)).length;
+  const flagCls = totalFlagged === 0 ? 'g' : totalFlagged <= 2 ? 'y' : 'r';
+  document.getElementById('eff-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-lbl">Deadline Hit Rate</div><div class="stat-val g">78%</div><div class="stat-sub">↑ 4% from last month</div></div>
+    <div class="stat-card"><div class="stat-lbl">Avg Project Duration</div><div class="stat-val c">18d</div><div class="stat-sub">Across all stages</div></div>
+    <div class="stat-card"><div class="stat-lbl">Videos Delivered (Mar)</div><div class="stat-val y">15</div><div class="stat-sub">Target: 18</div></div>
+    <div class="stat-card"><div class="stat-lbl">Excess Revisions</div><div class="stat-val ${flagCls}">${totalFlagged}</div><div class="stat-sub">${totalFlagged === 0 ? 'All clean' : totalFlagged === 1 ? '1 video flagged' : totalFlagged + ' videos flagged'}</div></div>`;
+
+  // Real stage bottleneck: avg daysInStage per stage across active projects
+  // Edit uses actual working hours from startedAt/completedAt (convert to days via 8.5h/day)
+  const stageTimes = STAGES.map((s, idx) => {
+    const active = projects.filter(p => p.stage === idx);
+    if(!active.length) return null;
+    const avg = Math.round(active.reduce((sum, p) => sum + (p.daysInStage||0), 0) / active.length * 10) / 10;
+    return {n: s.label, d: avg, count: active.length};
+  }).filter(Boolean);
+
+  // Edit stage: supplement with real avg working hours from completed videos
+  const completedEdits = projects.flatMap(p => p.videos.filter(v => v.startedAt && v.completedAt));
+  const avgEditHours = completedEdits.length
+    ? Math.round(completedEdits.reduce((s,v) => s + (v.actualHours||0), 0) / completedEdits.length * 10) / 10
+    : null;
+  const editEntry = avgEditHours != null
+    ? {n: 'Edit (avg)', d: Math.round(avgEditHours / 8.5 * 10) / 10, count: completedEdits.length, isReal: true}
+    : null;
+
+  // Real editor on-time rate: delivered videos where deliveredAt <= deadline
+  const editors = TEAM.filter(t => t.isEditor && !t.partTime);
+  const editorOnTime = editors.map(e => {
+    const delivered = projects.flatMap(p => p.videos.filter(v =>
+      v.assigneeId === e.id && v.stage === 3 && v.deliveredAt && v.deadline
+    ));
+    if(!delivered.length) return {name: e.name, rate: null, onTime: 0, total: 0};
+    const onTime = delivered.filter(v => new Date(v.deliveredAt) <= new Date(v.deadline)).length;
+    return {name: e.name, rate: Math.round((onTime / delivered.length) * 100), onTime, total: delivered.length};
+  });
+
+  // Live deliverables from actual data
+  const curMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+  const editorDels = editors.map(e => {
+    const c = projects.flatMap(p => p.videos.filter(v =>
+      v.assigneeId === e.id && v.stage === 3 && v.deliveredAt && v.deliveredAt.startsWith(curMonth)
+    )).length;
+    return {name: e.name, c};
+  });
+  const maxDels = Math.max(...editorDels.map(e => e.c), 1);
+
+  // Live latency data
+  const editorLatency = editors.map(e => {
+    const vids = projects.flatMap(p => p.videos.filter(v =>
+      v.assigneeId === e.id && v.latencyScore != null &&
+      v.completedAt && v.completedAt.startsWith(curMonth)
+    ));
+    const score = vids.length ? vids.reduce((s,v) => s + v.latencyScore, 0) / vids.length : null;
+    return {name: e.name, score: score != null ? Math.round(score*100)/100 : null, count: vids.length};
+  });
+  const hasLatency = editorLatency.some(e => e.score != null);
+
+  document.getElementById('charts-grid').innerHTML = `
+    <div class="ch-card">
+      <div class="ch-title">Editor On-Time Rate — All Time</div>
+      ${editorOnTime.some(e => e.total > 0)
+        ? `<div class="bar-chart">${editorOnTime.map(e => {
+            if(e.rate === null) return `<div class="bar-row"><div class="bar-lbl">${e.name.split(' ')[0]}</div><div style="font-size:9px;color:var(--td);font-style:italic;padding-left:4px">No deliveries yet</div></div>`;
+            const cls = e.rate>=85?'g':e.rate>=70?'y':'r';
+            return `<div class="bar-row"><div class="bar-lbl">${e.name.split(' ')[0]}</div><div class="bar-track"><div class="bar-fill ${cls}" data-w="${e.rate}" style="width:0"></div></div><div class="bar-val">${e.rate}%</div></div>`;
+          }).join('')}</div>
+          <div style="font-size:9px;color:var(--td);margin-top:10px">Based on delivered videos vs their deadline</div>`
+        : `<div style="font-size:10px;color:var(--td);font-style:italic;padding:10px 0">No delivered videos yet</div>`
+      }
+    </div>
+    <div class="ch-card">
+      <div class="ch-title">Current Stage Bottleneck</div>
+      ${stageTimes.length || editEntry ? `
+        <div class="bar-chart">
+          ${stageTimes.map(s => {
+            const maxD = Math.max(...[...stageTimes.map(x=>x.d), editEntry?.d||0]);
+            const cls = s.d<=1?'g':s.d<=3?'y':'r';
+            const w = Math.round((s.d / Math.max(maxD,1)) * 100);
+            return `<div class="bar-row"><div class="bar-lbl">${s.n}</div><div class="bar-track"><div class="bar-fill ${cls}" data-w="${w}" style="width:0"></div></div><div class="bar-val">${s.d}d <span style="font-size:8px;color:var(--td)">(${s.count})</span></div></div>`;
+          }).join('')}
+          ${editEntry ? (() => {
+            const maxD = Math.max(...[...stageTimes.map(x=>x.d), editEntry.d]);
+            const cls = editEntry.d<=0.3?'g':editEntry.d<=0.6?'y':'r';
+            const w = Math.round((editEntry.d / Math.max(maxD,1)) * 100);
+            return `<div class="bar-row"><div class="bar-lbl">${editEntry.n}</div><div class="bar-track"><div class="bar-fill ${cls}" data-w="${w}" style="width:0"></div></div><div class="bar-val">${editEntry.d}d <span style="font-size:8px;color:var(--accent)">live</span></div></div>`;
+          })() : ''}
+        </div>
+        <div style="font-size:9px;color:var(--td);margin-top:10px">Avg days in stage — active projects only · Edit uses real working-hour data</div>`
+      : `<div style="font-size:10px;color:var(--td);font-style:italic;padding:10px 0">No active projects yet</div>`}
+    </div>
+    <div class="ch-card">
+      <div class="ch-title">Videos Delivered — ${today.toLocaleDateString('en-GB',{month:'short',year:'numeric'})}</div>
+      <div class="bar-chart">${editorDels.map(e => {
+        const w = Math.round((e.c/maxDels)*100);
+        return `<div class="bar-row"><div class="bar-lbl">${e.name.split(' ')[0]}</div><div class="bar-track"><div class="bar-fill g" data-w="${w}" style="width:0"></div></div><div class="bar-val">${e.c}</div></div>`;
+      }).join('')}</div>
+    </div>
+    <div class="ch-card">
+      <div class="ch-title">Editor Latency — ${today.toLocaleDateString('en-GB',{month:'short',year:'numeric'})}</div>
+      ${hasLatency
+        ? `<div class="bar-chart">${editorLatency.map(e => {
+            if(e.score == null) return `<div class="bar-row"><div class="bar-lbl">${e.name.split(' ')[0]}</div><div style="font-size:9px;color:var(--td);font-style:italic">No data</div></div>`;
+            const cls = e.score<=1.0?'g':e.score<=1.3?'y':'r';
+            const w = Math.min(100, Math.round((e.score/2)*100));
+            return `<div class="bar-row"><div class="bar-lbl">${e.name.split(' ')[0]}</div><div class="bar-track"><div class="bar-fill ${cls}" data-w="${w}" style="width:0"></div></div><div class="bar-val" style="color:${e.score<=1.0?'var(--accent)':e.score<=1.3?'var(--yellow)':'var(--red)'}">${e.score.toFixed(1)}×</div></div>`;
+          }).join('')}</div>
+          <div style="font-size:9px;color:var(--td);margin-top:10px">1.0× = on estimated time · &lt;1.0× = faster · &gt;1.3× = slower</div>`
+        : `<div style="font-size:10px;color:var(--td);font-style:italic;padding:10px 0">No videos tracked yet — editors need to use ▶ Start before editing</div>`
+      }
+    </div>`;
+
+  // Per-editor flagged videos (all stages, including delivered — monthly review)
+  const flaggedByEditor = editors.map(e => {
+    const vids = projects.flatMap(p => p.videos.filter(v =>
+      v.assigneeId === e.id && v.revisions > 2
+    ).map(v => ({...v, client: p.client})));
+    return {editor: e, vids};
+  }).filter(x => x.vids.length > 0);
+
+  const flagSection = flaggedByEditor.length > 0 ? `
+    <div class="ch-card" style="grid-column:1/-1">
+      <div class="ch-title">⚠ Excess Internal Revisions — All Time</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        ${flaggedByEditor.map(({editor, vids}) => `
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="font-size:10px;color:var(--tm);font-weight:600;letter-spacing:.04em">${editor.name}</div>
+            ${vids.map(v => `
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--rdim);border:1px solid rgba(255,77,94,.18);border-radius:var(--rs)">
+                <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
+                <span style="font-size:11px;color:var(--fg);flex:1">${v.client} · ${v.name}</span>
+                <span style="font-size:9px;color:var(--red);font-weight:600">${v.revisions} int${v.clientRevs>0?` · ${v.clientRevs} client`:''}</span>
+                <span style="font-size:9px;color:var(--td)">${v.stage === 3 ? 'Delivered' : VIDEO_STAGES[v.stage]}</span>
+              </div>`).join('')}
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  const chartsEl = document.getElementById('charts-grid');
+  if(flagSection) chartsEl.insertAdjacentHTML('beforeend', flagSection);
+
+  // ── Week range helpers ──
+  const todayD = new Date(today);
+  const dow = todayD.getDay(); // 0=Sun
+  const weekStart = new Date(todayD); weekStart.setDate(todayD.getDate() - (dow === 0 ? 6 : dow - 1)); weekStart.setHours(0,0,0,0);
+  const weekEnd   = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6); weekEnd.setHours(23,59,59,999);
+  const inWeek = iso => { if(!iso) return false; const d = new Date(iso); return d >= weekStart && d <= weekEnd; };
+  const fmt = d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  document.getElementById('summary-title').textContent = `Week of ${fmt(weekStart)} – ${fmt(weekEnd)}, ${weekStart.getFullYear()}`;
+
+  // ── Real stats ──
+  const allVids = projects.flatMap(p => p.videos.map(v => ({...v, client: p.client, projectDeadline: p.deadline})));
+
+  // 1. Videos delivered this week
+  const deliveredThisWeek = allVids.filter(v => v.stage === 3 && inWeek(v.deliveredAt));
+  const deliveredCount = deliveredThisWeek.length;
+
+  // 2. Currently in pipeline (Edit + QC + Sarosh Review)
+  const inPipeline = allVids.filter(v => v.stage >= 0 && v.stage <= 2 && !v.draft);
+
+  // 3. Overdue projects
+  const overdue = projects.filter(p => p.stage < 7 && daysFromNow(p.deadline) < 0);
+
+  // 4. Top editor this week by deliveries
+  const editorDelsWeek = TEAM.filter(t => t.isEditor && !t.partTime).map(e => ({
+    name: e.name.split(' ')[0],
+    count: allVids.filter(v => v.assigneeId === e.id && v.stage === 3 && inWeek(v.deliveredAt)).length
+  })).filter(e => e.count > 0).sort((a,b) => b.count - a.count);
+  const topEditor = editorDelsWeek.length ? `${editorDelsWeek[0].name} (${editorDelsWeek[0].count})` : 'No deliveries yet';
+
+  // 5. Client revisions received this week (any video with clientRevs > 0 currently back in pipeline)
+  const clientRevActive = allVids.filter(v => (v.clientRevs||0) > 0 && v.stage < 3);
+
+  // 6. Active internal revision flags
+  const flaggedActive = allVids.filter(v => v.revisions > 2 && v.stage < 3);
+
+  const summaryVal = (v, cls='') => `<div class="sum-item-val${cls?' '+cls:''}">${v}</div>`;
+  document.getElementById('summary-grid').innerHTML = `
+    <div class="sum-item">
+      <div class="sum-item-lbl">Delivered This Week</div>
+      ${summaryVal(deliveredCount, deliveredCount > 0 ? 'g' : '')}
+    </div>
+    <div class="sum-item">
+      <div class="sum-item-lbl">In Pipeline Now</div>
+      ${summaryVal(`${inPipeline.length} video${inPipeline.length !== 1 ? 's' : ''}`)}
+    </div>
+    <div class="sum-item">
+      <div class="sum-item-lbl">Overdue Projects</div>
+      ${summaryVal(overdue.length === 0 ? 'None' : overdue.length, overdue.length > 0 ? 'r' : 'g')}
+    </div>
+    <div class="sum-item">
+      <div class="sum-item-lbl">Top Editor This Week</div>
+      ${summaryVal(topEditor, editorDelsWeek.length ? 'g' : '')}
+    </div>
+    <div class="sum-item">
+      <div class="sum-item-lbl">Client Revisions Active</div>
+      ${summaryVal(clientRevActive.length === 0 ? 'None' : clientRevActive.length, clientRevActive.length > 0 ? 'y' : 'g')}
+    </div>
+    <div class="sum-item">
+      <div class="sum-item-lbl">Flagged (Excess Int. Revs)</div>
+      ${summaryVal(flaggedActive.length === 0 ? 'None' : `${flaggedActive.length} active`, flaggedActive.length > 0 ? 'r' : 'g')}
+    </div>`;
+
+  renderPerfChips();
+  animateBars();
+}
+
+function animateBars(){
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll('.bar-fill[data-w], .wl-fill[data-w], .cap-fill[data-w]').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  }));
+}
+
+function toggleSummary(){
+  document.getElementById('summary-panel').classList.toggle('open');
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+
+function openModal(){
+  document.getElementById('f-manager').innerHTML = TEAM.map(t => `<option value="${t.id}"${t.id===2?' selected':''}>${t.name} · ${t.role}</option>`).join('');
+  document.getElementById('f-client').value = '';
+  document.getElementById('f-project').value = '';
+  document.getElementById('f-deadline').value = '';
+  document.getElementById('f-shootdate').value = '';
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('modal-ov').classList.remove('open'); }
+
+async function createProject(){
+  const client = document.getElementById('f-client').value.trim();
+  const name = document.getElementById('f-project').value.trim();
+  const managerId = parseInt(document.getElementById('f-manager').value);
+  if(!client || !name){ toast('Please fill in client and project name'); return; }
+  const deadline = document.getElementById('f-deadline').value || new Date(today.getTime() + 21*86400000).toISOString().split('T')[0];
+  const shootDate = document.getElementById('f-shootdate').value || null;
+  const { data, error } = await db.from('projects').insert({
+    client, name, stage:0, manager_id:managerId, deadline,
+    days_in_stage:0, sarosh_review:true, edit_plan:[], stage_notes:{}, shoot_date:shootDate
+  }).select().single();
+  if(error){ toast('⚠ Error creating project'); console.error(error); return; }
+  projects.push({id:data.id, client, name, stage:0, managerId, deadline, daysInStage:0, saroshReview:true, editPlan:[], videos:[], stageNotes:{}, shootDate, createdAt:data.created_at||new Date().toISOString()});
+  closeModal();
+  renderAll();
+  toast(`✓ Created: ${client} · ${name}`);
+}
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+
+function switchTab(name, btn){
+  if(name === 'efficiency' && !isAdmin()){ toast('⚠ Access restricted'); return; }
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name === 'efficiency'){ renderEfficiency(); }
+  if(name === 'team') animateBars();
+  if(name === 'calendar') renderCalendar();
+  if(name === 'queue') renderQueue();
+}
+
+// ─── CALENDAR ────────────────────────────────────────────────────────────────
+
+let calYear = today.getFullYear();
+let calMonth = today.getMonth();
+
+const CAL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CAL_DOWS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function renderCalendar(){
+  const wrap = document.getElementById('cal-wrap');
+  if(!wrap) return;
+
+  document.getElementById('cal-month-label').textContent = `${CAL_MONTHS[calMonth]} ${calYear}`;
+
+  // Build events map: dateStr → [{type, label, cls}]
+  const evMap = {};
+  function addEv(dateStr, ev){ if(!evMap[dateStr]) evMap[dateStr] = []; evMap[dateStr].push(ev); }
+
+  const todayStr = today.toISOString().split('T')[0];
+
+  projects.forEach(p => {
+    // Project deadline
+    if(p.deadline && p.stage < 7){
+      const dd = daysFromNow(p.deadline);
+      const cls = dd < 0 ? 'proj-over' : dd <= 3 ? 'proj-warn' : 'proj-safe';
+      addEv(p.deadline, {cls, label:`📁 ${p.client} · ${p.name}`});
+    }
+    // Shoot day — show on the actual shoot date if set
+    if(p.shootDate && p.stage < 7){
+      addEv(p.shootDate, {cls:'shoot-day', label:`📷 Shoot: ${p.client} · ${p.name}`});
+    }
+    // Video deadlines
+    p.videos.forEach(v => {
+      if(v.deadline && v.stage < 3){
+        addEv(v.deadline, {cls:'vid-dl', label:`🎬 ${p.client} · ${v.name}`});
+      }
+    });
+  });
+
+  // Build grid
+  const firstDay = new Date(calYear, calMonth, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Mon=0, Sun=6
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+  let html = CAL_DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  // Prev month overflow
+  for(let i = startDow - 1; i >= 0; i--){
+    html += `<div class="cal-day other-month"><div class="cal-day-num">${daysInPrev - i}</div></div>`;
+  }
+
+  // Current month
+  for(let d = 1; d <= daysInMonth; d++){
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === todayStr;
+    const dow = new Date(calYear, calMonth, d).getDay();
+    const isWeekend = dow === 0 || dow === 6;
+    const dayEvs = evMap[dateStr] || [];
+    const shown = dayEvs.slice(0, 3);
+    const extra = dayEvs.length - shown.length;
+    const evHTML = shown.map(ev => `<div class="cal-event ${ev.cls}" title="${ev.label}">${ev.label}</div>`).join('');
+    const moreHTML = extra > 0 ? `<div class="cal-more">+${extra} more</div>` : '';
+    html += `<div class="cal-day${isToday?' today':''}${isWeekend?' weekend':''}">
+      <div class="cal-day-num">${d}</div>
+      ${evHTML}${moreHTML}
+    </div>`;
+  }
+
+  // Next month overflow
+  const totalCells = startDow + daysInMonth;
+  const trailing = (7 - (totalCells % 7)) % 7;
+  for(let d = 1; d <= trailing; d++){
+    html += `<div class="cal-day other-month"><div class="cal-day-num">${d}</div></div>`;
+  }
+
+  wrap.innerHTML = html;
+}
+
+function calPrev(){
+  calMonth--;
+  if(calMonth < 0){ calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function calNext(){
+  calMonth++;
+  if(calMonth > 11){ calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+// ─── VIDEO QUEUE ──────────────────────────────────────────────────────────────
+
+function renderQueue(){
+  const body = document.getElementById('queue-body');
+  if(!body) return;
+
+  const sortEl = document.getElementById('queue-sort');
+  const filterEl = document.getElementById('queue-filter-client');
+  // Hide sort/filter controls for limited users
+  const admin = isAdmin();
+  if(sortEl) sortEl.style.display = admin ? '' : 'none';
+  if(filterEl) filterEl.style.display = admin ? '' : 'none';
+  const sortBy = sortEl ? sortEl.value : 'client-due';
+  const filterClient = filterEl ? filterEl.value : '';
+
+  // Populate client filter dropdown (once)
+  const clients = [...new Set(projects.map(p => p.client))].sort();
+  if(filterEl && filterEl.options.length <= 1){
+    clients.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      filterEl.appendChild(opt);
+    });
+  }
+
+  // Flatten all non-draft videos across all projects
+  let allVids = projects.flatMap(p =>
+    p.videos.filter(v => !v.draft).map(v => ({ ...v, projectId: p.id, projectName: p.name, client: p.client }))
+  );
+
+  // Limited users only see their assigned videos
+  if(!isAdmin() && currentUser){
+    allVids = allVids.filter(v => v.assigneeId === currentUser.id);
+  }
+
+  // Apply client filter
+  if(filterClient) allVids = allVids.filter(v => v.client === filterClient);
+
+  // Stats
+  const unstarted = allVids.filter(v => !v.assigneeId && v.stage === 0).length;
+  const inProg = allVids.filter(v => v.assigneeId && v.stage < 3).length;
+  const done = allVids.filter(v => v.stage === 3).length;
+  const statsEl = document.getElementById('queue-stats');
+  if(statsEl) statsEl.textContent = `${unstarted} unstarted · ${inProg} in progress · ${done} delivered`;
+
+  // Sort
+  allVids.sort((a, b) => {
+    if(sortBy === 'client-due'){
+      if(!a.clientDueDate && !b.clientDueDate) return 0;
+      if(!a.clientDueDate) return 1;
+      if(!b.clientDueDate) return -1;
+      return a.clientDueDate.localeCompare(b.clientDueDate);
+    }
+    if(sortBy === 'internal'){
+      if(!a.deadline && !b.deadline) return 0;
+      if(!a.deadline) return 1;
+      if(!b.deadline) return -1;
+      return a.deadline.localeCompare(b.deadline);
+    }
+    if(sortBy === 'stage') return a.stage - b.stage;
+    return 0;
+  });
+
+  // Group by client
+  const grouped = {};
+  allVids.forEach(v => {
+    if(!grouped[v.client]) grouped[v.client] = [];
+    grouped[v.client].push(v);
+  });
+
+  if(allVids.length === 0){
+    body.innerHTML = '<div class="queue-empty">No videos in queue. Create a project and add videos.</div>';
+    return;
+  }
+
+  body.innerHTML = Object.entries(grouped).map(([client, vids]) => {
+    const color = CLIENT_COLORS[client] || CLIENT_COLORS['default'];
+    const rows = vids.map(v => renderQueueRow(v)).join('');
+    return `<div class="queue-client-group">
+      <div class="queue-client-header">
+        <div class="queue-client-dot" style="background:${color};box-shadow:0 0 6px ${color}40"></div>
+        <div class="queue-client-name">${client}</div>
+        <div class="queue-client-count">${vids.length} video${vids.length>1?'s':''}</div>
+      </div>
+      <table class="queue-table">
+        <thead><tr>
+          <th>Video</th><th>Type</th><th>Client Due</th>
+          <th>Internal Deadline</th><th>Buffer</th><th>Assigned To</th><th>Stage</th>
+          ${!isAdmin() ? '<th>Actions</th>' : ''}
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+function renderQueueRow(v){
+  const isUnstarted = !v.assigneeId && v.stage === 0;
+  const stagePill = v.stage === 3
+    ? `<span class="queue-stage-pill s3">Delivered</span>`
+    : isUnstarted
+    ? `<span class="queue-stage-pill unstarted">Unstarted</span>`
+    : `<span class="queue-stage-pill s${v.stage}">${VIDEO_STAGES[v.stage]}</span>`;
+
+  // Buffer
+  let bufferHtml = '<span class="queue-buffer d">—</span>';
+  if(v.clientDueDate && v.deadline){
+    const diff = Math.round((new Date(v.clientDueDate) - new Date(v.deadline)) / 86400000);
+    const cls = diff >= 5 ? 'g' : diff >= 2 ? 'y' : 'r';
+    const label = diff === 0 ? 'Same day' : diff > 0 ? `${diff}d buffer` : `${Math.abs(diff)}d late`;
+    bufferHtml = `<span class="queue-buffer ${cls}">${label}</span>`;
+  }
+
+  // Client due date — editable for admins
+  const clientDueHtml = isAdmin()
+    ? `<input type="date" class="queue-date-input${v.clientDueDate?' set':''}" value="${v.clientDueDate||''}"
+        onchange="updateQueueClientDue('${v.projectId}','${v.id}',this.value)" style="color-scheme:dark" />`
+    : v.clientDueDate
+    ? `<span style="font-size:11px;color:var(--text)">${new Date(v.clientDueDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>`
+    : `<span style="font-size:10px;color:var(--td)">Not set</span>`;
+
+  // Internal deadline — editable for admins
+  const internalDeadlineHtml = isAdmin()
+    ? `<input type="date" class="queue-date-input${v.deadline?' set':''}" value="${v.deadline||''}"
+        onchange="updateQueueDeadline('${v.projectId}','${v.id}',this.value)" style="color-scheme:dark" />`
+    : v.deadline
+    ? `<span style="font-size:11px;color:var(--text)">${new Date(v.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>`
+    : `<span style="font-size:10px;color:var(--td)">Not set</span>`;
+
+  // Assignee — editable for admins
+  const editors = TEAM.filter(t => t.isEditor);
+  const assigneeHtml = isAdmin()
+    ? `<select class="queue-assignee-select${v.assigneeId?' set':''}"
+        onchange="updateQueueAssignee('${v.projectId}','${v.id}',this.value)">
+        <option value="">Unassigned</option>
+        ${editors.map(e => `<option value="${e.id}"${v.assigneeId===e.id?' selected':''}>${e.name}</option>`).join('')}
+      </select>`
+    : (() => {
+        const editor = TEAM.find(t => t.id === v.assigneeId);
+        return editor
+          ? `<span style="font-size:11px;color:var(--text)">${editor.name}</span>`
+          : `<span style="font-size:10px;color:var(--td)">Unassigned</span>`;
+      })();
+
+  // Action buttons for the assigned editor (non-admin)
+  let actionsHtml = '';
+  if(!isAdmin() && currentUser && v.assigneeId === currentUser.id && v.stage < 3){
+    if(v.stage === 0){
+      if(!v.startedAt){
+        actionsHtml = `<button class="btn-sm start" onclick="startVideo('${v.projectId}','${v.id}')">▶ Start</button>`;
+      } else {
+        const hrs = workingHoursBetween(v.startedAt, new Date().toISOString());
+        const nowH = new Date().getHours() + new Date().getMinutes()/60;
+        const isWorkHours = nowH >= 10.5 && nowH < 19 && new Date().getDay() !== 0 && new Date().getDay() !== 6;
+        const workMins = Math.round(hrs * 60);
+        const hrsLabel = !isWorkHours ? 'paused' : hrs < 1 ? (workMins < 1 ? 'just started' : workMins + 'm in') : hrs.toFixed(1) + 'h in';
+        actionsHtml = `<span class="v-inprogress" style="margin-right:5px">⏱ ${hrsLabel}</span><button class="btn-sm submit" onclick="advanceVideo('${v.projectId}','${v.id}')">Submit ✓</button>`;
+      }
+    } else {
+      actionsHtml = `<button class="btn-sm adv" onclick="advanceVideo('${v.projectId}','${v.id}')">→ Done</button>`;
+    }
+  }
+
+  return `<tr class="queue-row${isUnstarted?' unstarted':''}">
+    <td class="queue-cell"><div class="queue-vid-name">${v.name}</div><div class="queue-vid-project">${v.projectName}</div></td>
+    <td class="queue-cell"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span></td>
+    <td class="queue-cell">${clientDueHtml}</td>
+    <td class="queue-cell">${internalDeadlineHtml}</td>
+    <td class="queue-cell">${bufferHtml}</td>
+    <td class="queue-cell">${assigneeHtml}</td>
+    <td class="queue-cell">${stagePill}</td>
+    ${!isAdmin() ? `<td class="queue-cell">${actionsHtml}</td>` : ''}
+  </tr>`;
+}
+
+async function updateQueueClientDue(projId, vidId, value){
+  const p = projects.find(x => x.id === parseInt(projId) || x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v) return;
+  v.clientDueDate = value || null;
+  renderQueue();
+  await syncVideo(v, p.id);
+}
+
+async function updateQueueDeadline(projId, vidId, value){
+  const p = projects.find(x => x.id === parseInt(projId) || x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v) return;
+  v.deadline = value || null;
+  renderQueue();
+  await syncVideo(v, p.id);
+}
+
+async function updateQueueAssignee(projId, vidId, value){
+  const p = projects.find(x => x.id === parseInt(projId) || x.id === projId);
+  const v = p?.videos.find(x => x.id === vidId);
+  if(!v) return;
+  const editorId = value ? parseInt(value) : null;
+  v.assigneeId = editorId;
+  if(editorId) showWaPing(`${waTag(editorId)} 📋 *Assigned:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — due ${fmtDue(v.deadline)}`);
+  renderQueue();
+  await syncVideo(v, p.id);
+}
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  errEl.textContent = '';
+  if(!email || !password){ errEl.textContent = 'Please enter email and password.'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
+  if(error){
+    errEl.textContent = error.message === 'Invalid login credentials' ? 'Incorrect email or password.' : error.message;
+    btn.disabled = false; btn.textContent = 'Sign In';
+    return;
+  }
+  await onSignedIn(data.user);
+}
+
+async function doLogout(){
+  await db.auth.signOut();
+  currentUser = null;
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-btn').textContent = 'Sign In';
+}
+
+async function onSignedIn(user){
+  const member = TEAM.find(t => t.email === user.email.toLowerCase());
+  if(!member){
+    document.getElementById('login-error').textContent = 'Account not recognised. Contact ops.';
+    document.getElementById('login-btn').disabled = false;
+    document.getElementById('login-btn').textContent = 'Sign In';
+    await db.auth.signOut();
+    return;
+  }
+  currentUser = member;
+  applyRoleGating();
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('hdr-user').textContent = member.name;
+  await loadData();
+  subscribeRealtime();
+}
+
+function applyRoleGating(){
+  const admin = isAdmin();
+  // Efficiency tab — admins only
+  document.getElementById('nav-efficiency').style.display = admin ? '' : 'none';
+  // New Project button — admins only
+  document.getElementById('btn-new-project').style.display = admin ? '' : 'none';
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+async function init(){
+  document.getElementById('hdr-date').textContent = today.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('hdr-version').textContent = VERSION;
+  document.getElementById('hdr-month').textContent = today.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  showLoading(false); // hide spinner until we know auth state
+  requestNotifPermission();
+  // check for existing session
+  const { data: { session } } = await db.auth.getSession();
+  if(session?.user){
+    await onSignedIn(session.user);
+  }
+  // else login screen stays visible
+}
+
+init();
+</script>
+</body>
+</html>
