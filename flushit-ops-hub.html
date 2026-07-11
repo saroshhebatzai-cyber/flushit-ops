@@ -453,6 +453,49 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-legend{display:flex;gap:14px;align-items:center;margin-top:14px;flex-wrap:wrap}
 .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--td)}
 .cal-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* ─── COMMAND CENTER ─── */
+.cmd-sep{width:1px;height:18px;background:var(--border);margin:0 4px}
+.cmd-two-col{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
+.cmd-col-hdr{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--td);text-transform:uppercase;margin-bottom:8px}
+.person-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
+.person-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.person-card-name{font-weight:700;font-size:13px}
+.person-card-meta{font-family:var(--mono);font-size:10px;color:var(--tm)}
+.loop-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dashed var(--border);font-size:12px}
+.loop-status{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:9px;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--tm);white-space:nowrap}
+.loop-status.inprog{color:var(--yellow);border-color:var(--yellow)}
+.loop-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.loop-client{font-family:var(--mono);font-size:9px;color:var(--cyan)}
+.loop-age{font-family:var(--mono);font-size:9px;color:var(--td);white-space:nowrap}
+.loop-del{background:none;border:none;color:var(--td);cursor:pointer;font-size:12px;padding:0 2px}
+.loop-del:hover{color:var(--red)}
+.pipe-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11px;color:var(--tm);border-top:1px dashed var(--border)}
+.pipe-row .ov{color:var(--red)}
+.cmd-add-row{display:flex;gap:6px;margin-top:8px}
+.cmd-add-input{flex:1;font-family:var(--mono);font-size:11px;padding:6px 9px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
+.cmd-add-btn{font-family:var(--mono);font-size:11px;padding:6px 10px;background:var(--adim);color:var(--accent);border:1px solid var(--accent);border-radius:var(--rs);cursor:pointer}
+.needs-card{background:var(--rdim);border:1px solid var(--red);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
+.needs-row{display:flex;gap:8px;align-items:center;font-size:12px;padding:5px 0;cursor:pointer}
+.needs-row:hover{color:var(--accent)}
+.stream-card{background:var(--surface);border:1px dashed var(--b2);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
+.inbox-row{display:flex;gap:6px;align-items:center;padding:5px 0;border-top:1px dashed var(--border);font-size:12px;flex-wrap:wrap}
+.inbox-sel{font-family:var(--mono);font-size:10px;padding:3px 6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--tm)}
+#capture-input{font-family:var(--mono);font-size:11px;padding:6px 10px;width:210px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
+#capture-input:focus{border-color:var(--accent);outline:none}
+.week-day{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:8px}
+.week-day.today-hl{border-color:var(--accent)}
+.week-day-hdr{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--tm);margin-bottom:4px}
+.week-focus{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:14px}
+.week-focus-label{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--td);text-transform:uppercase}
+.week-focus-text{font-size:14px;font-weight:600;margin-top:4px;outline:none;min-height:20px}
+.note-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
+.note-title{width:100%;background:transparent;border:none;color:var(--text);font-weight:700;font-size:13px;outline:none;margin-bottom:6px}
+.note-body{width:100%;background:transparent;border:none;color:var(--tm);font-size:12px;line-height:1.5;outline:none;resize:vertical;min-height:60px;font-family:inherit}
+.client-subtab{font-family:var(--mono);font-size:11px;padding:5px 12px;background:var(--s2);border:1px solid var(--border);border-radius:14px;color:var(--tm);cursor:pointer;margin:0 6px 6px 0}
+.client-subtab.active{background:var(--adim);color:var(--accent);border-color:var(--accent)}
+.lead-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;display:grid;grid-template-columns:2fr 1.5fr 1.2fr 1fr auto;gap:10px;align-items:center;font-size:12px}
+@media(max-width:900px){.cmd-two-col{grid-template-columns:1fr}.lead-card{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -493,7 +536,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="nav-btn" id="nav-efficiency" onclick="switchTab('efficiency',this)">Efficiency</button>
     <button class="nav-btn" onclick="switchTab('calendar',this)">Calendar</button>
     <button class="nav-btn" onclick="switchTab('queue',this)">Queue</button>
+    <span class="cmd-sep" id="cmd-sep" style="display:none"></span>
+    <button class="nav-btn cmd-nav" id="nav-today" style="display:none" onclick="switchTab('today',this)">Today</button>
+    <button class="nav-btn cmd-nav" id="nav-week" style="display:none" onclick="switchTab('week',this)">My Week</button>
+    <button class="nav-btn cmd-nav" id="nav-research" style="display:none" onclick="switchTab('research',this)">Research</button>
+    <button class="nav-btn cmd-nav" id="nav-leads" style="display:none" onclick="switchTab('leads',this)">Leads</button>
   </nav>
+  <input id="capture-input" style="display:none" placeholder="＋ capture… (c)"
+         onkeydown="if(event.key==='Enter')captureTask()" />
   <button class="btn-new" id="btn-new-project" onclick="openModal()">+ New Project</button>
   <div class="hdr-date" id="hdr-date"></div>
   <div style="font-family:var(--mono);font-size:9px;color:var(--td);white-space:nowrap;border-left:1px solid var(--border);padding-left:12px;display:flex;flex-direction:column;gap:2px;text-align:right">
@@ -578,6 +628,47 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="perf-drilldown" id="perf-drilldown"></div>
     </div>
     <div class="charts-grid" id="charts-grid"></div>
+  </div>
+  <div class="tab" id="tab-today">
+    <div class="sec-hdr"><div class="sec-title" id="today-title">Today</div></div>
+    <div class="cmd-two-col">
+      <div><div class="cmd-col-hdr">People</div><div id="today-people"></div></div>
+      <div>
+        <div class="cmd-col-hdr">Needs You</div><div id="today-needs"></div>
+        <div class="cmd-col-hdr" style="margin-top:14px">Streams</div><div id="today-streams"></div>
+        <div class="cmd-col-hdr" style="margin-top:14px">Inbox</div><div id="today-inbox"></div>
+      </div>
+    </div>
+  </div>
+  <div class="tab" id="tab-week">
+    <div class="sec-hdr">
+      <div class="sec-title">My Week</div>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="weekPrev()">←</button>
+        <div class="cal-month-label" id="week-label"></div>
+        <button class="cal-nav-btn" onclick="weekNext()">→</button>
+      </div>
+    </div>
+    <div class="week-focus">
+      <div class="week-focus-label">This week</div>
+      <div class="week-focus-text" id="week-focus-text" contenteditable="true" spellcheck="false"
+           onblur="saveWeekFocus()">Click to set your weekly focus…</div>
+    </div>
+    <div id="week-days"></div>
+    <div class="sec-hdr" style="margin-top:18px"><div class="sec-title" style="font-size:13px">Parking Lot</div>
+      <div style="font-size:10px;color:var(--td)">Tasks without a day — same list as the Today inbox</div></div>
+    <div id="week-parking"></div>
+  </div>
+  <div class="tab" id="tab-research">
+    <div class="sec-hdr"><div class="sec-title">Research</div>
+      <button class="cmd-add-btn" onclick="addNote()">+ New Note</button></div>
+    <div id="research-subtabs"></div>
+    <div id="research-notes"></div>
+  </div>
+  <div class="tab" id="tab-leads">
+    <div class="sec-hdr"><div class="sec-title">Leads</div>
+      <button class="cmd-add-btn" onclick="addLead()">+ New Lead</button></div>
+    <div id="leads-list"></div>
   </div>
 </div>
 
@@ -2444,6 +2535,8 @@ async function createProject(){
 
 function switchTab(name, btn){
   if(name === 'efficiency' && !isAdmin()){ toast('⚠ Access restricted'); return; }
+  const CMD_TABS = ['today','week','research','leads'];
+  if(CMD_TABS.includes(name) && !isAdmin()){ toast('⚠ Access restricted'); return; }
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
@@ -2452,7 +2545,23 @@ function switchTab(name, btn){
   if(name === 'team') animateBars();
   if(name === 'calendar') renderCalendar();
   if(name === 'queue') renderQueue();
+  if(name === 'today') renderToday();
+  if(name === 'week') renderWeek();
+  if(name === 'research') renderResearch();
+  if(name === 'leads') renderLeads();
 }
+
+// ─── COMMAND CENTER ──────────────────────────────────────────────────────────
+function renderToday(){}
+function renderWeek(){}
+function renderResearch(){}
+function renderLeads(){}
+function captureTask(){}
+function weekPrev(){}
+function weekNext(){}
+function saveWeekFocus(){}
+function addNote(){}
+function addLead(){}
 
 // ─── CALENDAR ────────────────────────────────────────────────────────────────
 
@@ -2803,6 +2912,10 @@ function applyRoleGating(){
   document.getElementById('nav-efficiency').style.display = admin ? '' : 'none';
   // New Project button — admins only
   document.getElementById('btn-new-project').style.display = admin ? '' : 'none';
+  // Command section — admins only
+  document.getElementById('cmd-sep').style.display = admin ? '' : 'none';
+  document.getElementById('capture-input').style.display = admin ? '' : 'none';
+  document.querySelectorAll('.cmd-nav').forEach(b => b.style.display = admin ? '' : 'none');
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
