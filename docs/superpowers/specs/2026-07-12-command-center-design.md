@@ -88,7 +88,7 @@ Placement logic: **which fields are filled decides where an item appears.** Empt
 
 ### `leads`
 
-`id`, `name`, `contact`, `source`, `stage` (`new` → `discovery_scheduled` → `research` → `proposal` → `won` / `lost`), `meeting_at`, `notes`, `created_at`. Won leads convert to a client. Lead research lives in `notes` linked by client name.
+`id`, `name`, `contact`, `source`, `stage` (`new` → `discovery_scheduled` → `research` → `proposal` → `won` / `lost`), `meeting_at`, `notes`, `created_at`. Marking a lead `won` makes its name available as a `client` tag on tasks/notes (same free-text client convention the hub already uses) — no separate conversion step. Lead research lives in `notes` linked by client name.
 
 All three tables join the existing `supabase_realtime` publication with `REPLICA IDENTITY FULL`, reusing the hub's per-session channel subscription pattern.
 
