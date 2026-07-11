@@ -50,3 +50,9 @@ alter publication supabase_realtime add table tasks;
 alter publication supabase_realtime add table notes;
 alter publication supabase_realtime add table leads;
 alter publication supabase_realtime add table meta;
+
+-- Grants: tables created via raw SQL don't inherit the API grants that
+-- UI-created tables (projects/videos) got — without these the anon key
+-- gets 42501 permission denied.
+grant select, insert, update, delete on table tasks, notes, leads, meta to anon, authenticated;
+grant all on table tasks, notes, leads, meta to service_role;
