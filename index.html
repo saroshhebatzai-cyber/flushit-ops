@@ -507,12 +507,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="login-subtitle">Ops Hub — Sign In</div>
     </div>
     <div class="login-field">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="you@flushit.com.pk" autocomplete="email" />
-    </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" />
+      <label>Access Code</label>
+      <input type="password" id="login-code" placeholder="your code" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()" />
     </div>
     <div class="login-error" id="login-error"></div>
     <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
@@ -781,12 +777,12 @@ const CLIENT_COLORS = {
 };
 
 const TEAM = [
-  {id:1, name:'Sarosh Ahmed', role:'Founder',               initials:'SA', isEditor:false, ownedStages:[4], waName:'Sarosh',  email:'sarosh.hebatzai@gmail.com',  isAdmin:true},
-  {id:3, name:'Ayesha',       role:'Social Media Manager',   initials:'AY', isEditor:true,  partTime:true, ownedStages:[0], waName:'Ayesha', email:'saddiqa9211@gmail.com',  isAdmin:false},
-  {id:4, name:'Tanzeel',      role:'Video Editor',           initials:'TZ', isEditor:true,  ownedStages:[], waName:'Tanzeel', email:'tanzeeltariq2002@gmail.com', isAdmin:false},
-  {id:5, name:'Osama',        role:'Video Editor',           initials:'OS', isEditor:true,  ownedStages:[], waName:'Osama',   email:'osamairshad18@gmail.com',    isAdmin:false},
-  {id:6, name:'Kabeer',       role:'Video Editor',           initials:'KB', isEditor:true,  ownedStages:[], waName:'Kabeer',  email:'ulhaqkabeer703@gmail.com',   isAdmin:false},
-  {id:7, name:'Arsal',        role:'Videographer',           initials:'AR', isEditor:false, ownedStages:[3,5], waName:'Arsal',  email:'arsalmoizsp3@gmail.com',  isAdmin:false},
+  {id:1, name:'Sarosh Ahmed', role:'Founder',               initials:'SA', isEditor:false, ownedStages:[4], waName:'Sarosh',  email:'sarosh.hebatzai@gmail.com',  isAdmin:true,  code:'bebatzai'},
+  {id:3, name:'Ayesha',       role:'Social Media Manager',   initials:'AY', isEditor:true,  partTime:true, ownedStages:[0], waName:'Ayesha', email:'saddiqa9211@gmail.com',  isAdmin:false, code:'ayesha'},
+  {id:4, name:'Tanzeel',      role:'Video Editor',           initials:'TZ', isEditor:true,  ownedStages:[], waName:'Tanzeel', email:'tanzeeltariq2002@gmail.com', isAdmin:false, code:'tanzeel'},
+  {id:5, name:'Osama',        role:'Video Editor',           initials:'OS', isEditor:true,  ownedStages:[], waName:'Osama',   email:'osamairshad18@gmail.com',    isAdmin:false, code:'osama'},
+  {id:6, name:'Kabeer',       role:'Video Editor',           initials:'KB', isEditor:true,  ownedStages:[], waName:'Kabeer',  email:'ulhaqkabeer703@gmail.com',   isAdmin:false, code:'kabeer'},
+  {id:7, name:'Arsal',        role:'Videographer',           initials:'AR', isEditor:false, ownedStages:[3,5], waName:'Arsal',  email:'arsalmoizsp3@gmail.com',  isAdmin:false, code:'arsal'},
 ];
 
 const EDITOR_HOURS = 8;
@@ -3367,43 +3363,31 @@ async function updateQueueAssignee(projId, vidId, value){
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 
+// Auth = per-person access codes (TEAM[].code), remembered per device.
+// Supabase Auth accounts are no longer used; RLS is disabled on all app
+// tables (see docs/superpowers/sql/), so the anon key covers data access.
+const CODE_STORAGE_KEY = 'flushit-access-code';
+
 async function doLogin(){
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const password = document.getElementById('login-password').value;
+  const code = document.getElementById('login-code').value.trim().toLowerCase();
   const errEl = document.getElementById('login-error');
-  const btn = document.getElementById('login-btn');
   errEl.textContent = '';
-  if(!email || !password){ errEl.textContent = 'Please enter email and password.'; return; }
-  btn.disabled = true; btn.textContent = 'Signing in…';
-  const { data, error } = await db.auth.signInWithPassword({ email, password });
-  if(error){
-    errEl.textContent = error.message === 'Invalid login credentials' ? 'Incorrect email or password.' : error.message;
-    btn.disabled = false; btn.textContent = 'Sign In';
-    return;
-  }
-  await onSignedIn(data.user);
+  if(!code){ errEl.textContent = 'Please enter your access code.'; return; }
+  const member = TEAM.find(t => t.code === code);
+  if(!member){ errEl.textContent = 'Code not recognised. Contact ops.'; return; }
+  localStorage.setItem(CODE_STORAGE_KEY, code);
+  await onSignedIn(member);
 }
 
 async function doLogout(){
-  await db.auth.signOut();
+  localStorage.removeItem(CODE_STORAGE_KEY);
   currentUser = null;
   document.getElementById('login-screen').classList.remove('hidden');
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-password').value = '';
+  document.getElementById('login-code').value = '';
   document.getElementById('login-error').textContent = '';
-  document.getElementById('login-btn').disabled = false;
-  document.getElementById('login-btn').textContent = 'Sign In';
 }
 
-async function onSignedIn(user){
-  const member = TEAM.find(t => t.email === user.email.toLowerCase());
-  if(!member){
-    document.getElementById('login-error').textContent = 'Account not recognised. Contact ops.';
-    document.getElementById('login-btn').disabled = false;
-    document.getElementById('login-btn').textContent = 'Sign In';
-    await db.auth.signOut();
-    return;
-  }
+async function onSignedIn(member){
   currentUser = member;
   applyRoleGating();
   document.getElementById('login-screen').classList.add('hidden');
@@ -3434,10 +3418,11 @@ async function init(){
   document.getElementById('hdr-month').textContent = today.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
   showLoading(false); // hide spinner until we know auth state
   requestNotifPermission();
-  // check for existing session
-  const { data: { session } } = await db.auth.getSession();
-  if(session?.user){
-    await onSignedIn(session.user);
+  // check for a remembered access code
+  const saved = (localStorage.getItem(CODE_STORAGE_KEY) || '').toLowerCase();
+  const member = TEAM.find(t => t.code === saved);
+  if(member){
+    await onSignedIn(member);
   }
   // else login screen stays visible
 }
