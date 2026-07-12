@@ -2817,7 +2817,69 @@ async function saveWeekFocus(){
   await syncMeta(el.dataset.key, text);
   toast('✓ Focus saved');
 }
-function renderResearch(){}
+let researchClient = null; // active subtab
+
+function renderResearch(){
+  const clients = [...new Set([...allClientNames(), ...notes.map(n => n.client)])].sort();
+  if(!researchClient || !clients.includes(researchClient)) researchClient = clients[0] || null;
+  document.getElementById('research-subtabs').innerHTML = clients.map(c =>
+    `<button class="client-subtab ${c===researchClient?'active':''}"
+      onclick="researchClient='${escHtml(c)}';renderResearch()">${escHtml(c)}
+      <span style="opacity:.5">${notes.filter(n=>n.client===c).length}</span></button>`).join('')
+    || '<div style="font-size:11px;color:var(--td)">No clients yet — add a note to create one.</div>';
+
+  const list = notes.filter(n => n.client === researchClient)
+    .sort((a,b) => (b.pinned - a.pinned) || (new Date(b.updatedAt) - new Date(a.updatedAt)));
+  document.getElementById('research-notes').innerHTML = list.map(n => `<div class="note-card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <input class="note-title" value="${escHtml(n.title)}" placeholder="Note title…"
+        onblur="updateNote('${n.id}','title',this.value)">
+      <span>
+        <button class="loop-del" title="Pin" style="${n.pinned?'color:var(--yellow)':''}"
+          onclick="togglePin('${n.id}')">📌</button>
+        <button class="loop-del" onclick="removeNote('${n.id}')">×</button>
+      </span>
+    </div>
+    <textarea class="note-body" placeholder="Research, links, angles…"
+      onblur="updateNote('${n.id}','body',this.value)">${escHtml(n.body)}</textarea>
+    <div class="loop-age">updated ${relAge(n.updatedAt)} ago</div>
+  </div>`).join('') || (researchClient ? '<div style="font-size:11px;color:var(--td)">No notes yet for this client.</div>' : '');
+}
+
+async function addNote(){
+  let client = researchClient;
+  const typed = prompt('Client for this note:', client || '');
+  if(typed === null) return;
+  client = typed.trim() || client;
+  if(!client){ toast('⚠ Note needs a client'); return; }
+  const n = { id:newCmdId('n'), client, title:'', body:'', pinned:false,
+              createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() };
+  notes.unshift(n); researchClient = client;
+  await syncNote(n);
+  renderResearch();
+}
+
+async function updateNote(id, field, value){
+  const n = notes.find(x => x.id === id); if(!n) return;
+  if(n[field] === value) return;
+  n[field] = value; n.updatedAt = new Date().toISOString();
+  await syncNote(n);
+}
+
+async function togglePin(id){
+  const n = notes.find(x => x.id === id); if(!n) return;
+  n.pinned = !n.pinned;
+  await syncNote(n);
+  renderResearch();
+}
+
+async function removeNote(id){
+  if(!confirm('Delete this note?')) return;
+  notes = notes.filter(x => x.id !== id);
+  await deleteNoteRow(id);
+  renderResearch();
+}
+
 function renderLeads(){}
 
 async function captureTask(){
@@ -2917,7 +2979,6 @@ function isoDate(d){
 
 function weekPrev(){ weekOffset--; renderWeek(); }
 function weekNext(){ weekOffset++; renderWeek(); }
-function addNote(){}
 function addLead(){}
 
 // ─── CALENDAR ────────────────────────────────────────────────────────────────
