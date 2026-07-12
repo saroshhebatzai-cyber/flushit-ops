@@ -800,13 +800,15 @@ git commit -m "feat: My Week — day planner, week focus, parking lot (slice 3)"
 
 ```js
 let researchClient = null; // active subtab
+let researchClientList = []; // parallel to subtab indices; avoids quoting client names in inline JS
 
 function renderResearch(){
   const clients = [...new Set([...allClientNames(), ...notes.map(n => n.client)])].sort();
   if(!researchClient || !clients.includes(researchClient)) researchClient = clients[0] || null;
-  document.getElementById('research-subtabs').innerHTML = clients.map(c =>
+  researchClientList = clients;
+  document.getElementById('research-subtabs').innerHTML = clients.map((c, i) =>
     `<button class="client-subtab ${c===researchClient?'active':''}"
-      onclick="researchClient='${escHtml(c)}';renderResearch()">${escHtml(c)}
+      onclick="researchClient=researchClientList[${i}];renderResearch()">${escHtml(c)}
       <span style="opacity:.5">${notes.filter(n=>n.client===c).length}</span></button>`).join('')
     || '<div style="font-size:11px;color:var(--td)">No clients yet — add a note to create one.</div>';
 
