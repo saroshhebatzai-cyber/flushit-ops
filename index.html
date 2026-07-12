@@ -788,6 +788,7 @@ const TEAM = [
 
 const EDITOR_HOURS = 8;
 const VERSION = 'v1.0';
+const CPC_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Jlm9JcPpL1WON2QvyyyaZqbYi-RA2caN1KLVPTWBa74/edit?gid=449361892#gid=449361892'; // Ayesha's Cpc Google Sheet
 const today = new Date();
 
 // Stage advance permissions: stage index → array of team member IDs allowed to advance
@@ -1191,7 +1192,7 @@ function toast(msg){
   setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); renderQueue(); updateStats(); if(currentPanelId) renderPanelBody(currentPanelId); }
+function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); renderQueue(); updateStats(); if(currentPanelId) renderPanelBody(currentPanelId); if(document.querySelector('.tab.active')?.id === 'tab-today') renderToday(); }
 
 function updateStats(){
   const active = projects.filter(p => p.stage < 7).length;
@@ -2655,9 +2656,101 @@ function switchTab(name, btn){
 }
 
 // ─── COMMAND CENTER ──────────────────────────────────────────────────────────
+function allVideosFlat(){
+  return projects.flatMap(p => p.videos.map(v => ({...v, projClient:p.client, projName:p.name, projId:p.id})));
+}
+
+function personCardHtml(m){
+  const loops = openLoops(m.id);
+  const loopHtml = loops.map(t => `<div class="loop-row">
+    <span class="loop-status ${t.status==='in_progress'?'inprog':''}"
+      onclick="setTaskStatus('${t.id}','${t.status==='open'?'in_progress':'done'}')">${t.status==='in_progress'?'IN PROG':'OPEN'}</span>
+    <span class="loop-title">${escHtml(t.title)}</span>
+    ${t.client?`<span class="loop-client">${escHtml(t.client)}</span>`:''}
+    <span class="loop-age">asked ${relAge(t.createdAt)} ago</span>
+    <button class="loop-del" onclick="removeTask('${t.id}')">×</button>
+  </div>`).join('');
+
+  let liveHtml = '';
+  if(m.isEditor){
+    const vids = allVideosFlat().filter(v => v.assigneeId === m.id && v.stage < 3 && !v.draft);
+    liveHtml = vids.map(v => {
+      const od = v.deadline && daysFromNow(v.deadline) < 0;
+      return `<div class="pipe-row">🎬 <span class="loop-title">${escHtml(v.name)}</span>
+        <span class="${od?'ov':''}">${VIDEO_STAGES[v.stage]}${od?' · overdue':''}</span></div>`;
+    }).join('') || '<div class="pipe-row" style="color:var(--td)">no active edits</div>';
+  }
+  if(m.id === 7){ // Arsal — next shoot
+    const upcoming = projects.filter(p => p.shootDate && daysFromNow(p.shootDate) >= 0)
+      .sort((a,b) => new Date(a.shootDate) - new Date(b.shootDate))[0];
+    liveHtml += `<div class="pipe-row">📸 ${upcoming
+      ? `Next shoot: ${escHtml(upcoming.client)} — ${new Date(upcoming.shootDate).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}`
+      : 'No shoot scheduled'}</div>`;
+  }
+  const sheetLink = (m.id === 3 && CPC_SHEET_URL)
+    ? `<a href="${CPC_SHEET_URL}" target="_blank" style="font-family:var(--mono);font-size:9px;color:var(--cyan)">📊 Cpc sheet ↗</a>` : '';
+
+  return `<div class="person-card">
+    <div class="person-card-hdr">
+      <span class="person-card-name">${m.name}</span>
+      <span class="person-card-meta">${loops.length} open ${sheetLink}</span>
+    </div>
+    ${liveHtml}${loopHtml}
+    <div class="cmd-add-row">
+      <input class="cmd-add-input" id="loop-add-${m.id}" placeholder="Ask ${m.name.split(' ')[0]}…"
+        onkeydown="if(event.key==='Enter')addLoop(${m.id})">
+      <button class="cmd-add-btn" onclick="addLoop(${m.id})">+</button>
+    </div>
+  </div>`;
+}
+
+async function addLoop(memberId){
+  const input = document.getElementById('loop-add-' + memberId);
+  const title = input.value.trim(); if(!title) return;
+  const t = { id:newCmdId('t'), title, notes:'', ownerId:currentUser.id, assigneeId:memberId,
+              client:null, status:'open', scheduledFor:null,
+              createdAt:new Date().toISOString(), completedAt:null };
+  tasks.push(t); input.value = '';
+  await syncTask(t);
+  renderToday();
+}
+
+function needsYouHtml(){
+  const items = [];
+  allVideosFlat().filter(v => v.stage === 2 && !v.draft).forEach(v =>
+    items.push({icon:'🔴', label:`${escHtml(v.projClient)} · ${escHtml(v.name)} — your review`, go:"switchTab('queue',document.querySelector('.nav-btn:nth-child(6)'))"}));
+  projects.filter(p => p.stage === 4).forEach(p =>
+    items.push({icon:'🔴', label:`${escHtml(p.client)} · ${escHtml(p.name)} — approval to shoot`, go:"switchTab('projects',document.querySelector('.nav-btn:nth-child(1)'))"}));
+  tasks.filter(t => t.assigneeId === currentUser.id && t.status !== 'done' && t.status !== 'cancelled').forEach(t =>
+    items.push({icon:'🟡', label:escHtml(t.title), go:''}));
+  const todayStr = new Date().toDateString();
+  leads.filter(l => l.meetingAt && new Date(l.meetingAt).toDateString() === todayStr).forEach(l =>
+    items.push({icon:'📅', label:`${escHtml(l.name)} — meeting today`, go:"switchTab('leads',document.getElementById('nav-leads'))"}));
+  if(!items.length) return '<div class="stream-card" style="font-size:11px;color:var(--td)">Nothing blocked on you ✓</div>';
+  return `<div class="needs-card">${items.map(i =>
+    `<div class="needs-row" ${i.go?`onclick="${i.go}"`:''}>${i.icon} ${i.label}</div>`).join('')}</div>`;
+}
+
+function streamsHtml(){
+  const active = allVideosFlat().filter(v => v.stage < 3 && !v.draft);
+  const overdue = active.filter(v => v.deadline && daysFromNow(v.deadline) < 0).length;
+  const openLeads = leads.filter(l => !['won','lost'].includes(l.stage));
+  const nextMeet = leads.filter(l => l.meetingAt && new Date(l.meetingAt) >= new Date())
+    .sort((a,b) => new Date(a.meetingAt) - new Date(b.meetingAt))[0];
+  return `
+  <div class="stream-card" style="cursor:pointer" onclick="switchTab('queue',document.querySelector('.nav-btn:nth-child(6)'))">
+    <b>Edits</b> — ${active.length} active${overdue?` · <span style="color:var(--red)">${overdue} overdue</span>`:''}</div>
+  <div class="stream-card" style="cursor:pointer" onclick="switchTab('leads',document.getElementById('nav-leads'))">
+    <b>Leads</b> — ${openLeads.length} open${nextMeet?` · next: ${escHtml(nextMeet.name)} ${new Date(nextMeet.meetingAt).toLocaleDateString('en-GB',{weekday:'short'})}`:''}</div>`;
+}
+
 function renderToday(){
   document.getElementById('today-title').textContent =
     '☀️ ' + today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+  document.getElementById('today-people').innerHTML =
+    TEAM.filter(m => m.id !== currentUser.id).map(personCardHtml).join('');
+  document.getElementById('today-needs').innerHTML = needsYouHtml();
+  document.getElementById('today-streams').innerHTML = streamsHtml();
   const inbox = inboxTasks();
   document.getElementById('today-inbox').innerHTML = `<div class="stream-card">
     ${inbox.length ? inbox.map(inboxRowHtml).join('') : '<div style="font-size:11px;color:var(--td)">Inbox zero ✓</div>'}

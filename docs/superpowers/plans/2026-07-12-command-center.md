@@ -560,10 +560,8 @@ git commit -m "feat: capture box, c shortcut, inbox with sort controls (slice 1)
 - [ ] **Step 1: Add config constant** — next to `const VERSION = 'v1.0';`:
 
 ```js
-const CPC_SHEET_URL = ''; // Ayesha's Cpc Google Sheet — paste the share URL here
+const CPC_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Jlm9JcPpL1WON2QvyyyaZqbYi-RA2caN1KLVPTWBa74/edit?gid=449361892#gid=449361892'; // Ayesha's Cpc Google Sheet
 ```
-
-(Ask Sarosh for the real URL during implementation; empty string hides the link.)
 
 - [ ] **Step 2: Add card builders** (Command section):
 
@@ -630,9 +628,9 @@ async function addLoop(memberId){
 function needsYouHtml(){
   const items = [];
   allVideosFlat().filter(v => v.stage === 2 && !v.draft).forEach(v =>
-    items.push({icon:'🔴', label:`${v.projClient} · ${v.name} — your review`, go:"switchTab('queue',document.querySelector('.nav-btn:nth-child(6)'))"}));
+    items.push({icon:'🔴', label:`${escHtml(v.projClient)} · ${escHtml(v.name)} — your review`, go:"switchTab('queue',document.querySelector('.nav-btn:nth-child(6)'))"}));
   projects.filter(p => p.stage === 4).forEach(p =>
-    items.push({icon:'🔴', label:`${p.client} · ${p.name} — approval to shoot`, go:"switchTab('projects',document.querySelector('.nav-btn:nth-child(1)'))"}));
+    items.push({icon:'🔴', label:`${escHtml(p.client)} · ${escHtml(p.name)} — approval to shoot`, go:"switchTab('projects',document.querySelector('.nav-btn:nth-child(1)'))"}));
   tasks.filter(t => t.assigneeId === currentUser.id && t.status !== 'done' && t.status !== 'cancelled').forEach(t =>
     items.push({icon:'🟡', label:escHtml(t.title), go:''}));
   const todayStr = new Date().toDateString();
