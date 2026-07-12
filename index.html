@@ -2712,7 +2712,7 @@ async function addLoop(memberId){
               createdAt:new Date().toISOString(), completedAt:null };
   tasks.push(t); input.value = '';
   await syncTask(t);
-  renderToday();
+  renderCommand();
 }
 
 function needsYouHtml(){
@@ -2756,7 +2756,67 @@ function renderToday(){
     ${inbox.length ? inbox.map(inboxRowHtml).join('') : '<div style="font-size:11px;color:var(--td)">Inbox zero ✓</div>'}
   </div>`;
 }
-function renderWeek(){}
+function renderWeek(){
+  const mon = weekMonday(weekOffset);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  document.getElementById('week-label').textContent =
+    (weekOffset === 0 ? 'This week · ' : '') + `${fmt(mon)} – ${fmt(sun)}`;
+
+  const focusKey = 'week_focus_' + isoDate(mon);
+  const focusEl = document.getElementById('week-focus-text');
+  focusEl.textContent = metaKV[focusKey] || 'Click to set your weekly focus…';
+  focusEl.dataset.key = focusKey;
+
+  const todayIso = isoDate(new Date());
+  let html = '';
+  for(let i = 0; i < 7; i++){
+    const day = new Date(mon); day.setDate(mon.getDate() + i);
+    const iso = isoDate(day);
+    const dayTasks = tasks.filter(t => t.scheduledFor === iso && t.status !== 'cancelled');
+    html += `<div class="week-day ${iso === todayIso ? 'today-hl' : ''}">
+      <div class="week-day-hdr">
+        <span>${day.toLocaleDateString('en-GB',{weekday:'long'})}</span><span>${fmt(day)}</span>
+      </div>
+      ${dayTasks.map(t => `<div class="loop-row">
+        <input type="checkbox" ${t.status==='done'?'checked':''}
+          onchange="setTaskStatus('${t.id}','${t.status==='done'?'open':'done'}')">
+        <span class="loop-title" style="${t.status==='done'?'text-decoration:line-through;color:var(--td)':''}">${escHtml(t.title)}</span>
+        ${t.client?`<span class="loop-client">${escHtml(t.client)}</span>`:''}
+        <button class="loop-del" onclick="removeTask('${t.id}')">×</button>
+      </div>`).join('')}
+      <div class="cmd-add-row">
+        <input class="cmd-add-input" id="week-add-${iso}" placeholder="Add…"
+          onkeydown="if(event.key==='Enter')addWeekTask('${iso}')">
+        <button class="cmd-add-btn" onclick="addWeekTask('${iso}')">+</button>
+      </div>
+    </div>`;
+  }
+  document.getElementById('week-days').innerHTML = html;
+  const parking = inboxTasks();
+  document.getElementById('week-parking').innerHTML = `<div class="stream-card">
+    ${parking.length ? parking.map(inboxRowHtml).join('') : '<div style="font-size:11px;color:var(--td)">Parking lot empty ✓</div>'}
+  </div>`;
+}
+
+async function addWeekTask(iso){
+  const input = document.getElementById('week-add-' + iso);
+  const title = input.value.trim(); if(!title) return;
+  const t = { id:newCmdId('t'), title, notes:'', ownerId:currentUser.id, assigneeId:null,
+              client:null, status:'open', scheduledFor:iso,
+              createdAt:new Date().toISOString(), completedAt:null };
+  tasks.push(t); input.value = '';
+  await syncTask(t);
+  renderWeek();
+}
+
+async function saveWeekFocus(){
+  const el = document.getElementById('week-focus-text');
+  const text = el.textContent.trim();
+  if(text === 'Click to set your weekly focus…') return;
+  await syncMeta(el.dataset.key, text);
+  toast('✓ Focus saved');
+}
 function renderResearch(){}
 function renderLeads(){}
 
@@ -2842,9 +2902,21 @@ async function removeTask(id){
   renderCommand();
 }
 
-function weekPrev(){}
-function weekNext(){}
-function saveWeekFocus(){}
+let weekOffset = 0; // 0 = this week
+
+function weekMonday(offset){
+  const d = new Date(); const dow = d.getDay();
+  d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1) + offset*7);
+  d.setHours(0,0,0,0); return d;
+}
+// Local-date ISO (NOT toISOString — that converts to UTC and shifts the day
+// backwards before 5am PKT)
+function isoDate(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function weekPrev(){ weekOffset--; renderWeek(); }
+function weekNext(){ weekOffset++; renderWeek(); }
 function addNote(){}
 function addLead(){}
 

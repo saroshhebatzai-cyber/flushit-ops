@@ -622,7 +622,7 @@ async function addLoop(memberId){
               createdAt:new Date().toISOString(), completedAt:null };
   tasks.push(t); input.value = '';
   await syncTask(t);
-  renderToday();
+  renderCommand();
 }
 
 function needsYouHtml(){
