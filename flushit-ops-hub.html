@@ -2654,11 +2654,101 @@ function switchTab(name, btn){
 }
 
 // ─── COMMAND CENTER ──────────────────────────────────────────────────────────
-function renderToday(){}
+function renderToday(){
+  document.getElementById('today-title').textContent =
+    '☀️ ' + today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+  const inbox = inboxTasks();
+  document.getElementById('today-inbox').innerHTML = `<div class="stream-card">
+    ${inbox.length ? inbox.map(inboxRowHtml).join('') : '<div style="font-size:11px;color:var(--td)">Inbox zero ✓</div>'}
+  </div>`;
+}
 function renderWeek(){}
 function renderResearch(){}
 function renderLeads(){}
-function captureTask(){}
+
+async function captureTask(){
+  const input = document.getElementById('capture-input');
+  const title = input.value.trim();
+  if(!title) return;
+  const t = { id:newCmdId('t'), title, notes:'', ownerId:currentUser.id, assigneeId:null,
+              client:null, status:'open', scheduledFor:null,
+              createdAt:new Date().toISOString(), completedAt:null };
+  tasks.push(t);
+  input.value = '';
+  await syncTask(t);
+  toast('✓ Captured');
+  renderCommand();
+}
+
+document.addEventListener('keydown', e => {
+  if(e.key !== 'c' || e.metaKey || e.ctrlKey || e.altKey) return;
+  if(!isAdmin()) return;
+  const tag = document.activeElement?.tagName;
+  if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || document.activeElement?.isContentEditable) return;
+  e.preventDefault();
+  document.getElementById('capture-input').focus();
+});
+
+const inboxTasks = () => tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled'
+  && !t.assigneeId && !t.scheduledFor && !t.client);
+const openLoops = id => tasks.filter(t => t.assigneeId === id && t.status !== 'done' && t.status !== 'cancelled');
+
+function allClientNames(){
+  const fromProjects = projects.map(p => p.client);
+  const fromLeads = leads.filter(l => l.stage === 'won').map(l => l.name);
+  return [...new Set([...fromProjects, ...fromLeads])].sort();
+}
+
+function relAge(iso){
+  const mins = Math.round((Date.now() - new Date(iso)) / 60000);
+  if(mins < 60) return mins + 'm';
+  if(mins < 1440) return Math.round(mins/60) + 'h';
+  return Math.round(mins/1440) + 'd';
+}
+
+function inboxRowHtml(t){
+  const clientOpts = allClientNames().map(c => `<option ${t.client===c?'selected':''}>${c}</option>`).join('');
+  const teamOpts = TEAM.filter(m => m.id !== currentUser.id)
+    .map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  return `<div class="inbox-row">
+    <span class="loop-title">${escHtml(t.title)}</span>
+    <span class="loop-age">${relAge(t.createdAt)}</span>
+    <select class="inbox-sel" onchange="sortInbox('${t.id}','client',this.value)">
+      <option value="">client…</option>${clientOpts}</select>
+    <select class="inbox-sel" onchange="sortInbox('${t.id}','assignee',this.value)">
+      <option value="">assign…</option>${teamOpts}</select>
+    <input type="date" class="inbox-sel" onchange="sortInbox('${t.id}','schedule',this.value)">
+    <button class="loop-del" title="Done" onclick="setTaskStatus('${t.id}','done')">✓</button>
+    <button class="loop-del" title="Delete" onclick="removeTask('${t.id}')">×</button>
+  </div>`;
+}
+
+function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+async function sortInbox(id, field, value){
+  const t = tasks.find(x => x.id === id); if(!t || !value) return;
+  if(field === 'client') t.client = value;
+  if(field === 'assignee') t.assigneeId = parseInt(value);
+  if(field === 'schedule') t.scheduledFor = value;
+  await syncTask(t);
+  renderCommand();
+  toast('✓ Sorted');
+}
+
+async function setTaskStatus(id, status){
+  const t = tasks.find(x => x.id === id); if(!t) return;
+  t.status = status;
+  t.completedAt = (status === 'done') ? new Date().toISOString() : null;
+  await syncTask(t);
+  renderCommand();
+}
+
+async function removeTask(id){
+  tasks = tasks.filter(x => x.id !== id);
+  await deleteTask(id);
+  renderCommand();
+}
+
 function weekPrev(){}
 function weekNext(){}
 function saveWeekFocus(){}
