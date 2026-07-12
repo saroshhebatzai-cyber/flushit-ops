@@ -3392,6 +3392,7 @@ async function onSignedIn(user){
   await loadData();
   await loadCommandData();
   subscribeRealtime();
+  if(isAdmin()) switchTab('today', document.getElementById('nav-today'));
 }
 
 function applyRoleGating(){
