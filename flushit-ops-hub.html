@@ -481,6 +481,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .stream-card{background:var(--surface);border:1px dashed var(--b2);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
 .inbox-row{display:flex;gap:6px;align-items:center;padding:5px 0;border-top:1px dashed var(--border);font-size:12px;flex-wrap:wrap}
 .inbox-sel{font-family:var(--mono);font-size:10px;padding:3px 6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--tm)}
+.inbox-chip{font-family:var(--mono);font-size:10px;padding:3px 8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--tm);cursor:pointer}
+.inbox-chip:hover{border-color:var(--accent);color:var(--accent)}
+.inbox-date{width:26px;padding:3px 2px;cursor:pointer}
 #capture-input{font-family:var(--mono);font-size:11px;padding:6px 10px;width:210px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
 #capture-input:focus{border-color:var(--accent);outline:none}
 .week-day{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:8px}
@@ -2988,7 +2991,7 @@ document.addEventListener('keydown', e => {
 });
 
 const inboxTasks = () => tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled'
-  && !t.assigneeId && !t.scheduledFor && !t.client);
+  && !t.assigneeId && !t.scheduledFor);
 const openLoops = id => tasks.filter(t => t.assigneeId === id && t.status !== 'done' && t.status !== 'cancelled');
 
 function allClientNames(){
@@ -3004,31 +3007,60 @@ function relAge(iso){
   return Math.round(mins/1440) + 'd';
 }
 
+// One decisive action per item: schedule it (chips / picker), hand it to a
+// person, or file it as a Research note under a client. No dead ends.
 function inboxRowHtml(t){
-  const clientOpts = allClientNames().map(c => `<option ${t.client===c?'selected':''}>${escHtml(c)}</option>`).join('');
+  const clientOpts = allClientNames().map(c => `<option>${escHtml(c)}</option>`).join('');
   const teamOpts = TEAM.filter(m => m.id !== currentUser.id)
     .map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  const tod = new Date(), tom = new Date(Date.now() + 864e5);
+  const mon = new Date(); mon.setDate(mon.getDate() + ((8 - mon.getDay()) % 7 || 7));
   return `<div class="inbox-row">
     <span class="loop-title">${escHtml(t.title)}</span>
     <span class="loop-age">${relAge(t.createdAt)}</span>
-    <select class="inbox-sel" onchange="sortInbox('${t.id}','client',this.value)">
-      <option value="">client…</option>${clientOpts}</select>
+    <button class="inbox-chip" onclick="sortInbox('${t.id}','schedule','${isoDate(tod)}')">Today</button>
+    <button class="inbox-chip" onclick="sortInbox('${t.id}','schedule','${isoDate(tom)}')">Tmrw</button>
+    <button class="inbox-chip" onclick="sortInbox('${t.id}','schedule','${isoDate(mon)}')">Mon</button>
+    <input type="date" class="inbox-sel inbox-date" title="Pick a date" min="2024-01-01"
+      onchange="sortInbox('${t.id}','schedule',this.value)">
     <select class="inbox-sel" onchange="sortInbox('${t.id}','assignee',this.value)">
       <option value="">assign…</option>${teamOpts}</select>
-    <input type="date" class="inbox-sel" onchange="sortInbox('${t.id}','schedule',this.value)">
+    <select class="inbox-sel" onchange="fileToResearch('${t.id}',this.value)">
+      <option value="">file under…</option>${clientOpts}</select>
     <button class="loop-del" title="Done" onclick="setTaskStatus('${t.id}','done')">✓</button>
     <button class="loop-del" title="Delete" onclick="removeTask('${t.id}')">×</button>
   </div>`;
+}
+
+// Sorting to a client files the capture where you'd look for it: as a note
+// under that client in Research. The task itself is absorbed (deleted).
+async function fileToResearch(id, client){
+  const t = tasks.find(x => x.id === id); if(!t || !client) return;
+  const n = { id:newCmdId('n'), client, title:t.title, body:t.notes||'', pinned:false,
+              createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() };
+  notes.unshift(n);
+  tasks = tasks.filter(x => x.id !== id);
+  await syncNote(n);
+  await deleteTask(id);
+  renderCommand();
+  toast(`→ Research · ${client}`);
 }
 
 function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
 async function sortInbox(id, field, value){
   const t = tasks.find(x => x.id === id); if(!t) return;
-  // empty value = user cleared the field: null it out (unschedule / unassign / no client)
-  if(field === 'client') t.client = value || null;
+  // empty value = user cleared the field: null it out (unschedule / unassign)
+  // (client sorting is fileToResearch now, not a task field)
   if(field === 'assignee') t.assigneeId = value ? parseInt(value) : null;
-  if(field === 'schedule') t.scheduledFor = value || null;
+  if(field === 'schedule'){
+    if(value){
+      // a half-typed year (e.g. 0021) silently exiled a task once — never again
+      const d = new Date(value);
+      if(isNaN(d) || d.getFullYear() < 2024){ toast('⚠ Check the date'); renderCommand(); return; }
+    }
+    t.scheduledFor = value || null;
+  }
   const ok = await syncTask(t);
   renderCommand();
   if(ok) toast('✓ Sorted');
