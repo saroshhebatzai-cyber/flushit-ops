@@ -2882,7 +2882,74 @@ async function removeNote(id){
   renderResearch();
 }
 
-function renderLeads(){}
+// Stored UTC ISO → value string for <input type="datetime-local"> in the
+// browser's local timezone (slicing the raw ISO would show UTC time)
+function toLocalDT(iso){
+  const d = new Date(iso);
+  return isoDate(d) + 'T' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+const LEAD_STAGES = [
+  {key:'new',                 label:'New'},
+  {key:'discovery_scheduled', label:'Discovery Scheduled'},
+  {key:'research',            label:'Research'},
+  {key:'proposal',            label:'Proposal'},
+  {key:'won',                 label:'Won ✓'},
+  {key:'lost',                label:'Lost'},
+];
+
+function renderLeads(){
+  const order = Object.fromEntries(LEAD_STAGES.map((s,i) => [s.key, i]));
+  const list = [...leads].sort((a,b) => order[a.stage] - order[b.stage] || new Date(b.createdAt) - new Date(a.createdAt));
+  document.getElementById('leads-list').innerHTML = list.map(l => `<div class="lead-card"
+      style="${l.stage==='won'?'border-color:var(--accent)':''}${l.stage==='lost'?'opacity:.45':''}">
+    <div>
+      <input class="note-title" value="${escHtml(l.name)}" onblur="updateLead('${l.id}','name',this.value)">
+      <input class="cmd-add-input" style="width:100%" value="${escHtml(l.contact)}" placeholder="contact…"
+        onblur="updateLead('${l.id}','contact',this.value)">
+    </div>
+    <textarea class="note-body" style="min-height:36px" placeholder="notes…"
+      onblur="updateLead('${l.id}','notes',this.value)">${escHtml(l.notes)}</textarea>
+    <select class="inbox-sel" onchange="setLeadStage('${l.id}',this.value)">
+      ${LEAD_STAGES.map(s => `<option value="${s.key}" ${l.stage===s.key?'selected':''}>${s.label}</option>`).join('')}
+    </select>
+    <input type="datetime-local" class="inbox-sel" value="${l.meetingAt ? toLocalDT(l.meetingAt) : ''}"
+      onchange="updateLead('${l.id}','meetingAt',this.value ? new Date(this.value).toISOString() : null)">
+    <button class="loop-del" onclick="removeLead('${l.id}')">×</button>
+  </div>`).join('') || '<div style="font-size:11px;color:var(--td)">No leads yet. + New Lead when one lands.</div>';
+}
+
+async function addLead(){
+  const name = prompt('Lead name (person or company):'); if(!name?.trim()) return;
+  const l = { id:newCmdId('l'), name:name.trim(), contact:'', source:'', stage:'new',
+              meetingAt:null, notes:'', createdAt:new Date().toISOString() };
+  leads.unshift(l);
+  await syncLead(l);
+  renderLeads();
+}
+
+async function updateLead(id, field, value){
+  const l = leads.find(x => x.id === id); if(!l) return;
+  if(l[field] === value) return;
+  l[field] = value;
+  await syncLead(l);
+  if(field === 'meetingAt') renderLeads();
+}
+
+async function setLeadStage(id, stage){
+  const l = leads.find(x => x.id === id); if(!l) return;
+  l.stage = stage;
+  await syncLead(l);
+  if(stage === 'won') toast(`🎉 ${l.name} is now a client — available as a tag everywhere`);
+  renderLeads();
+}
+
+async function removeLead(id){
+  if(!confirm('Delete this lead?')) return;
+  leads = leads.filter(x => x.id !== id);
+  await deleteLeadRow(id);
+  renderLeads();
+}
 
 async function captureTask(){
   const input = document.getElementById('capture-input');
@@ -2982,7 +3049,6 @@ function isoDate(d){
 
 function weekPrev(){ weekOffset--; renderWeek(); }
 function weekNext(){ weekOffset++; renderWeek(); }
-function addLead(){}
 
 // ─── CALENDAR ────────────────────────────────────────────────────────────────
 
