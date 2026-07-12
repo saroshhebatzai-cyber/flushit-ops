@@ -56,3 +56,11 @@ alter publication supabase_realtime add table meta;
 -- gets 42501 permission denied.
 grant select, insert, update, delete on table tasks, notes, leads, meta to anon, authenticated;
 grant all on table tasks, notes, leads, meta to service_role;
+
+-- Supabase enables RLS by default on SQL-created tables; the existing
+-- projects/videos tables run without RLS (app-level gating convention).
+-- With RLS on and no policies: selects return empty, inserts fail 42501.
+alter table tasks disable row level security;
+alter table notes disable row level security;
+alter table leads disable row level security;
+alter table meta  disable row level security;
