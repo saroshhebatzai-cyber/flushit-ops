@@ -345,7 +345,8 @@ async function syncTask(t){
     assignee_id:t.assigneeId, client:t.client, status:t.status,
     scheduled_for:t.scheduledFor, created_at:t.createdAt, completed_at:t.completedAt
   });
-  if(error){ console.error('syncTask:', error); toast('⚠ Failed to save — check connection'); }
+  if(error){ console.error('syncTask:', error); toast('⚠ Failed to save — check connection'); return false; }
+  return true;
 }
 async function deleteTask(id){
   const { error } = await db.from('tasks').delete().eq('id', id);
@@ -446,8 +447,7 @@ async function captureTask(){
               createdAt:new Date().toISOString(), completedAt:null };
   tasks.push(t);
   input.value = '';
-  await syncTask(t);
-  toast('✓ Captured');
+  if(await syncTask(t)) toast('✓ Captured');
   renderCommand();
 }
 
@@ -482,7 +482,7 @@ function relAge(iso){
 }
 
 function inboxRowHtml(t){
-  const clientOpts = allClientNames().map(c => `<option ${t.client===c?'selected':''}>${c}</option>`).join('');
+  const clientOpts = allClientNames().map(c => `<option ${t.client===c?'selected':''}>${escHtml(c)}</option>`).join('');
   const teamOpts = TEAM.filter(m => m.id !== currentUser.id)
     .map(m => `<option value="${m.id}">${m.name}</option>`).join('');
   return `<div class="inbox-row">
@@ -505,9 +505,9 @@ async function sortInbox(id, field, value){
   if(field === 'client') t.client = value;
   if(field === 'assignee') t.assigneeId = parseInt(value);
   if(field === 'schedule') t.scheduledFor = value;
-  await syncTask(t);
+  const ok = await syncTask(t);
   renderCommand();
-  toast('✓ Sorted');
+  if(ok) toast('✓ Sorted');
 }
 
 async function setTaskStatus(id, status){
