@@ -661,7 +661,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
   <div class="tab" id="tab-research">
     <div class="sec-hdr"><div class="sec-title">Research</div>
-      <button class="cmd-add-btn" onclick="addNote()">+ New Note</button></div>
+      <span>
+        <button class="cmd-add-btn" onclick="addClient()">+ New Client</button>
+        <button class="cmd-add-btn" onclick="addNote()">+ New Note</button>
+      </span></div>
     <div id="research-subtabs"></div>
     <div id="research-notes"></div>
   </div>
@@ -2848,17 +2851,26 @@ function renderResearch(){
   </div>`).join('') || (researchClient ? '<div style="font-size:11px;color:var(--td)">No notes yet for this client.</div>' : '');
 }
 
-async function addNote(){
-  let client = researchClient;
-  const typed = prompt('Client for this note:', client || '');
-  if(typed === null) return;
-  client = typed.trim() || client;
-  if(!client){ toast('⚠ Note needs a client'); return; }
+// New notes land on the active client subtab; the prompt only appears when no
+// client exists yet (first use). "+ New Client" is the explicit way to start a
+// new client — typing note text into a client prompt was creating junk subtabs.
+async function addNote(client){
+  client = client || researchClient;
+  if(!client){ await addClient(); return; }
   const n = { id:newCmdId('n'), client, title:'', body:'', pinned:false,
               createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() };
   notes.unshift(n); researchClient = client;
   await syncNote(n);
   renderResearch();
+  document.querySelector('#research-notes .note-title')?.focus();
+}
+
+async function addClient(){
+  const typed = prompt('New client name:');
+  if(typed === null) return;
+  const client = typed.trim();
+  if(!client){ toast('⚠ Client needs a name'); return; }
+  await addNote(client);
 }
 
 async function updateNote(id, field, value){
@@ -2889,6 +2901,13 @@ function toLocalDT(iso){
   return isoDate(d) + 'T' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
 
+// datetime-local can hand over strings Date can't parse (e.g. 5+ digit years
+// mid-typing) — toISOString() on an invalid Date throws, killing the onchange
+function toIsoOrNull(v){
+  const d = new Date(v);
+  return v && !isNaN(d) ? d.toISOString() : null;
+}
+
 const LEAD_STAGES = [
   {key:'new',                 label:'New'},
   {key:'discovery_scheduled', label:'Discovery Scheduled'},
@@ -2914,7 +2933,7 @@ function renderLeads(){
       ${LEAD_STAGES.map(s => `<option value="${s.key}" ${l.stage===s.key?'selected':''}>${s.label}</option>`).join('')}
     </select>
     <input type="datetime-local" class="inbox-sel" value="${l.meetingAt ? toLocalDT(l.meetingAt) : ''}"
-      onchange="updateLead('${l.id}','meetingAt',this.value ? new Date(this.value).toISOString() : null)">
+      onchange="updateLead('${l.id}','meetingAt',toIsoOrNull(this.value))">
     <button class="loop-del" onclick="removeLead('${l.id}')">×</button>
   </div>`).join('') || '<div style="font-size:11px;color:var(--td)">No leads yet. + New Lead when one lands.</div>';
 }
