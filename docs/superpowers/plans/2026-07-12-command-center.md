@@ -395,6 +395,10 @@ async function syncMeta(key, value){
       clearTimeout(_cmdRealtimeDebounce);
       _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
     })
+    .on('postgres_changes', {event:'*', schema:'public', table:'meta'}, () => {
+      clearTimeout(_cmdRealtimeDebounce);
+      _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
+    })
 ```
 
 and declare `let _cmdRealtimeDebounce;` next to the existing `let _realtimeDebounce;`.

@@ -982,6 +982,10 @@ function subscribeRealtime(){
       clearTimeout(_cmdRealtimeDebounce);
       _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
     })
+    .on('postgres_changes', {event:'*', schema:'public', table:'meta'}, () => {
+      clearTimeout(_cmdRealtimeDebounce);
+      _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
+    })
     .subscribe((status, err) => {
       console.log('[Realtime]', status, err || '');
       if(status === 'SUBSCRIBED') toast('● Live');
