@@ -25,7 +25,7 @@
   --r:12px;--rs:8px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;min-height:100vh;overflow-x:hidden;display:grid;grid-template-columns:200px 1fr;grid-template-rows:56px 1fr;grid-template-areas:"side hdr" "side main"}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;min-height:100vh;overflow-x:hidden;display:grid;grid-template-columns:200px minmax(0,1fr);grid-template-rows:56px 1fr;grid-template-areas:"side hdr" "side main"}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,179,104,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,179,104,.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
 
 /* LOGIN */
@@ -71,7 +71,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .side-out:hover{color:var(--red);border-color:var(--red)}
 .side-meta{font-family:var(--mono);font-size:8px;color:var(--td)}
 .sidebar #capture-input{width:100%;margin:4px 0}
-.hdr{grid-area:hdr;position:sticky;top:0;z-index:100;background:rgba(250,248,244,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px}
+.hdr{grid-area:hdr;min-width:0;position:sticky;top:0;z-index:100;background:rgba(250,248,244,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px}
 .hdr-title{font-family:var(--display);font-weight:800;font-size:18px;color:var(--text)}
 .hdr-icon-btn{font-size:12px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer}
 .menu-btn{display:none;background:transparent;border:1px solid var(--border);border-radius:var(--rs);padding:4px 9px;cursor:pointer;color:var(--tm)}
@@ -83,7 +83,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 }
 
 /* MAIN */
-.main{grid-area:main;position:relative;z-index:1;padding:20px 24px}
+.main{grid-area:main;min-width:0;position:relative;z-index:1;padding:20px 24px}
 .tab{display:none}.tab.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -3040,12 +3040,20 @@ async function captureTask(){
 }
 
 document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){ document.body.classList.remove('sidebar-open'); return; }
   if(e.key !== 'c' || e.metaKey || e.ctrlKey || e.altKey) return;
   if(!isAdmin()) return;
   const tag = document.activeElement?.tagName;
   if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || document.activeElement?.isContentEditable) return;
   e.preventDefault();
+  if(window.innerWidth <= 900) document.body.classList.add('sidebar-open');
   document.getElementById('capture-input').focus();
+});
+
+document.addEventListener('click', e => {
+  if(!document.body.classList.contains('sidebar-open')) return;
+  if(e.target.closest('#sidebar') || e.target.closest('#menu-btn')) return;
+  document.body.classList.remove('sidebar-open');
 });
 
 const inboxTasks = () => tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled'
