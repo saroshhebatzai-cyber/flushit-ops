@@ -25,7 +25,7 @@
   --r:12px;--rs:8px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;min-height:100vh;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;min-height:100vh;overflow-x:hidden;display:grid;grid-template-columns:200px 1fr;grid-template-rows:56px 1fr;grid-template-areas:"side hdr" "side main"}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,179,104,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,179,104,.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
 
 /* LOGIN */
@@ -45,24 +45,45 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .login-error{font-size:11px;color:var(--red);text-align:center;min-height:16px}
 
 /* HEADER */
-.hdr{position:sticky;top:0;z-index:100;background:rgba(250,248,244,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:20px;height:58px}
 .logo{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:-.5px;white-space:nowrap;display:flex;align-items:center;gap:8px}
 .logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%}
-.hdr-stats{display:flex;gap:16px;flex:1}
+.hdr-stats{display:flex;gap:16px;margin-bottom:14px}
 .hs{display:flex;flex-direction:column;gap:1px}
 .hs-l{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1.2px}
 .hs-v{font-size:13px;font-weight:500}
 .hs-v.g{color:var(--accent)}.hs-v.y{color:var(--yellow)}.hs-v.r{color:var(--red)}
-.nav{display:flex;gap:2px;background:var(--surface);padding:4px;border-radius:var(--r);border:1px solid var(--border)}
-.nav-btn{font-family:var(--mono);font-size:11px;padding:6px 14px;border:none;border-radius:var(--rs);cursor:pointer;background:transparent;color:var(--tm);transition:all .15s}
-.nav-btn:hover{color:var(--text);background:var(--s2)}
-.nav-btn.active{background:var(--accent);color:var(--dark);font-weight:600}
 .btn-new{font-family:var(--mono);font-size:11px;padding:8px 16px;background:var(--accent);color:var(--dark);border:none;border-radius:var(--r);cursor:pointer;font-weight:600;transition:all .15s;white-space:nowrap}
 .btn-new:hover{background:#00e87a}
 .hdr-date{font-size:10px;color:var(--td);white-space:nowrap}
 
+/* SIDEBAR */
+.sidebar{grid-area:side;background:var(--bg);border-right:1px solid var(--border);padding:16px 10px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.side-logo{font-family:var(--display);font-weight:800;font-size:16px;display:flex;align-items:center;gap:8px;padding:0 8px 12px}
+.side-group{display:flex;flex-direction:column;gap:1px;margin-top:10px}
+.side-label{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--td);padding:0 8px 4px}
+.nav-btn{font-family:var(--sans);font-size:12px;text-align:left;padding:6px 10px;border:none;border-radius:var(--rs);cursor:pointer;background:transparent;color:var(--tm);display:flex;justify-content:space-between;align-items:center;transition:all .15s}
+.nav-btn:hover{color:var(--text);background:var(--s2)}
+.nav-btn.active{color:var(--text);background:var(--surface);box-shadow:var(--shadow);font-weight:600}
+.side-badge{font-family:var(--mono);font-size:9px;color:#fff;background:var(--accent);border-radius:9px;padding:1px 6px}
+.side-badge:empty{display:none}
+.side-footer{margin-top:auto;padding:10px 8px 0;border-top:1px solid var(--border);font-size:10px;color:var(--tm);display:flex;flex-direction:column;gap:6px}
+.side-out{background:transparent;border:1px solid var(--border);border-radius:var(--rs);color:var(--td);font-family:var(--mono);font-size:9px;padding:3px 8px;cursor:pointer;width:fit-content}
+.side-out:hover{color:var(--red);border-color:var(--red)}
+.side-meta{font-family:var(--mono);font-size:8px;color:var(--td)}
+.sidebar #capture-input{width:100%;margin:4px 0}
+.hdr{grid-area:hdr;position:sticky;top:0;z-index:100;background:rgba(250,248,244,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px}
+.hdr-title{font-family:var(--display);font-weight:800;font-size:18px;color:var(--text)}
+.hdr-icon-btn{font-size:12px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer}
+.menu-btn{display:none;background:transparent;border:1px solid var(--border);border-radius:var(--rs);padding:4px 9px;cursor:pointer;color:var(--tm)}
+@media (max-width:900px){
+  body{grid-template-columns:1fr;grid-template-areas:"hdr" "main"}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;width:210px;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 40px rgba(26,26,26,.15)}
+  body.sidebar-open .sidebar{transform:none}
+  .menu-btn{display:block}
+}
+
 /* MAIN */
-.main{position:relative;z-index:1;padding:20px 24px}
+.main{grid-area:main;position:relative;z-index:1;padding:20px 24px}
 .tab{display:none}.tab.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -459,7 +480,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
 /* ─── COMMAND CENTER ─── */
-.cmd-sep{width:1px;height:18px;background:var(--border);margin:0 4px}
 .cmd-two-col{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
 .cmd-col-hdr{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--td);text-transform:uppercase;margin-bottom:8px}
 .person-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
@@ -523,46 +543,58 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </div>
 
 <div class="hdr">
-  <div class="logo"><div class="logo-dot"></div>Flush It</div>
-  <div class="hdr-stats">
-    <div class="hs"><div class="hs-l">Active</div><div class="hs-v g" id="stat-active">0</div></div>
-    <div class="hs"><div class="hs-l">On Track</div><div class="hs-v g" id="stat-ontrack">0</div></div>
-    <div class="hs"><div class="hs-l">At Risk</div><div class="hs-v y" id="stat-atrisk">0</div></div>
-    <div class="hs"><div class="hs-l">Overdue</div><div class="hs-v r" id="stat-overdue">0</div></div>
-    <div class="hs"><div class="hs-l">In Production</div><div class="hs-v" id="stat-prod">0</div></div>
-    <div class="hs"><div class="hs-l">Delivered</div><div class="hs-v" id="stat-delivered">0</div></div>
-  </div>
-  <nav class="nav">
-    <button class="nav-btn active" onclick="switchTab('projects',this)">Projects</button>
-    <button class="nav-btn" onclick="switchTab('clients',this)">Clients</button>
-    <button class="nav-btn" onclick="switchTab('team',this)">Team</button>
-    <button class="nav-btn" id="nav-efficiency" onclick="switchTab('efficiency',this)">Efficiency</button>
-    <button class="nav-btn" onclick="switchTab('calendar',this)">Calendar</button>
-    <button class="nav-btn" onclick="switchTab('queue',this)">Queue</button>
-    <span class="cmd-sep" id="cmd-sep" style="display:none"></span>
-    <button class="nav-btn cmd-nav" id="nav-today" style="display:none" onclick="switchTab('today',this)">Today</button>
-    <button class="nav-btn cmd-nav" id="nav-week" style="display:none" onclick="switchTab('week',this)">My Week</button>
-    <button class="nav-btn cmd-nav" id="nav-research" style="display:none" onclick="switchTab('research',this)">Research</button>
-    <button class="nav-btn cmd-nav" id="nav-leads" style="display:none" onclick="switchTab('leads',this)">Leads</button>
-  </nav>
-  <input id="capture-input" style="display:none" placeholder="＋ capture… (c)"
-         onkeydown="if(event.key==='Enter')captureTask()" />
+  <button class="menu-btn" id="menu-btn" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
+  <div class="hdr-title" id="hdr-title">Projects</div>
+  <div style="flex:1"></div>
   <button class="btn-new" id="btn-new-project" onclick="openModal()">+ New Project</button>
   <div class="hdr-date" id="hdr-date"></div>
-  <div style="font-family:var(--mono);font-size:9px;color:var(--td);white-space:nowrap;border-left:1px solid var(--border);padding-left:12px;display:flex;flex-direction:column;gap:2px;text-align:right">
-    <span id="hdr-version" style="color:var(--accent);opacity:.7"></span>
-    <span id="hdr-month"></span>
-  </div>
-  <button onclick="playDeadlineChime()" title="Test notification sound" style="font-family:var(--mono);font-size:11px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--text)';this.style.borderColor='var(--b2)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">🔔</button>
-  <div style="display:flex;align-items:center;gap:8px;border-left:1px solid var(--border);padding-left:12px">
-    <span id="hdr-user" style="font-size:10px;color:var(--tm)"></span>
-    <button onclick="doLogout()" title="Sign out" style="font-family:var(--mono);font-size:10px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseleave="this.style.color='var(--td)';this.style.borderColor='var(--border)'">Out</button>
-  </div>
+  <button onclick="playDeadlineChime()" title="Test notification sound" class="hdr-icon-btn">🔔</button>
 </div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="side-logo"><div class="logo-dot"></div>Flush It</div>
+  <input id="capture-input" style="display:none" placeholder="＋ capture… (c)"
+         onkeydown="if(event.key==='Enter')captureTask()" />
+  <div class="side-group" id="grp-myday" style="display:none">
+    <div class="side-label">My Day</div>
+    <button class="nav-btn" id="nav-today" onclick="switchTab('today',this)">Today <span class="side-badge" id="badge-today"></span></button>
+    <button class="nav-btn" id="nav-week" onclick="switchTab('week',this)">My Week</button>
+  </div>
+  <div class="side-group">
+    <div class="side-label">Delivery</div>
+    <button class="nav-btn active" id="nav-projects" onclick="switchTab('projects',this)">Projects</button>
+    <button class="nav-btn" id="nav-queue" onclick="switchTab('queue',this)">Queue <span class="side-badge" id="badge-queue"></span></button>
+    <button class="nav-btn" id="nav-calendar" onclick="switchTab('calendar',this)">Calendar</button>
+  </div>
+  <div class="side-group" id="grp-growth" style="display:none">
+    <div class="side-label">Growth</div>
+    <button class="nav-btn" id="nav-leads" onclick="switchTab('leads',this)">Leads</button>
+    <button class="nav-btn" id="nav-research" onclick="switchTab('research',this)">Research</button>
+  </div>
+  <div class="side-group">
+    <div class="side-label">Studio</div>
+    <button class="nav-btn" id="nav-team" onclick="switchTab('team',this)">Team</button>
+    <button class="nav-btn" id="nav-clients" onclick="switchTab('clients',this)">Clients</button>
+    <button class="nav-btn" id="nav-efficiency" onclick="switchTab('efficiency',this)">Efficiency</button>
+  </div>
+  <div class="side-footer">
+    <span id="hdr-user"></span>
+    <button onclick="doLogout()" class="side-out">Out</button>
+    <div class="side-meta"><span id="hdr-version"></span> <span id="hdr-month"></span></div>
+  </div>
+</aside>
 
 <div class="main">
   <div class="tab active" id="tab-projects">
     <div class="sec-hdr"><div class="sec-title">Pipeline Board</div><div style="font-size:10px;color:var(--tm)">Click any card to manage</div></div>
+    <div class="hdr-stats">
+      <div class="hs"><div class="hs-l">Active</div><div class="hs-v g" id="stat-active">0</div></div>
+      <div class="hs"><div class="hs-l">On Track</div><div class="hs-v g" id="stat-ontrack">0</div></div>
+      <div class="hs"><div class="hs-l">At Risk</div><div class="hs-v y" id="stat-atrisk">0</div></div>
+      <div class="hs"><div class="hs-l">Overdue</div><div class="hs-v r" id="stat-overdue">0</div></div>
+      <div class="hs"><div class="hs-l">In Production</div><div class="hs-v" id="stat-prod">0</div></div>
+      <div class="hs"><div class="hs-l">Delivered</div><div class="hs-v" id="stat-delivered">0</div></div>
+    </div>
     <div class="kanban-wrap"><div class="kanban" id="kanban"></div></div>
   </div>
   <div class="tab" id="tab-clients">
@@ -912,6 +944,7 @@ async function loadCommandData(){
   metaKV = {};
   (m.data||[]).forEach(r => metaKV[r.key] = r.value);
   renderCommand();
+  updateSideBadges();
 }
 
 function renderCommand(){
@@ -920,6 +953,7 @@ function renderCommand(){
   if(active === 'tab-week') renderWeek();
   if(active === 'tab-research') renderResearch();
   if(active === 'tab-leads') renderLeads();
+  updateSideBadges();
 }
 
 async function syncTask(t){
@@ -1197,7 +1231,23 @@ function toast(msg){
   setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); renderQueue(); updateStats(); if(currentPanelId) renderPanelBody(currentPanelId); if(document.querySelector('.tab.active')?.id === 'tab-today') renderToday(); }
+function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); renderQueue(); updateStats(); if(currentPanelId) renderPanelBody(currentPanelId); if(document.querySelector('.tab.active')?.id === 'tab-today') renderToday(); updateSideBadges(); }
+
+function updateSideBadges(){
+  const t = document.getElementById('badge-today'), q = document.getElementById('badge-queue');
+  if(t){
+    const blockers = allVideosFlat().filter(v => v.stage === 2 && !v.draft).length
+      + projects.filter(p => p.stage === 4).length;
+    const n = blockers + (typeof inboxTasks === 'function' ? inboxTasks().length : 0);
+    t.textContent = n || '';
+  }
+  if(q && currentUser){
+    const mine = isAdmin()
+      ? allVideosFlat().filter(v => v.stage === 2 && !v.draft).length
+      : allVideosFlat().filter(v => v.assigneeId === currentUser.id && v.stage < 3 && !v.draft).length;
+    q.textContent = mine || '';
+  }
+}
 
 function updateStats(){
   const active = projects.filter(p => p.stage < 7).length;
@@ -2650,6 +2700,10 @@ function switchTab(name, btn){
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
+  const TAB_TITLES = {projects:'Projects',clients:'Clients',team:'Team',efficiency:'Efficiency',
+    calendar:'Calendar',queue:'Queue',today:'Today',week:'My Week',research:'Research',leads:'Leads'};
+  document.getElementById('hdr-title').textContent = TAB_TITLES[name] || name;
+  document.body.classList.remove('sidebar-open');
   if(name === 'efficiency'){ renderEfficiency(); }
   if(name === 'team') animateBars();
   if(name === 'calendar') renderCalendar();
@@ -2723,9 +2777,9 @@ async function addLoop(memberId){
 function needsYouHtml(){
   const items = [];
   allVideosFlat().filter(v => v.stage === 2 && !v.draft).forEach(v =>
-    items.push({icon:'🔴', label:`${escHtml(v.projClient)} · ${escHtml(v.name)} — your review`, go:"switchTab('queue',document.querySelector('.nav-btn:nth-child(6)'))"}));
+    items.push({icon:'🔴', label:`${escHtml(v.projClient)} · ${escHtml(v.name)} — your review`, go:"switchTab('queue',document.getElementById('nav-queue'))"}));
   projects.filter(p => p.stage === 4).forEach(p =>
-    items.push({icon:'🔴', label:`${escHtml(p.client)} · ${escHtml(p.name)} — approval to shoot`, go:"switchTab('projects',document.querySelector('.nav-btn:nth-child(1)'))"}));
+    items.push({icon:'🔴', label:`${escHtml(p.client)} · ${escHtml(p.name)} — approval to shoot`, go:"switchTab('projects',document.getElementById('nav-projects'))"}));
   tasks.filter(t => t.assigneeId === currentUser.id && t.status !== 'done' && t.status !== 'cancelled').forEach(t =>
     items.push({icon:'🟡', label:escHtml(t.title), go:''}));
   const todayStr = new Date().toDateString();
@@ -2743,7 +2797,7 @@ function streamsHtml(){
   const nextMeet = leads.filter(l => l.meetingAt && new Date(l.meetingAt) >= new Date())
     .sort((a,b) => new Date(a.meetingAt) - new Date(b.meetingAt))[0];
   return `
-  <div class="stream-card" style="cursor:pointer" onclick="switchTab('queue',document.querySelector('.nav-btn:nth-child(6)'))">
+  <div class="stream-card" style="cursor:pointer" onclick="switchTab('queue',document.getElementById('nav-queue'))">
     <b>Edits</b> — ${active.length} active${overdue?` · <span style="color:var(--red)">${overdue} overdue</span>`:''}</div>
   <div class="stream-card" style="cursor:pointer" onclick="switchTab('leads',document.getElementById('nav-leads'))">
     <b>Leads</b> — ${openLeads.length} open${nextMeet?` · next: ${escHtml(nextMeet.name)} ${new Date(nextMeet.meetingAt).toLocaleDateString('en-GB',{weekday:'short'})}`:''}</div>`;
@@ -3435,14 +3489,11 @@ async function onSignedIn(member){
 
 function applyRoleGating(){
   const admin = isAdmin();
-  // Efficiency tab — admins only
+  document.getElementById('grp-myday').style.display = admin ? '' : 'none';
+  document.getElementById('grp-growth').style.display = admin ? '' : 'none';
   document.getElementById('nav-efficiency').style.display = admin ? '' : 'none';
-  // New Project button — admins only
   document.getElementById('btn-new-project').style.display = admin ? '' : 'none';
-  // Command section — admins only
-  document.getElementById('cmd-sep').style.display = admin ? '' : 'none';
   document.getElementById('capture-input').style.display = admin ? '' : 'none';
-  document.querySelectorAll('.cmd-nav').forEach(b => b.style.display = admin ? '' : 'none');
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
