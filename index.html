@@ -480,8 +480,23 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
 /* ─── COMMAND CENTER ─── */
-.cmd-two-col{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
-.cmd-col-hdr{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--td);text-transform:uppercase;margin-bottom:8px}
+.brief-bar{background:var(--dark);border-radius:var(--r);padding:14px 18px;margin-bottom:18px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+.brief-date{font-family:var(--display);font-weight:800;font-size:16px;color:#FAF8F4}
+.brief-hot{font-family:var(--mono);font-size:10px;color:var(--accent-bright)}
+.brief-cool{font-family:var(--mono);font-size:10px;color:#8A8A93}
+.brief-focus{font-family:var(--mono);font-size:9px;color:#5E5E66;margin-left:auto}
+.today-label{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--td);margin:16px 0 7px;font-weight:600}
+.need-card{background:var(--surface);border-radius:var(--rs);padding:11px 13px;margin-bottom:6px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;border-left:3px solid var(--td)}
+.need-card.sev-red{border-left-color:var(--red)}
+.need-card.sev-amber{border-left-color:var(--yellow)}
+.need-title{font-size:12px;color:var(--text);font-weight:600}
+.need-why{font-family:var(--mono);font-size:9px;color:var(--tm);white-space:nowrap}
+.need-card.sev-red .need-why{color:var(--red)}
+.team-strip{display:flex;gap:8px;flex-wrap:wrap}
+.team-pill{background:var(--surface);border-radius:16px;padding:5px 12px;font-size:10px;color:var(--text);box-shadow:var(--shadow);cursor:pointer;border:1px solid transparent}
+.team-pill:hover,.team-pill.open{border-color:var(--accent)}
+.team-pill .dot-on{color:var(--accent)} .team-pill .dot-busy{color:var(--yellow)} .team-pill .dot-free{color:var(--td)}
+#today-team-detail{margin-top:10px}
 .person-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
 .person-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .person-card-name{font-weight:700;font-size:13px}
@@ -499,14 +514,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cmd-add-row{display:flex;gap:6px;margin-top:8px}
 .cmd-add-input{flex:1;font-family:var(--mono);font-size:11px;padding:6px 9px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
 .cmd-add-btn{font-family:var(--mono);font-size:11px;padding:6px 10px;background:var(--adim);color:var(--accent);border:1px solid var(--accent);border-radius:var(--rs);cursor:pointer}
-.needs-card{background:var(--rdim);border:1px solid var(--red);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
-.needs-row{display:flex;gap:8px;align-items:center;font-size:12px;padding:5px 0;cursor:pointer}
-.needs-row:hover{color:var(--accent)}
 .stream-card{background:var(--surface);border:1px dashed var(--b2);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
-.inbox-row{display:flex;gap:6px;align-items:center;padding:5px 0;border-top:1px dashed var(--border);font-size:12px;flex-wrap:wrap}
+.inbox-row{background:var(--surface);border:none;border-radius:var(--rs);box-shadow:var(--shadow);padding:9px 12px;margin-bottom:6px;display:flex;gap:6px;align-items:center;font-size:12px;flex-wrap:wrap}
 .inbox-sel{font-family:var(--mono);font-size:10px;padding:3px 6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--tm)}
 .inbox-chip{font-family:var(--mono);font-size:10px;padding:3px 8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--tm);cursor:pointer}
-.inbox-chip:hover{border-color:var(--accent);color:var(--accent)}
+.inbox-chip:hover{background:var(--accent);border-color:var(--accent);color:#fff}
 .inbox-date{width:26px;padding:3px 2px;cursor:pointer}
 #capture-input{font-family:var(--mono);font-size:11px;padding:6px 10px;width:210px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
 #capture-input:focus{border-color:var(--accent);outline:none}
@@ -522,7 +534,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .client-subtab{font-family:var(--mono);font-size:11px;padding:5px 12px;background:var(--s2);border:1px solid var(--border);border-radius:14px;color:var(--tm);cursor:pointer;margin:0 6px 6px 0}
 .client-subtab.active{background:var(--adim);color:var(--accent);border-color:var(--accent)}
 .lead-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;display:grid;grid-template-columns:2fr 1.5fr 1.2fr 1fr auto;gap:10px;align-items:center;font-size:12px}
-@media(max-width:900px){.cmd-two-col{grid-template-columns:1fr}.lead-card{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.lead-card{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -665,15 +677,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="charts-grid" id="charts-grid"></div>
   </div>
   <div class="tab" id="tab-today">
-    <div class="sec-hdr"><div class="sec-title" id="today-title">Today</div></div>
-    <div class="cmd-two-col">
-      <div><div class="cmd-col-hdr">People</div><div id="today-people"></div></div>
-      <div>
-        <div class="cmd-col-hdr">Needs You</div><div id="today-needs"></div>
-        <div class="cmd-col-hdr" style="margin-top:14px">Streams</div><div id="today-streams"></div>
-        <div class="cmd-col-hdr" style="margin-top:14px">Inbox</div><div id="today-inbox"></div>
-      </div>
-    </div>
+    <div id="today-brief"></div>
+    <div class="today-label">Needs you</div>
+    <div id="today-needs"></div>
+    <div class="today-label">Inbox</div>
+    <div id="today-inbox"></div>
+    <div class="today-label">Team</div>
+    <div id="today-team"></div>
+    <div id="today-team-detail"></div>
   </div>
   <div class="tab" id="tab-week">
     <div class="sec-hdr">
@@ -2776,44 +2787,76 @@ async function addLoop(memberId){
 
 function needsYouHtml(){
   const items = [];
-  allVideosFlat().filter(v => v.stage === 2 && !v.draft).forEach(v =>
-    items.push({icon:'🔴', label:`${escHtml(v.projClient)} · ${escHtml(v.name)} — your review`, go:"switchTab('queue',document.getElementById('nav-queue'))"}));
+  allVideosFlat().filter(v => v.stage === 2 && !v.draft).forEach(v => {
+    const who = TEAM.find(m => m.id === v.assigneeId);
+    items.push({sev:'red', title:`${escHtml(v.projClient)} · ${escHtml(v.name)} — your review`,
+      why: who ? `blocking ${who.name.split(' ')[0]}` : 'blocking delivery',
+      go:"switchTab('queue',document.getElementById('nav-queue'))"});
+  });
   projects.filter(p => p.stage === 4).forEach(p =>
-    items.push({icon:'🔴', label:`${escHtml(p.client)} · ${escHtml(p.name)} — approval to shoot`, go:"switchTab('projects',document.getElementById('nav-projects'))"}));
-  tasks.filter(t => t.assigneeId === currentUser.id && t.status !== 'done' && t.status !== 'cancelled').forEach(t =>
-    items.push({icon:'🟡', label:escHtml(t.title), go:''}));
+    items.push({sev:'red', title:`${escHtml(p.client)} · ${escHtml(p.name)} — approval to shoot`,
+      why:'crew waiting', go:"switchTab('projects',document.getElementById('nav-projects'))"}));
   const todayStr = new Date().toDateString();
   leads.filter(l => l.meetingAt && new Date(l.meetingAt).toDateString() === todayStr).forEach(l =>
-    items.push({icon:'📅', label:`${escHtml(l.name)} — meeting today`, go:"switchTab('leads',document.getElementById('nav-leads'))"}));
-  if(!items.length) return '<div class="stream-card" style="font-size:11px;color:var(--tm)">Nothing blocked on you ✓</div>';
-  return `<div class="needs-card">${items.map(i =>
-    `<div class="needs-row" ${i.go?`onclick="${i.go}"`:''}>${i.icon} ${i.label}</div>`).join('')}</div>`;
+    items.push({sev:'amber', title:`📅 ${escHtml(l.name)} — meeting`,
+      why:new Date(l.meetingAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
+      go:"switchTab('leads',document.getElementById('nav-leads'))"}));
+  tasks.filter(t => t.assigneeId === currentUser.id && t.status !== 'done' && t.status !== 'cancelled').forEach(t =>
+    items.push({sev:'', title:escHtml(t.title), why:'assigned to you', go:''}));
+  if(!items.length) return '<div style="font-size:11px;color:var(--td)">Nothing blocked on you ✓</div>';
+  const order = {red:0, amber:1, '':2};
+  items.sort((a,b) => order[a.sev] - order[b.sev]);
+  return items.map(i => `<div class="need-card sev-${i.sev}" ${i.go?`onclick="${i.go}"`:''}>
+    <span class="need-title">${i.title}</span><span class="need-why">${i.why}</span></div>`).join('');
 }
 
-function streamsHtml(){
-  const active = allVideosFlat().filter(v => v.stage < 3 && !v.draft);
-  const overdue = active.filter(v => v.deadline && daysFromNow(v.deadline) < 0).length;
-  const openLeads = leads.filter(l => !['won','lost'].includes(l.stage));
-  const nextMeet = leads.filter(l => l.meetingAt && new Date(l.meetingAt) >= new Date())
-    .sort((a,b) => new Date(a.meetingAt) - new Date(b.meetingAt))[0];
-  return `
-  <div class="stream-card" style="cursor:pointer" onclick="switchTab('queue',document.getElementById('nav-queue'))">
-    <b>Edits</b> — ${active.length} active${overdue?` · <span style="color:var(--red)">${overdue} overdue</span>`:''}</div>
-  <div class="stream-card" style="cursor:pointer" onclick="switchTab('leads',document.getElementById('nav-leads'))">
-    <b>Leads</b> — ${openLeads.length} open${nextMeet?` · next: ${escHtml(nextMeet.name)} ${new Date(nextMeet.meetingAt).toLocaleDateString('en-GB',{weekday:'short'})}`:''}</div>`;
+function briefBarHtml(){
+  const needs = document.createElement('div'); needs.innerHTML = needsYouHtml();
+  const needCount = needs.querySelectorAll('.need-card.sev-red').length;
+  const inbox = inboxTasks().length;
+  const inProd = projects.filter(p => p.stage === 6).length;
+  const todayStr = new Date().toDateString();
+  const meetings = leads.filter(l => l.meetingAt && new Date(l.meetingAt).toDateString() === todayStr).length;
+  const focus = metaKV['week_focus_' + isoDate(weekMonday(0))] || '';
+  return `<div class="brief-bar">
+    <span class="brief-date">${today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</span>
+    <span class="brief-hot">${needCount} NEED YOU</span>
+    <span class="brief-cool">${inbox} INBOX · ${inProd} IN PRODUCTION · ${meetings} MEETING${meetings===1?'':'S'}</span>
+    ${focus ? `<span class="brief-focus">week focus: ${escHtml(focus)}</span>` : ''}
+  </div>`;
+}
+
+function teamPillHtml(m){
+  const vids = allVideosFlat().filter(v => v.assigneeId === m.id && v.stage < 3 && !v.draft);
+  const live = vids.find(v => v.startedAt && !v.completedAt);
+  const loops = openLoops(m.id);
+  const dot = live ? 'dot-on' : (vids.length || loops.length) ? 'dot-busy' : 'dot-free';
+  const glyph = dot === 'dot-free' ? '○' : '●';
+  const now = live ? `${escHtml(live.name)}, ${VIDEO_STAGES[live.stage]}`
+    : vids.length ? `${vids.length} edit${vids.length>1?'s':''}`
+    : loops.length ? `${loops.length} open` : 'free';
+  return `<span class="team-pill" id="pill-${m.id}" onclick="togglePersonDetail(${m.id})">
+    <span class="${dot}">${glyph}</span> ${m.name.split(' ')[0]} — ${now}</span>`;
+}
+
+let openPersonId = null;
+function togglePersonDetail(id){
+  openPersonId = (openPersonId === id) ? null : id;
+  const el = document.getElementById('today-team-detail');
+  el.innerHTML = openPersonId ? personCardHtml(TEAM.find(m => m.id === openPersonId)) : '';
+  document.querySelectorAll('.team-pill').forEach(p => p.classList.toggle('open', p.id === 'pill-' + openPersonId));
 }
 
 function renderToday(){
-  document.getElementById('today-title').textContent =
-    '☀️ ' + today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
-  document.getElementById('today-people').innerHTML =
-    TEAM.filter(m => m.id !== currentUser.id).map(personCardHtml).join('');
+  document.getElementById('today-brief').innerHTML = briefBarHtml();
   document.getElementById('today-needs').innerHTML = needsYouHtml();
-  document.getElementById('today-streams').innerHTML = streamsHtml();
   const inbox = inboxTasks();
-  document.getElementById('today-inbox').innerHTML = `<div class="stream-card">
-    ${inbox.length ? inbox.map(inboxRowHtml).join('') : '<div style="font-size:11px;color:var(--td)">Inbox zero ✓</div>'}
-  </div>`;
+  document.getElementById('today-inbox').innerHTML =
+    inbox.length ? inbox.map(inboxRowHtml).join('') : '<div style="font-size:11px;color:var(--td)">Inbox zero ✓</div>';
+  document.getElementById('today-team').innerHTML =
+    TEAM.filter(m => m.id !== currentUser.id).map(teamPillHtml).join('');
+  const detail = document.getElementById('today-team-detail');
+  detail.innerHTML = openPersonId ? personCardHtml(TEAM.find(m => m.id === openPersonId)) : '';
 }
 function renderWeek(){
   const mon = weekMonday(weekOffset);
