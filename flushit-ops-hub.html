@@ -487,6 +487,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .brief-focus{font-family:var(--mono);font-size:9px;color:#5E5E66;margin-left:auto}
 .today-label{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--td);margin:16px 0 7px;font-weight:600}
 .need-card{background:var(--surface);border-radius:var(--rs);padding:11px 13px;margin-bottom:6px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;border-left:3px solid var(--td)}
+.need-card.no-action{cursor:default}
 .need-card.sev-red{border-left-color:var(--red)}
 .need-card.sev-amber{border-left-color:var(--yellow)}
 .need-title{font-size:12px;color:var(--text);font-weight:600}
@@ -2806,7 +2807,7 @@ function needsYouHtml(){
   if(!items.length) return '<div style="font-size:11px;color:var(--td)">Nothing blocked on you ✓</div>';
   const order = {red:0, amber:1, '':2};
   items.sort((a,b) => order[a.sev] - order[b.sev]);
-  return items.map(i => `<div class="need-card sev-${i.sev}" ${i.go?`onclick="${i.go}"`:''}>
+  return items.map(i => `<div class="need-card sev-${i.sev}${i.go?'':' no-action'}" ${i.go?`onclick="${i.go}"`:''}>
     <span class="need-title">${i.title}</span><span class="need-why">${i.why}</span></div>`).join('');
 }
 
@@ -2819,7 +2820,7 @@ function briefBarHtml(){
   const meetings = leads.filter(l => l.meetingAt && new Date(l.meetingAt).toDateString() === todayStr).length;
   const focus = metaKV['week_focus_' + isoDate(weekMonday(0))] || '';
   return `<div class="brief-bar">
-    <span class="brief-date">${today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</span>
+    <span class="brief-date">${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</span>
     <span class="brief-hot">${needCount} NEED YOU</span>
     <span class="brief-cool">${inbox} INBOX · ${inProd} IN PRODUCTION · ${meetings} MEETING${meetings===1?'':'S'}</span>
     ${focus ? `<span class="brief-focus">week focus: ${escHtml(focus)}</span>` : ''}
