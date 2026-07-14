@@ -238,7 +238,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .ps{flex:1;height:3px;background:var(--s3);border-radius:2px;transition:background .3s}
 .ps.done{background:var(--accent)}
 .ps.cur{background:var(--cyan);animation:pb 2s infinite}
-@keyframes pb{0%,100%{opacity:.4}50%{opacity:.9}}
+@keyframes pb{0%,100%{opacity:.65}50%{opacity:1}}
 .cl-details{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .cl-det{background:var(--s2);border-radius:var(--rs);padding:12px 12px}
 .cl-det-lbl{font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
@@ -262,6 +262,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .wl-fill.low{background:var(--accent)}.wl-fill.med{background:var(--yellow)}.wl-fill.high{background:var(--red)}
 .tm-tasks{display:flex;flex-direction:column;gap:6px}
 .tm-task{display:flex;align-items:center;gap:7px;padding:12px 12px;background:var(--s2);border-radius:var(--rs);border:1px solid var(--border)}
+.tm-task.overdue{border-left:2px solid var(--red)}
 .t-pill{font-size:8px;padding:2px 6px;border-radius:20px;background:var(--adim);color:var(--accent-deep);border:1px solid rgba(0,179,104,.2);white-space:nowrap;flex-shrink:0}
 .t-name{font-size:10px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .t-dl{font-size:9px;color:var(--td);white-space:nowrap}
