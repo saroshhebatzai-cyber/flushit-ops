@@ -19,6 +19,7 @@
   --yellow:#C77F00;--ydim:rgba(199,127,0,.14);
   --orange:#D95A25;--odim:rgba(217,90,37,.08);
   --purple:#7C5CD6;--pdim:rgba(124,92,214,.08);
+  --pink:#E64980;--pinkdim:rgba(230,73,128,.12);
   --shadow:0 1px 5px rgba(26,26,26,.07);
   --display:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
   --sans:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
@@ -526,16 +527,46 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .inbox-date{width:26px;padding:3px 2px;cursor:pointer}
 #capture-input{font-family:var(--mono);font-size:11px;padding:6px 10px;width:210px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
 #capture-input:focus{border-color:var(--accent);outline:none}
-.week-day{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:8px}
-.week-day.wd-0{background:#FDF7F9;border-left:3px solid #D6558A}   .wd-0 .week-day-hdr{color:#B84372}
-.week-day.wd-1{background:#FDFAF2;border-left:3px solid #C77F00}   .wd-1 .week-day-hdr{color:#9A6400}
-.week-day.wd-2{background:#FDF8F4;border-left:3px solid #D95A25}   .wd-2 .week-day-hdr{color:#B4491D}
-.week-day.wd-3{background:#F4FBF7;border-left:3px solid #00A05F}   .wd-3 .week-day-hdr{color:#00794A}
-.week-day.wd-4{background:#F4F9FC;border-left:3px solid #0090B3}   .wd-4 .week-day-hdr{color:#00728C}
-.week-day.wd-5{background:#F9F7FE;border-left:3px solid #7C5CD6}   .wd-5 .week-day-hdr{color:#5B3FA8}
-.week-day.wd-6{background:#FDF6F8;border-left:3px solid #B24A63}   .wd-6 .week-day-hdr{color:#8F3A4F}
-.week-day.today-hl{border-color:var(--accent);box-shadow:0 0 0 2px var(--adim)}
-.week-day-hdr{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--tm);margin-bottom:4px}
+/* My Week — collapsible day bars + expanded day table */
+.wd-collapsed{display:flex;align-items:center;justify-content:space-between;background:var(--s3);border:1px solid var(--border);border-radius:var(--rs);padding:12px 16px;margin-bottom:8px;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--tm)}
+.wd-collapsed:hover{background:var(--s2);border-color:var(--b2)}
+.wd-c-count{color:var(--td);margin-left:12px}
+.wd-c-chev{color:var(--td);font-size:10px}
+.wd-open{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+.wd-head{display:flex;align-items:center;gap:12px;padding:15px 20px;cursor:pointer;background:var(--s2)}
+.wd-head-title{font-family:var(--display);font-weight:800;font-size:21px;letter-spacing:-.01em;color:var(--text)}
+.wd-head-pill{font-family:var(--mono);font-size:11px;padding:2px 10px;border-radius:20px;background:var(--s3);color:var(--tm)}
+.wd-head.today{background:var(--pink)}
+.wd-head.today .wd-head-title{color:#fff}
+.wd-head.today .wd-head-pill{background:rgba(255,255,255,.25);color:#fff}
+.wd-thead{display:flex;background:var(--dark);color:var(--td);font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:10px 20px}
+.wd-thead .th-task{flex:1}
+.wd-thead .th-status{width:150px}
+.wd-row{display:flex;align-items:center;padding:14px 20px;border-top:1px solid var(--border)}
+.wd-bullet{width:18px;height:18px;border-radius:50%;border:2px solid var(--b2);margin-right:14px;flex-shrink:0;cursor:pointer;position:relative}
+.wd-bullet.inprog{border-color:var(--yellow)}
+.wd-bullet.done{background:var(--accent);border-color:var(--accent)}
+.wd-bullet.done::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700}
+.wd-title{flex:1;font-size:15px;color:var(--text)}
+.wd-row.done .wd-title{text-decoration:line-through;color:var(--td)}
+.wd-title-client{font-family:var(--mono);font-size:10px;color:var(--cyan);margin-left:8px}
+.wd-status-cell{width:150px;position:relative}
+.wd-status{background:none;border:none;font-family:var(--mono);font-size:12px;color:var(--tm);cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:3px 4px}
+.wd-status:hover{color:var(--text)}
+.wd-caret{color:var(--td);font-size:10px}
+.wd-menu{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);box-shadow:0 8px 24px rgba(26,26,26,.14);z-index:30;display:none;min-width:140px;overflow:hidden}
+.wd-menu.open{display:block}
+.wd-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 13px;font-size:12px;color:var(--text);cursor:pointer}
+.wd-menu button:hover{background:var(--s2)}
+.wd-del{background:none;border:none;color:var(--td);cursor:pointer;font-size:14px;padding:0 4px;margin-left:6px}
+.wd-del:hover{color:var(--red)}
+.wd-add{display:flex;align-items:center;gap:10px;padding:13px 20px;border-top:1px dashed var(--border)}
+.wd-add-task{flex:1.4;font-size:13px;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
+.wd-add-notes{flex:1;font-size:13px;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
+.wd-add-task::placeholder,.wd-add-notes::placeholder{font-style:italic;color:var(--td)}
+.wd-add-btn{font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:8px 14px;background:var(--s3);border:1px solid var(--b2);border-radius:var(--rs);color:var(--tm);cursor:pointer;white-space:nowrap}
+.wd-add-btn:hover{background:var(--dark);color:#fff;border-color:var(--dark)}
+.wd-empty{padding:16px 20px;font-size:12px;color:var(--td)}
 .week-focus{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:14px}
 .week-focus-label{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--td);text-transform:uppercase}
 .week-focus-text{font-size:14px;font-weight:600;margin-top:4px;outline:none;min-height:20px}
@@ -2869,6 +2900,9 @@ function renderToday(){
   const detail = document.getElementById('today-team-detail');
   detail.innerHTML = openPersonId ? personCardHtml(TEAM.find(m => m.id === openPersonId)) : '';
 }
+let weekExpandedIso = null;              // null = today expanded (default); 'none' = all collapsed
+const WK_STATUS = { open:'Not started', in_progress:'In progress', done:'Done' };
+
 function renderWeek(){
   const mon = weekMonday(weekOffset);
   const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
@@ -2882,26 +2916,56 @@ function renderWeek(){
   focusEl.dataset.key = focusKey;
 
   const todayIso = isoDate(new Date());
+  const expandedIso = weekExpandedIso || todayIso;
   let html = '';
   for(let i = 0; i < 7; i++){
     const day = new Date(mon); day.setDate(mon.getDate() + i);
     const iso = isoDate(day);
+    const isToday = iso === todayIso;
     const dayTasks = tasks.filter(t => t.scheduledFor === iso && t.status !== 'cancelled');
-    html += `<div class="week-day wd-${i} ${iso === todayIso ? 'today-hl' : ''}">
-      <div class="week-day-hdr">
-        <span>${day.toLocaleDateString('en-GB',{weekday:'long'})}</span><span>${fmt(day)}</span>
+    const done = dayTasks.filter(t => t.status === 'done').length;
+    const total = dayTasks.length;
+    const wday = day.toLocaleDateString('en-GB',{weekday:'long'});
+    const dnum = fmt(day);
+    const isExpanded = weekExpandedIso === 'none' ? false : iso === expandedIso;
+
+    if(!isExpanded){
+      html += `<div class="wd-collapsed" onclick="toggleWeekDay('${iso}')">
+        <span><strong>${wday} ${dnum}</strong>${total ? `<span class="wd-c-count">${done}/${total}</span>` : ''}</span>
+        <span class="wd-c-chev">▸</span>
+      </div>`;
+      continue;
+    }
+
+    const rows = dayTasks.map(t => {
+      const bulletCls = t.status === 'done' ? 'done' : (t.status === 'in_progress' ? 'inprog' : '');
+      return `<div class="wd-row ${t.status === 'done' ? 'done' : ''}">
+        <span class="wd-bullet ${bulletCls}" onclick="setTaskStatus('${t.id}','${t.status==='done'?'open':'done'}')"></span>
+        <span class="wd-title">${escHtml(t.title)}${t.client ? `<span class="wd-title-client">${escHtml(t.client)}</span>` : ''}</span>
+        <span class="wd-status-cell">
+          <button class="wd-status" onclick="openWkStatus(event,'${t.id}')">${WK_STATUS[t.status] || 'Not started'} <span class="wd-caret">⌄</span></button>
+          <span class="wd-menu" id="wkmenu-${t.id}">
+            <button onclick="setTaskStatus('${t.id}','open')">Not started</button>
+            <button onclick="setTaskStatus('${t.id}','in_progress')">In progress</button>
+            <button onclick="setTaskStatus('${t.id}','done')">Done</button>
+          </span>
+        </span>
+        <button class="wd-del" onclick="removeTask('${t.id}')">×</button>
+      </div>`;
+    }).join('');
+
+    html += `<div class="wd-open">
+      <div class="wd-head ${isToday ? 'today' : ''}" onclick="toggleWeekDay('${iso}')">
+        <span class="wd-head-title">${isToday ? 'Today — ' : ''}${wday} ${dnum}</span>
+        ${total ? `<span class="wd-head-pill">${done}/${total}</span>` : ''}
       </div>
-      ${dayTasks.map(t => `<div class="loop-row">
-        <input type="checkbox" ${t.status==='done'?'checked':''}
-          onchange="setTaskStatus('${t.id}','${t.status==='done'?'open':'done'}')">
-        <span class="loop-title" style="${t.status==='done'?'text-decoration:line-through;color:var(--td)':''}">${escHtml(t.title)}</span>
-        ${t.client?`<span class="loop-client">${escHtml(t.client)}</span>`:''}
-        <button class="loop-del" onclick="removeTask('${t.id}')">×</button>
-      </div>`).join('')}
-      <div class="cmd-add-row">
-        <input class="cmd-add-input" id="week-add-${iso}" placeholder="Add…"
+      <div class="wd-thead"><span class="th-task">Task</span><span class="th-status">Status</span></div>
+      ${rows || '<div class="wd-empty">No tasks yet.</div>'}
+      <div class="wd-add">
+        <input class="wd-add-task" id="wk-t-${iso}" placeholder="Add task…"
           onkeydown="if(event.key==='Enter')addWeekTask('${iso}')">
-        <button class="cmd-add-btn" onclick="addWeekTask('${iso}')">+</button>
+        <input class="wd-add-notes" id="wk-n-${iso}" placeholder="Notes (optional)">
+        <button class="wd-add-btn" onclick="addWeekTask('${iso}')">+ ADD</button>
       </div>
     </div>`;
   }
@@ -2912,13 +2976,33 @@ function renderWeek(){
   </div>`;
 }
 
+function toggleWeekDay(iso){
+  const cur = weekExpandedIso || isoDate(new Date());
+  weekExpandedIso = (cur === iso && weekExpandedIso !== 'none') ? 'none' : iso;
+  renderWeek();
+}
+
+function openWkStatus(e, id){
+  e.stopPropagation();
+  const menu = document.getElementById('wkmenu-' + id);
+  const wasOpen = menu.classList.contains('open');
+  document.querySelectorAll('.wd-menu.open').forEach(m => m.classList.remove('open'));
+  if(!wasOpen) menu.classList.add('open');
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.wd-status') && !e.target.closest('.wd-menu'))
+    document.querySelectorAll('.wd-menu.open').forEach(m => m.classList.remove('open'));
+});
+
 async function addWeekTask(iso){
-  const input = document.getElementById('week-add-' + iso);
+  const input = document.getElementById('wk-t-' + iso);
+  const notesEl = document.getElementById('wk-n-' + iso);
   const title = input.value.trim(); if(!title) return;
-  const t = { id:newCmdId('t'), title, notes:'', ownerId:currentUser.id, assigneeId:null,
+  const notes = notesEl ? notesEl.value.trim() : '';
+  const t = { id:newCmdId('t'), title, notes, ownerId:currentUser.id, assigneeId:null,
               client:null, status:'open', scheduledFor:iso,
               createdAt:new Date().toISOString(), completedAt:null };
-  tasks.push(t); input.value = '';
+  tasks.push(t); input.value = ''; if(notesEl) notesEl.value = '';
   await syncTask(t);
   renderWeek();
 }
