@@ -195,6 +195,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .v-row.overdue{border-color:rgba(229,72,77,.3)}
 .v-row-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 .v-name{font-size:13px;font-weight:500;color:var(--text);flex:1}
+.v-name.editable{cursor:text;border-radius:3px;padding:1px 3px;margin:-1px -3px}
+.v-name.editable:hover{background:var(--s2)}
+.v-name-edit{width:100%;font-family:inherit;font-size:13px;font-weight:500;color:var(--text);background:var(--surface);border:1px solid var(--purple);border-radius:3px;padding:0 2px;outline:none}
 .v-rev{font-size:11px;padding:2px 6px;border-radius:20px;background:var(--ydim);color:var(--yellow-deep);border:1px solid rgba(199,127,0,.2)}
 .v-rev.max{background:var(--rdim);color:var(--red-deep);border-color:rgba(229,72,77,.2)}
 .v-row-bot{display:flex;align-items:center;gap:6px}
@@ -1736,8 +1739,8 @@ function renderPanelBody(id){
                 <div class="v-row-top">
                   <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
                   <input class="panel-input" style="flex:1;font-size:13px" value="${v.name}" placeholder="Name this video…"
-                    onchange="saveDraftName(${p.id},'${v.id}',this.value)"
-                    onblur="saveDraftName(${p.id},'${v.id}',this.value)">
+                    onchange="saveVideoName(${p.id},'${v.id}',this.value)"
+                    onblur="saveVideoName(${p.id},'${v.id}',this.value)">
                   <button class="btn-sm del" onclick="removeDraftVideo(${p.id},'${v.id}')">×</button>
                 </div>
                 <div class="v-row-bot">
@@ -1852,7 +1855,7 @@ function videoRowHTML(p, v){
   <div class="v-row${isOD?' overdue':''}">
     <div class="v-row-top">
       <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
-      <span class="v-name">${v.name}</span>
+      <span class="v-name editable" title="Click to rename" onclick="beginRenameVideo(this,${p.id},'${v.id}')">${v.name}</span>
       ${(()=>{
         const ir = v.revisions||0, cr = v.clientRevs||0;
         if(ir === 0 && cr === 0) return '';
@@ -2107,12 +2110,37 @@ async function generateDraftVideos(projId){
   renderPanelBody(projId);
 }
 
-async function saveDraftName(projId, vidId, name){
+async function saveVideoName(projId, vidId, name){
   const p = projects.find(x => x.id === projId);
   const v = p?.videos.find(x => x.id === vidId);
   if(!v || !name.trim()) return;
   v.name = name.trim();
   syncVideo(v, projId);
+}
+
+function beginRenameVideo(el, projId, vidId){
+  if(el.querySelector('input')) return;
+  const current = el.textContent;
+  const input = document.createElement('input');
+  input.className = 'v-name-edit';
+  input.value = current;
+  let done = false;
+  const finish = (commit) => {
+    if(done) return;
+    done = true;
+    const next = input.value.trim();
+    el.textContent = (commit && next) ? next : current;
+    if(commit && next && next !== current) saveVideoName(projId, vidId, next);
+  };
+  input.onkeydown = (e) => {
+    if(e.key === 'Enter'){ e.preventDefault(); finish(true); }
+    if(e.key === 'Escape'){ e.preventDefault(); finish(false); }
+  };
+  input.onblur = () => finish(true);
+  el.textContent = '';
+  el.appendChild(input);
+  input.focus();
+  input.select();
 }
 
 async function assignDraftVideo(projId, vidId, editorId){
