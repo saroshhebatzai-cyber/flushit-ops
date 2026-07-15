@@ -366,6 +366,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 /* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--dark);border:none;border-radius:var(--r);padding:11px 16px;font-size:13px;color:#FAF8F4;z-index:2000;opacity:0;transform:translateY(8px);transition:all .25s cubic-bezier(.22,1,.36,1);pointer-events:none;box-shadow:0 6px 24px rgba(26,26,26,.2)}
 .toast.show{opacity:1;transform:translateY(0)}
+.toast.persist{pointer-events:auto;padding-right:11px}
+.toast-x{background:none;border:none;color:#FAF8F4;font-size:15px;line-height:1;cursor:pointer;padding:0 2px;margin-left:11px;opacity:.65}
+.toast-x:hover{opacity:1}
 
 /* WHATSAPP PING */
 .wa-backdrop{position:fixed;inset:0;background:rgba(26,26,26,.35);backdrop-filter:blur(4px);z-index:2099;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -926,7 +929,7 @@ async function loadData(){
     db.from('projects').select('*').order('id'),
     db.from('videos').select('*')
   ]);
-  if(pe || ve){ console.error(pe||ve); showLoading(false); _loadDataInFlight = false; toast('⚠ Failed to load data'); return; }
+  if(pe || ve){ console.error(pe||ve); showLoading(false); _loadDataInFlight = false; toast('⚠ Failed to load data', true); return; }
   projects = (projData||[]).map(p => ({
     id: p.id, client: p.client, name: p.name, stage: p.stage,
     managerId: p.manager_id, deadline: p.deadline, daysInStage: p.days_in_stage,
@@ -953,7 +956,7 @@ async function syncProject(p){
     sarosh_review: p.saroshReview, edit_plan: p.editPlan, stage_notes: p.stageNotes||{},
     shoot_date: p.shootDate||null, created_at: p.createdAt||null
   });
-  if(error){ console.error('syncProject:', error); toast('⚠ Failed to save — check connection'); }
+  if(error){ console.error('syncProject:', error); toast('⚠ Failed to save — check connection', true); }
 }
 
 async function syncVideo(v, projId){
@@ -965,7 +968,7 @@ async function syncVideo(v, projId){
     actual_hours: v.actualHours||null, latency_score: v.latencyScore||null,
     draft: v.draft||false
   });
-  if(error){ console.error('syncVideo:', error); toast('⚠ Failed to save — check connection'); }
+  if(error){ console.error('syncVideo:', error); toast('⚠ Failed to save — check connection', true); }
 }
 
 // ─── COMMAND DATA LAYER ───────────────────────────────────────────────────────
@@ -979,7 +982,7 @@ async function loadCommandData(){
   ]);
   if(t.error || n.error || l.error || m.error){
     console.error(t.error||n.error||l.error||m.error);
-    toast('⚠ Failed to load command data'); return;
+    toast('⚠ Failed to load command data', true); return;
   }
   tasks = (t.data||[]).map(r => ({
     id:r.id, title:r.title, notes:r.notes||'', ownerId:r.owner_id,
@@ -1015,39 +1018,39 @@ async function syncTask(t){
     assignee_id:t.assigneeId, client:t.client, status:t.status,
     scheduled_for:t.scheduledFor, created_at:t.createdAt, completed_at:t.completedAt
   });
-  if(error){ console.error('syncTask:', error); toast('⚠ Failed to save — check connection'); return false; }
+  if(error){ console.error('syncTask:', error); toast('⚠ Failed to save — check connection', true); return false; }
   return true;
 }
 async function deleteTask(id){
   const { error } = await db.from('tasks').delete().eq('id', id);
-  if(error){ console.error('deleteTask:', error); toast('⚠ Failed to delete — check connection'); }
+  if(error){ console.error('deleteTask:', error); toast('⚠ Failed to delete — check connection', true); }
 }
 async function syncNote(n){
   const { error } = await db.from('notes').upsert({
     id:n.id, client:n.client, title:n.title, body:n.body,
     pinned:n.pinned, created_at:n.createdAt, updated_at:new Date().toISOString()
   });
-  if(error){ console.error('syncNote:', error); toast('⚠ Failed to save — check connection'); }
+  if(error){ console.error('syncNote:', error); toast('⚠ Failed to save — check connection', true); }
 }
 async function deleteNoteRow(id){
   const { error } = await db.from('notes').delete().eq('id', id);
-  if(error){ console.error('deleteNoteRow:', error); toast('⚠ Failed to delete — check connection'); }
+  if(error){ console.error('deleteNoteRow:', error); toast('⚠ Failed to delete — check connection', true); }
 }
 async function syncLead(l){
   const { error } = await db.from('leads').upsert({
     id:l.id, name:l.name, contact:l.contact||null, source:l.source||null,
     stage:l.stage, meeting_at:l.meetingAt, notes:l.notes||null, created_at:l.createdAt
   });
-  if(error){ console.error('syncLead:', error); toast('⚠ Failed to save — check connection'); }
+  if(error){ console.error('syncLead:', error); toast('⚠ Failed to save — check connection', true); }
 }
 async function deleteLeadRow(id){
   const { error } = await db.from('leads').delete().eq('id', id);
-  if(error){ console.error('deleteLeadRow:', error); toast('⚠ Failed to delete — check connection'); }
+  if(error){ console.error('deleteLeadRow:', error); toast('⚠ Failed to delete — check connection', true); }
 }
 async function syncMeta(key, value){
   metaKV[key] = value;
   const { error } = await db.from('meta').upsert({ key, value });
-  if(error){ console.error('syncMeta:', error); toast('⚠ Failed to save — check connection'); }
+  if(error){ console.error('syncMeta:', error); toast('⚠ Failed to save — check connection', true); }
 }
 
 let _realtimeDebounce;
@@ -1082,8 +1085,7 @@ function subscribeRealtime(){
     })
     .subscribe((status, err) => {
       console.log('[Realtime]', status, err || '');
-      if(status === 'SUBSCRIBED') toast('● Live');
-      if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') toast('⚠ Live sync offline');
+      if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') toast('⚠ Live sync offline', true);
     });
 }
 
@@ -1277,11 +1279,23 @@ function copyAndSendWaPing(){
   setTimeout(hideWaPing, 800);
 }
 
-function toast(msg){
+let _toastTimer;
+function toast(msg, persist = false){
   const el = document.getElementById('toast');
+  clearTimeout(_toastTimer);
   el.textContent = msg;
+  if(persist){
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.className = 'toast-x';
+    x.setAttribute('aria-label', 'Dismiss');
+    x.textContent = '×';
+    x.onclick = () => el.classList.remove('show');
+    el.appendChild(x);
+  }
+  el.classList.toggle('persist', persist);
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2800);
+  if(!persist) _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
 function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); renderQueue(); updateStats(); if(currentPanelId) renderPanelBody(currentPanelId); if(document.querySelector('.tab.active')?.id === 'tab-today') renderToday(); updateSideBadges(); }
@@ -1430,7 +1444,6 @@ async function advanceProject(id){
   }
   await syncProject(p);
   renderAll();
-  toast(`${p.client} · ${p.name} → ${STAGES[p.stage].label}`);
   // WhatsApp pings on key stage transitions
   if(p.stage === 3) showWaPing(`${waTag(7)} 🎬 *Shoot Plan:* ${p.client} · ${p.name} — please add the shoot plan deck — due ${fmtDue(p.deadline)}`);
   if(p.stage === 5) showWaPing(`${waTag(7)} 📸 *Shoot Day:* ${p.client} · ${p.name} — shoot confirmed, all hands on deck — due ${fmtDue(p.deadline)}`);
@@ -1444,7 +1457,6 @@ async function moveBack(id){
   p.stage--;
   p.daysInStage = 0;
   renderAll();
-  toast(`${p.client} · ${p.name} ← ${STAGES[p.stage].label}`);
   syncProject(p);
 }
 
@@ -1454,7 +1466,6 @@ async function removeProject(id){
   projects = projects.filter(x => x.id !== id);
   if(currentPanelId === id) closePanel();
   renderAll();
-  toast(`Removed: ${p.client} · ${p.name}`);
   await db.from('projects').delete().eq('id', id);
 }
 
@@ -1465,7 +1476,7 @@ function editDeadline(id, el){
   input.type = 'date'; input.className = 'k-dl-input'; input.value = p.deadline;
   el.replaceWith(input); input.focus(); input.showPicker?.();
   function save(){
-    if(input.value){ p.deadline = input.value; toast(`Deadline updated`); syncProject(p); }
+    if(input.value){ p.deadline = input.value; syncProject(p); }
     renderKanban(); renderClients(); updateStats();
   }
   input.addEventListener('change', save);
@@ -1828,7 +1839,6 @@ async function assignVideo(projId, vidId, editorId){
   v.assigneeId = editorId ? parseInt(editorId) : null;
   renderPanelBody(projId);
   renderTeam();
-  toast(editorId ? `${v.name} → ${getTeam(parseInt(editorId)).name}` : `${v.name} unassigned`);
   await syncVideo(v, projId);
   if(editorId) showWaPing(`${waTag(parseInt(editorId))} 📋 *Assigned:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — due ${fmtDue(v.deadline)}`);
 }
@@ -1860,11 +1870,9 @@ async function advanceVideo(projId, vidId){
   if(p.videos.length > 0 && p.videos.every(x => x.stage === 3)){
     p.stage = 7;
     closePanel();
-    toast(`🎉 ${p.client} · ${p.name} — all videos delivered!`);
     syncProject(p);
     showWaPing(`🎉 *Delivered:* ${p.client} · ${p.name} — all videos done and sent to client!`);
   } else {
-    toast(`${v.name} → ${VIDEO_STAGES[v.stage]}`);
     if(v.stage === 1) showWaPing(`${waTag(2)} ✅ *QC Ready:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — ready for QC — due ${fmtDue(v.deadline)}`);
     if(v.stage === 2) showWaPing(`${waTag(1)} 👀 *Sarosh Review:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — ready for your review — due ${fmtDue(v.deadline)}`);
   }
@@ -1907,7 +1915,6 @@ async function clientVideoRevision(projId, vidId){
   v.completedAt = null;
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
-  toast(`↩ ${v.name} — client revision, back to Edit`);
   await syncVideo(v, projId);
 }
 
@@ -1919,7 +1926,6 @@ async function removeVideo(projId, vidId){
   p.videos = p.videos.filter(x => x.id !== vidId);
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
-  toast(`Removed: ${v.name}`);
   await db.from('videos').delete().eq('id', vidId);
 }
 
@@ -1931,7 +1937,7 @@ function editVideoDl(projId, vidId, el){
   input.type = 'date'; input.className = 'k-dl-input'; input.value = v.deadline;
   el.replaceWith(input); input.focus(); input.showPicker?.();
   function save(){
-    if(input.value){ v.deadline = input.value; toast(`${v.name} deadline updated`); syncVideo(v, projId); }
+    if(input.value){ v.deadline = input.value; syncVideo(v, projId); }
     renderAll();
     if(currentPanelId === projId) renderPanelBody(projId);
   }
@@ -1953,7 +1959,6 @@ async function addVideos(projId){
   }
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
-  toast(`Added ${count}× ${EDIT_TYPES[type].label}`);
 }
 
 // ─── EDIT PLAN ───────────────────────────────────────────────────────────────
@@ -1968,7 +1973,6 @@ async function addEditPlan(projId){
   else p.editPlan.push({type, count});
   renderKanban();
   renderPanelBody(projId);
-  toast(`Plan: ${count}× ${EDIT_TYPES[type].label} added`);
   syncProject(p);
 }
 
@@ -1986,7 +1990,6 @@ async function toggleSaroshReview(projId){
   if(!p) return;
   p.saroshReview = !p.saroshReview;
   renderPanelBody(projId);
-  toast(`Sarosh Review ${p.saroshReview?'enabled':'disabled'} for ${p.name}`);
   syncProject(p);
 }
 
@@ -2001,7 +2004,6 @@ async function editPanelField(field){
   const val = prompt(`Edit ${label}:`, current);
   if(!val || !val.trim() || val.trim() === current) return;
   p[field] = val.trim();
-  toast(`${label} updated to "${val.trim()}"`);
   syncProject(p);
   renderAll();
   // Refresh panel header
@@ -2048,7 +2050,6 @@ async function generateDraftVideos(projId){
   }
 
   renderPanelBody(projId);
-  toast(`Video tasks synced from plan`);
 }
 
 async function saveDraftName(projId, vidId, name){
@@ -2065,7 +2066,6 @@ async function assignDraftVideo(projId, vidId, editorId){
   if(!v) return;
   v.assigneeId = editorId ? parseInt(editorId) : null;
   syncVideo(v, projId);
-  toast(editorId ? `${v.name} pre-assigned to ${getTeam(parseInt(editorId)).name}` : `${v.name} unassigned`);
 }
 
 async function removeDraftVideo(projId, vidId){
@@ -2094,7 +2094,6 @@ async function saveShootDate(projId){
   p.shootDate = val;
   renderPanelBody(projId);
   renderCalendar();
-  toast(`Shoot date ${val ? 'set to ' + new Date(val).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : 'cleared'}`);
   syncProject(p);
 }
 
@@ -2112,7 +2111,6 @@ async function startVideo(projId, vidId){
   v.completedAt = null;
   if(currentPanelId === projId) renderPanelBody(projId);
   renderQueue();
-  toast(`⏱ Timer started: ${v.name}`);
   await syncVideo(v, projId);
 }
 
@@ -2127,7 +2125,6 @@ async function saveStageNote(projId, stageKey){
   if(!el) return;
   p.stageNotes[stageKey] = el.value.trim();
   renderPanelBody(projId);
-  toast(`${cfg.label} saved`);
   syncProject(p);
 }
 
@@ -2736,11 +2733,10 @@ async function createProject(){
     client, name, stage:0, manager_id:managerId, deadline,
     days_in_stage:0, sarosh_review:true, edit_plan:[], stage_notes:{}, shoot_date:shootDate
   }).select().single();
-  if(error){ toast('⚠ Error creating project'); console.error(error); return; }
+  if(error){ toast('⚠ Error creating project', true); console.error(error); return; }
   projects.push({id:data.id, client, name, stage:0, managerId, deadline, daysInStage:0, saroshReview:true, editPlan:[], videos:[], stageNotes:{}, shootDate, createdAt:data.created_at||new Date().toISOString()});
   closeModal();
   renderAll();
-  toast(`✓ Created: ${client} · ${name}`);
 }
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
@@ -3012,7 +3008,6 @@ async function saveWeekFocus(){
   const text = el.textContent.trim();
   if(text === 'Click to set your weekly focus…') return;
   await syncMeta(el.dataset.key, text);
-  toast('✓ Focus saved');
 }
 let researchClient = null; // active subtab
 let researchClientList = []; // parallel to subtab indices; avoids quoting client names in inline JS
@@ -3153,7 +3148,6 @@ async function setLeadStage(id, stage){
   const l = leads.find(x => x.id === id); if(!l) return;
   l.stage = stage;
   await syncLead(l);
-  if(stage === 'won') toast(`🎉 ${l.name} is now a client — available as a tag everywhere`);
   renderLeads();
 }
 
@@ -3173,7 +3167,7 @@ async function captureTask(){
               createdAt:new Date().toISOString(), completedAt:null };
   tasks.push(t);
   input.value = '';
-  if(await syncTask(t)) toast('✓ Captured');
+  await syncTask(t);
   renderCommand();
 }
 
@@ -3247,7 +3241,6 @@ async function fileToResearch(id, client){
   await syncNote(n);
   await deleteTask(id);
   renderCommand();
-  toast(`→ Research · ${client}`);
 }
 
 function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
@@ -3265,9 +3258,8 @@ async function sortInbox(id, field, value){
     }
     t.scheduledFor = value || null;
   }
-  const ok = await syncTask(t);
+  await syncTask(t);
   renderCommand();
-  if(ok) toast('✓ Sorted');
 }
 
 async function setTaskStatus(id, status){
