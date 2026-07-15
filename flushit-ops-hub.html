@@ -1117,6 +1117,12 @@ function realtimeReload(fn){
   fn();
 }
 
+// Single source of truth for the offline message: toast() and clearToast() match
+// on exact string, so a typo in either would silently break the retraction.
+const OFFLINE_MSG = '⚠ Live sync offline';
+const OFFLINE_GRACE_MS = 8000;
+let _offlineTimer = null;
+
 function subscribeRealtime(){
   const channelName = 'db-changes-' + Math.random().toString(36).slice(2);
   console.log('[Realtime] subscribing on channel:', channelName);
@@ -1148,7 +1154,21 @@ function subscribeRealtime(){
     .on('postgres_changes', {event:'*', schema:'public', table:'meta'},     handler('meta',     command,  '_cmdRealtimeDebounce'))
     .subscribe((status, err) => {
       console.log('[Realtime]', status, err || '');
-      if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') toast('⚠ Live sync offline', true);
+      if(status === 'SUBSCRIBED'){
+        // Recovery path. Silent on purpose — the old '● Live' toast fired on
+        // every re-subscribe and was pure noise. But SOMETHING has to retract
+        // the offline toast, or a two-second blip leaves a permanent lie on
+        // screen claiming sync is dead while it works fine.
+        clearTimeout(_offlineTimer);
+        _offlineTimer = null;
+        clearToast(OFFLINE_MSG);
+      }
+      if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
+        // Don't cry over a flap. Supabase channels drop and re-join on their own
+        // (wifi switch, laptop sleep, a momentary blip) and recover in seconds.
+        // Only complain if it's still down after the grace period.
+        if(!_offlineTimer) _offlineTimer = setTimeout(() => toast(OFFLINE_MSG, true), OFFLINE_GRACE_MS);
+      }
     });
 }
 
@@ -1343,9 +1363,21 @@ function copyAndSendWaPing(){
 }
 
 let _toastTimer;
+let _toastMsg = null;
+function hideToast(){
+  document.getElementById('toast').classList.remove('show');
+  _toastMsg = null;
+}
+// Retract a specific persistent toast once the condition it reported has cleared.
+// No-ops if a DIFFERENT message is showing, so recovering from one problem can
+// never silently swallow an unrelated error the user hasn't seen yet.
+function clearToast(msg){
+  if(_toastMsg === msg) hideToast();
+}
 function toast(msg, persist = false){
   const el = document.getElementById('toast');
   clearTimeout(_toastTimer);
+  _toastMsg = msg;
   el.textContent = msg;
   if(persist){
     const x = document.createElement('button');
@@ -1353,12 +1385,12 @@ function toast(msg, persist = false){
     x.className = 'toast-x';
     x.setAttribute('aria-label', 'Dismiss');
     x.textContent = '×';
-    x.onclick = () => el.classList.remove('show');
+    x.onclick = hideToast;
     el.appendChild(x);
   }
   el.classList.toggle('persist', persist);
   el.classList.add('show');
-  if(!persist) _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  if(!persist) _toastTimer = setTimeout(hideToast, 2800);
 }
 
 function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); renderQueue(); updateStats(); if(currentPanelId) renderPanelBody(currentPanelId); if(document.querySelector('.tab.active')?.id === 'tab-today') renderToday(); updateSideBadges(); }

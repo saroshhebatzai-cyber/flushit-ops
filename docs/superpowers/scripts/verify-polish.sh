@@ -31,7 +31,7 @@ grep -q '_selfWrites' "$SRC" && ok "_selfWrites present" || bad "_selfWrites mis
 grep -q 'stillInteracting' "$SRC" && ok "stillInteracting present" || bad "stillInteracting missing"
 
 echo "── E. Toasts ──"
-CALLS=$(grep -c 'toast(' "$SRC" || true)
+CALLS=$(grep -v '^[[:space:]]*//' "$SRC" | grep -c 'toast(' || true)
 [ "$CALLS" = "21" ] && ok "21 toast lines (20 call sites + 1 definition)" || bad "$CALLS toast lines, expected 21"
 PERSIST=$(grep -c 'toast(.*, *true)' "$SRC" || true)
 [ "$PERSIST" = "13" ] && ok "13 persisting error toasts" || bad "$PERSIST persisting toasts, expected 13"
