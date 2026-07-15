@@ -1449,8 +1449,8 @@ function kCardHTML(p, si){
 
   return `
   <div class="k-card${isOD?' overdue':''}" style="--client-color:${cColor(p.client)}" onclick="openPanel(${p.id})">
-    <div class="k-client">${p.name}</div>
-    <div class="k-name">${p.client}</div>
+    <div class="k-client">${escHtml(p.name)}</div>
+    <div class="k-name">${escHtml(p.client)}</div>
     ${planHTML}${videoHTML}
     <div class="k-meta">
       <div class="k-assignee">
@@ -1599,19 +1599,19 @@ function renderPanelBody(id){
     if(isUrl && val && (val.startsWith('http://') || val.startsWith('https://'))){
       inputHTML = `
         <div class="note-link">
-          <a href="${val}" target="_blank" rel="noopener">${val}</a>
+          <a href="${escHtml(val)}" target="_blank" rel="noopener">${escHtml(val)}</a>
           <button class="note-link-edit" onclick="editStageNoteLink(${p.id},'${stageKey}')">Edit</button>
         </div>`;
     } else if(isUrl){
       inputHTML = `
         <div class="stage-note-box">
-          <input type="url" class="stage-note-url" id="sn-${p.id}-${stageKey}" value="${val}" placeholder="${noteCfg.hint}">
+          <input type="url" class="stage-note-url" id="sn-${p.id}-${stageKey}" value="${escHtml(val)}" placeholder="${noteCfg.hint}">
           <button class="note-save-btn" onclick="saveStageNote(${p.id},'${stageKey}')">Save link</button>
         </div>`;
     } else {
       inputHTML = `
         <div class="stage-note-box">
-          <textarea class="stage-note-textarea" id="sn-${p.id}-${stageKey}" placeholder="${noteCfg.hint}">${val}</textarea>
+          <textarea class="stage-note-textarea" id="sn-${p.id}-${stageKey}" placeholder="${noteCfg.hint}">${escHtml(val)}</textarea>
           <button class="note-save-btn" onclick="saveStageNote(${p.id},'${stageKey}')">Save</button>
         </div>`;
     }
@@ -1635,7 +1635,7 @@ function renderPanelBody(id){
             const v = p.stageNotes[k];
             const cfg = STAGE_NOTE_CONFIG[k];
             const isLink = v.startsWith('http://') || v.startsWith('https://');
-            const display = isLink ? `<a href="${v}" target="_blank" rel="noopener">${v}</a>` : v.replace(/\n/g,'<br>');
+            const display = isLink ? `<a href="${escHtml(v)}" target="_blank" rel="noopener">${escHtml(v)}</a>` : escHtml(v).replace(/\n/g,'<br>');
             return `<div class="prev-note-item">
               <div class="prev-note-stage">${cfg.label}</div>
               <div class="prev-note-val">${display}</div>
@@ -1657,7 +1657,7 @@ function renderPanelBody(id){
               const v = p.stageNotes[k];
               const cfg = STAGE_NOTE_CONFIG[k];
               const isLink = v.startsWith('http://') || v.startsWith('https://');
-              const display = isLink ? `<a href="${v}" target="_blank" rel="noopener">${v}</a>` : v.replace(/\n/g,'<br>');
+              const display = isLink ? `<a href="${escHtml(v)}" target="_blank" rel="noopener">${escHtml(v)}</a>` : escHtml(v).replace(/\n/g,'<br>');
               return `<div class="prev-note-item">
                 <div class="prev-note-stage">${cfg.label}</div>
                 <div class="prev-note-val">${display}</div>
@@ -1738,7 +1738,7 @@ function renderPanelBody(id){
               return `<div class="v-row">
                 <div class="v-row-top">
                   <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
-                  <input class="panel-input" style="flex:1;font-size:13px" value="${v.name}" placeholder="Name this video…"
+                  <input class="panel-input" style="flex:1;font-size:13px" value="${escHtml(v.name)}" placeholder="Name this video…"
                     onchange="saveVideoName(${p.id},'${v.id}',this.value)"
                     onblur="saveVideoName(${p.id},'${v.id}',this.value)">
                   <button class="btn-sm del" onclick="removeDraftVideo(${p.id},'${v.id}')">×</button>
@@ -1855,7 +1855,7 @@ function videoRowHTML(p, v){
   <div class="v-row${isOD?' overdue':''}">
     <div class="v-row-top">
       <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
-      <span class="v-name editable" title="Click to rename" onclick="beginRenameVideo(this,${p.id},'${v.id}')">${v.name}</span>
+      <span class="v-name editable" title="Click to rename" onclick="beginRenameVideo(this,${p.id},'${v.id}')">${escHtml(v.name)}</span>
       ${(()=>{
         const ir = v.revisions||0, cr = v.clientRevs||0;
         if(ir === 0 && cr === 0) return '';
@@ -2331,7 +2331,7 @@ function renderTeam(){
         const badge = rem === 0 ? (h > 0 ? `${h}h queued` : 'off hours') : pct >= 100 ? 'FULL' : `${free}h left today`;
         // List their assigned videos
         const vids = projects.flatMap(p => p.videos.filter(v => v.assigneeId === e.id && v.stage < 3).map(v => ({...v, client:p.client})));
-        const vidList = vids.map(v => `<span class="type-badge ${v.type}" style="margin-right:3px">${v.client} ${EDIT_TYPES[v.type].label}</span>`).join('');
+        const vidList = vids.map(v => `<span class="type-badge ${v.type}" style="margin-right:3px">${escHtml(v.client)} ${EDIT_TYPES[v.type].label}</span>`).join('');
         return `<div class="cap-row" style="animation-delay:${i*.06}s">
           <div class="cap-name">${e.name}</div>
           <div class="cap-track"><div class="cap-fill ${cls}" data-w="${pct}" style="width:0"></div></div>
