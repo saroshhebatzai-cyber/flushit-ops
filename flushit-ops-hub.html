@@ -921,10 +921,10 @@ function showLoading(on){
 }
 
 let _loadDataInFlight = false;
-async function loadData(){
+async function loadData(opts = {}){
   if(_loadDataInFlight) return;
   _loadDataInFlight = true;
-  showLoading(true);
+  if(!opts.silent) showLoading(true);
   const [{ data: projData, error: pe }, { data: vidData, error: ve }] = await Promise.all([
     db.from('projects').select('*').order('id'),
     db.from('videos').select('*')
@@ -956,7 +956,8 @@ async function syncProject(p){
     sarosh_review: p.saroshReview, edit_plan: p.editPlan, stage_notes: p.stageNotes||{},
     shoot_date: p.shootDate||null, created_at: p.createdAt||null
   });
-  if(error){ console.error('syncProject:', error); toast('⚠ Failed to save — check connection', true); }
+  if(error){ console.error('syncProject:', error); toast('⚠ Failed to save — check connection', true); return; }
+  markSelfWrite('projects', p);
 }
 
 async function syncVideo(v, projId){
@@ -968,11 +969,12 @@ async function syncVideo(v, projId){
     actual_hours: v.actualHours||null, latency_score: v.latencyScore||null,
     draft: v.draft||false
   });
-  if(error){ console.error('syncVideo:', error); toast('⚠ Failed to save — check connection', true); }
+  if(error){ console.error('syncVideo:', error); toast('⚠ Failed to save — check connection', true); return; }
+  markSelfWrite('videos', v);
 }
 
 // ─── COMMAND DATA LAYER ───────────────────────────────────────────────────────
-async function loadCommandData(){
+async function loadCommandData(opts = {}){
   if(!isAdmin()) return;
   const [t, n, l, m] = await Promise.all([
     db.from('tasks').select('*').order('created_at'),
@@ -1019,70 +1021,122 @@ async function syncTask(t){
     scheduled_for:t.scheduledFor, created_at:t.createdAt, completed_at:t.completedAt
   });
   if(error){ console.error('syncTask:', error); toast('⚠ Failed to save — check connection', true); return false; }
+  markSelfWrite('tasks', t);
   return true;
 }
 async function deleteTask(id){
   const { error } = await db.from('tasks').delete().eq('id', id);
-  if(error){ console.error('deleteTask:', error); toast('⚠ Failed to delete — check connection', true); }
+  if(error){ console.error('deleteTask:', error); toast('⚠ Failed to delete — check connection', true); return; }
+  markSelfWrite('tasks', {id});
 }
 async function syncNote(n){
   const { error } = await db.from('notes').upsert({
     id:n.id, client:n.client, title:n.title, body:n.body,
     pinned:n.pinned, created_at:n.createdAt, updated_at:new Date().toISOString()
   });
-  if(error){ console.error('syncNote:', error); toast('⚠ Failed to save — check connection', true); }
+  if(error){ console.error('syncNote:', error); toast('⚠ Failed to save — check connection', true); return; }
+  markSelfWrite('notes', n);
 }
 async function deleteNoteRow(id){
   const { error } = await db.from('notes').delete().eq('id', id);
-  if(error){ console.error('deleteNoteRow:', error); toast('⚠ Failed to delete — check connection', true); }
+  if(error){ console.error('deleteNoteRow:', error); toast('⚠ Failed to delete — check connection', true); return; }
+  markSelfWrite('notes', {id});
 }
 async function syncLead(l){
   const { error } = await db.from('leads').upsert({
     id:l.id, name:l.name, contact:l.contact||null, source:l.source||null,
     stage:l.stage, meeting_at:l.meetingAt, notes:l.notes||null, created_at:l.createdAt
   });
-  if(error){ console.error('syncLead:', error); toast('⚠ Failed to save — check connection', true); }
+  if(error){ console.error('syncLead:', error); toast('⚠ Failed to save — check connection', true); return; }
+  markSelfWrite('leads', l);
 }
 async function deleteLeadRow(id){
   const { error } = await db.from('leads').delete().eq('id', id);
-  if(error){ console.error('deleteLeadRow:', error); toast('⚠ Failed to delete — check connection', true); }
+  if(error){ console.error('deleteLeadRow:', error); toast('⚠ Failed to delete — check connection', true); return; }
+  markSelfWrite('leads', {id});
 }
 async function syncMeta(key, value){
   metaKV[key] = value;
   const { error } = await db.from('meta').upsert({ key, value });
-  if(error){ console.error('syncMeta:', error); toast('⚠ Failed to save — check connection', true); }
+  if(error){ console.error('syncMeta:', error); toast('⚠ Failed to save — check connection', true); return; }
+  markSelfWrite('meta', {key});
 }
 
-let _realtimeDebounce;
-let _cmdRealtimeDebounce;
+// ─── REALTIME ECHO SUPPRESSION ───────────────────────────────────────────────
+// meta is keyed by `key`, every other table by `id`. A uniform 'table:id' key
+// would yield 'meta:undefined', never match, and leave weekly-focus edits
+// re-rendering on every keystroke.
+const PK_COL = { projects:'id', videos:'id', tasks:'id', notes:'id', leads:'id', meta:'key' };
+const rowKey = (table, row) => `${table}:${row?.[PK_COL[table]]}`;
+
+// Debounce timers, keyed by name. This must be a plain object, NOT `window[...]`:
+// the existing `let _realtimeDebounce;` is a top-level `let`, which does not
+// create a window property, so `window._realtimeDebounce` would be a separate
+// always-undefined value — clearTimeout would no-op and the debounce would never
+// debounce.
+const _debounce = {};
+
+const _selfWrites = new Set();
+function markSelfWrite(table, row){
+  const k = rowKey(table, row);
+  if(k.endsWith(':undefined')) return;
+  _selfWrites.add(k);
+  setTimeout(() => _selfWrites.delete(k), 5000);
+}
+
+// True while the user is mid-interaction and a re-render would destroy their work.
+function stillInteracting(){
+  const a = document.activeElement;
+  if(a && a.matches('input, select, textarea, [contenteditable="true"]')) return true;
+  return currentPanelId !== null;
+}
+
+let _deferredReload = null;
+function flushDeferredReload(){
+  if(!_deferredReload || stillInteracting()) return;
+  const fn = _deferredReload;
+  _deferredReload = null;
+  fn();
+}
+document.addEventListener('focusout', () => {
+  // Let activeElement settle to the NEW target before testing it — on focusout
+  // it is still transiently <body>, so an immediate check would report "not
+  // interacting" while tabbing between two fields and stomp the user mid-edit.
+  queueMicrotask(flushDeferredReload);
+});
+
+// Runs a realtime-triggered reload, or defers it until the user is idle.
+function realtimeReload(fn){
+  if(stillInteracting()){ _deferredReload = fn; return; }
+  fn();
+}
+
 function subscribeRealtime(){
   const channelName = 'db-changes-' + Math.random().toString(36).slice(2);
   console.log('[Realtime] subscribing on channel:', channelName);
+
+  const handler = (table, reload, debounceRef) => (payload) => {
+    const row = payload.new ?? payload.old;
+    const k = rowKey(table, row);
+    // Never drop an event we cannot identify — fall through to a reload.
+    if(!k.endsWith(':undefined') && _selfWrites.has(k)){
+      _selfWrites.delete(k);
+      return;
+    }
+    clearTimeout(_debounce[debounceRef]);
+    _debounce[debounceRef] = setTimeout(() => realtimeReload(reload), 400);
+  };
+
+  const pipeline = () => loadData({silent: true});
+  const command  = () => loadCommandData({silent: true});
+
   db.channel(channelName)
-    .on('postgres_changes', {event:'*', schema:'public', table:'projects'}, () => {
-      clearTimeout(_realtimeDebounce);
-      _realtimeDebounce = setTimeout(loadData, 400);
-    })
-    .on('postgres_changes', {event:'*', schema:'public', table:'videos'}, () => {
-      clearTimeout(_realtimeDebounce);
-      _realtimeDebounce = setTimeout(loadData, 400);
-    })
-    .on('postgres_changes', {event:'*', schema:'public', table:'tasks'}, () => {
-      clearTimeout(_cmdRealtimeDebounce);
-      _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
-    })
-    .on('postgres_changes', {event:'*', schema:'public', table:'notes'}, () => {
-      clearTimeout(_cmdRealtimeDebounce);
-      _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
-    })
-    .on('postgres_changes', {event:'*', schema:'public', table:'leads'}, () => {
-      clearTimeout(_cmdRealtimeDebounce);
-      _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
-    })
-    .on('postgres_changes', {event:'*', schema:'public', table:'meta'}, () => {
-      clearTimeout(_cmdRealtimeDebounce);
-      _cmdRealtimeDebounce = setTimeout(loadCommandData, 400);
-    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'projects'}, handler('projects', pipeline, '_realtimeDebounce'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'videos'},   handler('videos',   pipeline, '_realtimeDebounce'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'tasks'},    handler('tasks',    command,  '_cmdRealtimeDebounce'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'notes'},    handler('notes',    command,  '_cmdRealtimeDebounce'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'leads'},    handler('leads',    command,  '_cmdRealtimeDebounce'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'meta'},     handler('meta',     command,  '_cmdRealtimeDebounce'))
     .subscribe((status, err) => {
       console.log('[Realtime]', status, err || '');
       if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') toast('⚠ Live sync offline', true);
@@ -1519,6 +1573,7 @@ function closePanel(){
   document.getElementById('panel').classList.remove('open');
   document.getElementById('panel-backdrop').classList.remove('open');
   currentPanelId = null;
+  flushDeferredReload();
 }
 
 function renderPanelBody(id){
