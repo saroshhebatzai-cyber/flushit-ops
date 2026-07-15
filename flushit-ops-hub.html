@@ -1094,12 +1094,15 @@ function stillInteracting(){
   return currentPanelId !== null;
 }
 
-let _deferredReload = null;
+// A Set, not a single slot: `pipeline` and `command` are distinct closures, so
+// one slot means a command deferral silently overwrites a pending pipeline
+// deferral and that reload is lost until the next projects/videos event.
+const _deferredReloads = new Set();
 function flushDeferredReload(){
-  if(!_deferredReload || stillInteracting()) return;
-  const fn = _deferredReload;
-  _deferredReload = null;
-  fn();
+  if(!_deferredReloads.size || stillInteracting()) return;
+  const fns = [..._deferredReloads];
+  _deferredReloads.clear();
+  fns.forEach(fn => fn());
 }
 document.addEventListener('focusout', () => {
   // Let activeElement settle to the NEW target before testing it — on focusout
@@ -1110,7 +1113,7 @@ document.addEventListener('focusout', () => {
 
 // Runs a realtime-triggered reload, or defers it until the user is idle.
 function realtimeReload(fn){
-  if(stillInteracting()){ _deferredReload = fn; return; }
+  if(stillInteracting()){ _deferredReloads.add(fn); return; }
   fn();
 }
 
@@ -1119,7 +1122,10 @@ function subscribeRealtime(){
   console.log('[Realtime] subscribing on channel:', channelName);
 
   const handler = (table, reload, debounceRef) => (payload) => {
-    const row = payload.new ?? payload.old;
+    // DELETE carries the row only on payload.old — payload.new is {}, which is
+    // truthy, so `??` would never fall back and every delete would key as
+    // ':undefined'. Pick whichever record actually has fields.
+    const row = payload.new && Object.keys(payload.new).length ? payload.new : payload.old;
     const k = rowKey(table, row);
     // Never drop an event we cannot identify — fall through to a reload.
     if(!k.endsWith(':undefined') && _selfWrites.has(k)){
