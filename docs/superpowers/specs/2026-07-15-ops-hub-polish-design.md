@@ -160,25 +160,39 @@ input is precisely what an incoming re-render stomps.
 ### D. Realtime — skip self-echoes, silent reloads, defer while interacting
 
 **D1. Skip self-originated echoes.** A module-level `_selfWrites` Set holds keys
-of rows we just wrote (`table:id`), added by each `sync*()` and `delete*()` on
-success and evicted after 5s. Handlers derive the incoming key as
-`` `${table}:${payload.new?.id ?? payload.old?.id}` `` — **DELETE events carry
-only `payload.old`**, so reading `payload.new.id` alone would throw on every
-delete. If the key is in `_selfWrites`, drop the event without reloading; local
-state is already correct.
+of rows we just wrote, added by each `sync*()` and `delete*()` on success and
+evicted after 5s.
 
-If neither `payload.new` nor `payload.old` yields an id, fall back to reloading —
-never drop an event you cannot identify. Reloading is the current behavior, so the
-fallback is strictly no worse than today.
+**The primary key is not `id` on every table.** `meta` is keyed
+`key text primary key` ([2026-07-12-command-tables.sql](../sql/2026-07-12-command-tables.sql));
+`projects`, `videos`, `tasks`, `notes`, and `leads` are keyed `id`. A uniform
+`table:id` scheme would produce `meta:undefined` for every meta write, never match
+an echo, and leave weekly-focus edits re-rendering on every keystroke — the exact
+bug being fixed, silently surviving. A single `PK_COL` map is the source of truth
+for both the writers and the handlers:
+
+```js
+const PK_COL = { projects:'id', videos:'id', tasks:'id', notes:'id', leads:'id', meta:'key' };
+const rowKey = (table, row) => `${table}:${row?.[PK_COL[table]]}`;
+```
+
+Handlers derive the incoming key from `payload.new ?? payload.old` — **DELETE
+events carry only `payload.old`**, so reading `payload.new` alone would throw on
+every delete. If the key is in `_selfWrites`, drop the event without reloading;
+local state is already correct.
+
+If `rowKey()` yields `undefined` for the PK, fall back to reloading — never drop
+an event you cannot identify. Reloading is the current behavior, so the fallback
+is strictly no worse than today.
 
 This fallback is load-bearing, not decorative. Only `tasks`, `notes`, `leads`, and
-`meta` have a committed `replica identity full` migration
-([2026-07-12-command-tables.sql](../sql/2026-07-12-command-tables.sql)).
+`meta` have a committed `replica identity full` migration.
 `projects` and `videos` predate that file and were added to the
 `supabase_realtime` publication by hand in the dashboard — their replica identity
 is **unverified**. Under the Postgres default (primary key only), a DELETE still
-yields `payload.old.id`, which is all this design reads, so it works either way.
-Implementation must not assume more than `id` is present on `payload.old`.
+yields the PK column on `payload.old`, which is all `rowKey()` reads, so it works
+either way. Implementation must not assume any column beyond the PK is present on
+`payload.old`.
 
 The 5s TTL is a deliberate over-estimate of round-trip echo latency. Worst case
 on eviction race: a redundant silent reload, which is the current behavior minus
