@@ -534,11 +534,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 #capture-input{font-family:var(--mono);font-size:13px;padding:6px 10px;width:210px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
 #capture-input:focus{border-color:var(--accent);outline:none}
 /* My Week — collapsible day bars + expanded day table */
-.wd-collapsed{display:flex;align-items:center;justify-content:space-between;background:var(--s3);border:1px solid var(--border);border-radius:var(--rs);padding:12px 16px;margin-bottom:8px;cursor:pointer;font-family:var(--display);font-size:13px;font-weight:700;color:var(--text)}
-/* Old OS had THREE day tiers; the v2 rebuild collapsed past+future into one.
-   Past days are de-emphasised: 11px mono caps, muted (old .day-hdr-past .dl,
-   floored from its original 11px — unchanged). */
-.wd-collapsed.past{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--tm);text-transform:uppercase;letter-spacing:.1em;opacity:.75}
+/* All seven collapsed days share one style: 11px mono caps. The old OS split
+   past (mono caps) from future (Syne sentence case), but that reads as a font
+   bug rather than a hierarchy — Sarosh called it on sight. Today's pink bar is
+   the only tier marker now. */
+.wd-collapsed{display:flex;align-items:center;justify-content:space-between;background:var(--s3);border:1px solid var(--border);border-radius:var(--rs);padding:12px 16px;margin-bottom:8px;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--tm);text-transform:uppercase;letter-spacing:.1em;opacity:.75}
 .wd-collapsed:hover{background:var(--s2);border-color:var(--b2)}
 .wd-c-count{font-family:var(--mono);font-size:11px;color:var(--td);margin-left:12px}
 .wd-c-chev{color:var(--td);font-size:14px}
@@ -3049,7 +3049,6 @@ function renderWeek(){
     const day = new Date(mon); day.setDate(mon.getDate() + i);
     const iso = isoDate(day);
     const isToday = iso === todayIso;
-    const isPast = iso < todayIso;
     const dayTasks = tasks.filter(t => t.scheduledFor === iso && t.status !== 'cancelled');
     const done = dayTasks.filter(t => t.status === 'done').length;
     const total = dayTasks.length;
@@ -3058,7 +3057,7 @@ function renderWeek(){
     const isExpanded = weekExpandedIso === 'none' ? false : iso === expandedIso;
 
     if(!isExpanded){
-      html += `<div class="wd-collapsed${isPast ? ' past' : ''}" onclick="toggleWeekDay('${iso}')">
+      html += `<div class="wd-collapsed" onclick="toggleWeekDay('${iso}')">
         <span><strong>${wday} ${dnum}</strong>${total ? `<span class="wd-c-count">${done}/${total}</span>` : ''}</span>
         <span class="wd-c-chev">▸</span>
       </div>`;
