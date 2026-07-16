@@ -583,9 +583,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
    Today is the same shape — a single column of stacked sections — so it gets
    the same cap rather than stretching across a wide display. */
 #tab-week,#tab-today{max-width:860px;margin:0 auto}
-.week-focus{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:14px}
-.week-focus-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--td);text-transform:uppercase}
-.week-focus-text{font-size:13px;font-weight:400;line-height:1.5;margin-top:4px;outline:none;min-height:20px}
+/* Old OS focus bar: dark slab, 4px pink left edge, label and text on ONE line.
+   No border-radius — a single-sided border with rounded corners reads broken,
+   and the old planner had none either. */
+.week-focus{background:var(--dark);border-left:4px solid var(--pink);padding:12px 18px;margin-bottom:28px;display:flex;align-items:center;gap:12px}
+.week-focus-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--pink);text-transform:uppercase;white-space:nowrap}
+.week-focus-text{font-size:13px;font-weight:400;line-height:1.5;color:#fff;outline:none;flex:1;min-height:20px}
 .note-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
 .note-title{width:100%;background:transparent;border:none;color:var(--text);font-weight:700;font-size:15px;outline:none;margin-bottom:6px}
 .note-body{width:100%;background:transparent;border:none;color:var(--tm);font-size:14px;line-height:1.5;outline:none;resize:vertical;min-height:60px;font-family:inherit}
