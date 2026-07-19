@@ -26,6 +26,11 @@ create table if not exists content_ideas (
   updated_at    timestamptz not null default now()
 );
 
+-- Grants: tables created via raw SQL don't inherit the API grants that
+-- dashboard-created tables get (same fix as 2026-07-12-command-tables.sql).
+grant select, insert, update, delete on table content_briefs, content_ideas to anon, authenticated;
+grant all on table content_briefs, content_ideas to service_role;
+
 -- App convention: no RLS (code login), realtime on, full replica identity.
 alter table content_briefs disable row level security;
 alter table content_ideas  disable row level security;
