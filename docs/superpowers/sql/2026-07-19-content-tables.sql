@@ -67,7 +67,7 @@ select cron.schedule(
   '0 1 * * *',
   $$
   select net.http_post(
-    url     := 'https://kdfwrjjbpfoweokofjdq.supabase.co/functions/v1/content-agent',
+    url     := 'https://kdfwrjjbpfoweokofjdq.supabase.co/functions/v1/swift-action',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkZndyampicGZvd2Vva29mamRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjEwNjEsImV4cCI6MjA4OTQzNzA2MX0.LrkuoAo9g0WJ3dpq9CEHsE1dHmaKadcE21n6GinpgA8',

@@ -3283,7 +3283,9 @@ let contentClientList = [];    // parallel to subtab indices; avoids quoting cli
 let briefOpen = false;
 let genPillar = '';
 
-const AGENT_URL = SUPABASE_URL + '/functions/v1/content-agent';
+// NOTE: Supabase's editor assigned the URL slug 'swift-action' (display name
+// is 'content-agent' — the slug is immutable, so both callers use swift-action).
+const AGENT_URL = SUPABASE_URL + '/functions/v1/swift-action';
 const AGENT_TOKEN = 'fefa2ac2c65cfab6a16d8304';
 
 function contentClients(){
