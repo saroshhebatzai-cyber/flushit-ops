@@ -640,6 +640,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cslot.scheduled{border-color:var(--accent);background:var(--adim)}
 .cslot-pillar{font-family:var(--mono);font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.06em}
 .idea-card{padding:11px 13px}
+.idea-card.ic-fresh{border-left:3px solid var(--accent)}
+.idea-card.ic-banked{border-left:3px solid var(--yellow)}
+.bank-label{color:var(--yellow-deep)}
+.bank-wrap{background:var(--s2);border:1px dashed var(--border);border-radius:var(--r);padding:12px 12px 2px}
+.bank-wrap .idea-card{box-shadow:none;border:1px solid var(--border);border-left:3px solid var(--yellow)}
 .idea-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .idea-title{font-weight:700;font-size:14px}
 .idea-chips{display:flex;gap:5px;flex-shrink:0}
@@ -3289,7 +3294,10 @@ const AGENT_URL = SUPABASE_URL + '/functions/v1/swift-action';
 const AGENT_TOKEN = 'fefa2ac2c65cfab6a16d8304';
 
 function contentClients(){
-  return [...new Set([...cBriefs.map(b => b.client), ...cIdeas.map(i => i.client)])]
+  // killed-only clients drop off the chip row — a client is "in Content" via a
+  // brief or at least one living idea
+  const living = cIdeas.filter(i => i.status !== 'killed').map(i => i.client);
+  return [...new Set([...cBriefs.map(b => b.client), ...living])]
     .sort((a,b) => (a==='Bebatzai' ? -1 : b==='Bebatzai' ? 1 : a.localeCompare(b)));
 }
 const clientIdeas = c => cIdeas.filter(i => i.client === c);
@@ -3356,7 +3364,7 @@ function calendarStripHtml(c, admin){
 }
 
 function ideaCardHtml(i){
-  return `<div class="note-card idea-card">
+  return `<div class="note-card idea-card ${i.status==='banked' ? 'ic-banked' : 'ic-fresh'}">
     <div class="idea-top">
       <span class="idea-title">${escHtml(i.title)}</span>
       <span class="idea-chips">
@@ -3376,16 +3384,16 @@ function ideaCardHtml(i){
 
 function dropHtml(c){
   const fresh = clientIdeas(c).filter(i => i.status === 'proposed' && !i.scheduledFor);
-  return `<div class="today-label">Fresh ideas</div>
+  return `<div class="today-label">Fresh ideas${fresh.length ? ` · ${fresh.length}` : ''}</div>
     ${fresh.map(ideaCardHtml).join('')
       || '<div style="font-size:13px;color:var(--td)">Nothing waiting — the agent drops ideas each morning, or hit Generate.</div>'}`;
 }
 
 function bankHtml(c){
   const banked = clientIdeas(c).filter(i => i.status === 'banked');
-  return `<div class="today-label">Idea bank</div>
-    ${banked.map(ideaCardHtml).join('')
-      || '<div style="font-size:13px;color:var(--td)">Empty — bank drop ideas or file captures here.</div>'}`;
+  return `<div class="today-label bank-label">🗄 Idea bank${banked.length ? ` · ${banked.length}` : ''}</div>
+    <div class="bank-wrap">${banked.map(ideaCardHtml).join('')
+      || '<div style="font-size:13px;color:var(--td)">Empty — bank drop ideas or file captures here.</div>'}</div>`;
 }
 
 function briefHtml(c){
