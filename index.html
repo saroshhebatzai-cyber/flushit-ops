@@ -621,8 +621,35 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .note-body{width:100%;background:transparent;border:none;color:var(--tm);font-size:14px;line-height:1.5;outline:none;resize:vertical;min-height:60px;font-family:inherit}
 .client-subtab{font-family:var(--mono);font-size:13px;padding:5px 12px;background:var(--s2);border:1px solid var(--border);border-radius:14px;color:var(--tm);cursor:pointer;margin:0 6px 6px 0}
 .client-subtab.active{background:var(--adim);color:var(--accent);border-color:var(--accent)}
-.lead-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;display:grid;grid-template-columns:2fr 1.5fr 1.2fr 1fr auto;gap:10px;align-items:center;font-size:14px}
-@media(max-width:900px){.lead-card{grid-template-columns:1fr 1fr}}
+/* Content view */
+.content-setup{background:var(--surface);border:1px dashed var(--border);border-radius:var(--r);padding:20px 22px;font-size:14px;line-height:1.9;color:var(--tm)}
+.content-setup .mono{font-family:var(--mono);font-size:12px;background:var(--s2);padding:1px 6px;border-radius:4px}
+.gen-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:6px}
+.gen-pills{display:flex;gap:5px;flex-wrap:wrap}
+.gen-row .inbox-chip.gen-on{background:var(--adim);color:var(--accent-deep);border-color:var(--accent)}
+.gen-seed{flex:1;min-width:180px}
+.cstrip{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:6px 13px;margin-bottom:4px}
+.cday{display:flex;gap:12px;align-items:baseline;padding:5px 0;border-bottom:1px dashed var(--s3)}
+.cday:last-child{border-bottom:none}
+.cday-today .cday-date{color:var(--pink);font-weight:700}
+.cday-date{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--tm);width:72px;flex-shrink:0}
+.cday-items{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.cday-empty{color:var(--s3)}
+.cslot{display:inline-flex;gap:6px;align-items:center;font-size:13px;padding:3px 9px;border-radius:var(--rs);background:var(--s2);border:1px solid var(--border)}
+.cslot.proposed{border-style:dashed;border-color:var(--yellow);background:var(--ydim)}
+.cslot.scheduled{border-color:var(--accent);background:var(--adim)}
+.cslot-pillar{font-family:var(--mono);font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.06em}
+.idea-card{padding:11px 13px}
+.idea-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.idea-title{font-weight:700;font-size:14px}
+.idea-chips{display:flex;gap:5px;flex-shrink:0}
+.idea-chip{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:9px;background:var(--s2);color:var(--tm)}
+.idea-angle{font-size:13px;color:var(--tm);line-height:1.5;margin-top:4px}
+.idea-actions{display:flex;gap:6px;align-items:center;margin-top:8px}
+.bf-label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--td);margin:10px 0 3px}
+.bf-input{width:100%}
+.beb-guide{background:var(--dark);color:#FAF8F4;border-radius:var(--rs);padding:12px 14px;font-size:13px;line-height:1.6;margin-bottom:4px}
+.beb-guide b{color:#FFD000}
 </style>
 </head>
 <body>
@@ -666,10 +693,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="nav-btn" id="nav-queue" onclick="switchTab('queue',this)">Queue <span class="side-badge" id="badge-queue"></span></button>
     <button class="nav-btn" id="nav-calendar" onclick="switchTab('calendar',this)">Calendar</button>
   </div>
-  <div class="side-group" id="grp-growth" style="display:none">
-    <div class="side-label">Growth</div>
-    <button class="nav-btn" id="nav-leads" onclick="switchTab('leads',this)">Leads</button>
-    <button class="nav-btn" id="nav-research" onclick="switchTab('research',this)">Research</button>
+  <div class="side-group" id="grp-content">
+    <div class="side-label">Content</div>
+    <button class="nav-btn" id="nav-content" onclick="switchTab('content',this)">Content <span class="side-badge" id="badge-content"></span></button>
   </div>
   <div class="side-group">
     <div class="side-label">Studio</div>
@@ -793,19 +819,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div style="font-size:12px;color:var(--tm)">Tasks without a day — same list as the Today inbox</div></div>
     <div id="week-parking"></div>
   </div>
-  <div class="tab" id="tab-research">
-    <div class="sec-hdr"><div class="sec-title">Research</div>
-      <span>
-        <button class="cmd-add-btn" onclick="addClient()">+ New Client</button>
-        <button class="cmd-add-btn" onclick="addNote()">+ New Note</button>
-      </span></div>
-    <div id="research-subtabs"></div>
-    <div id="research-notes"></div>
-  </div>
-  <div class="tab" id="tab-leads">
-    <div class="sec-hdr"><div class="sec-title">Leads</div>
-      <button class="cmd-add-btn" onclick="addLead()">+ New Lead</button></div>
-    <div id="leads-list"></div>
+  <div class="tab" id="tab-content">
+    <div class="sec-hdr"><div class="sec-title">Content</div>
+      <button class="cmd-add-btn" id="content-add-client" onclick="addContentClient()">+ New Client</button></div>
+    <div id="content-subtabs"></div>
+    <div id="content-body"></div>
   </div>
 </div>
 
@@ -959,9 +977,10 @@ let nextVidId = 1; // kept for legacy loadData parsing only
 let currentUser = null; // logged-in TEAM member
 
 let tasks = [];   // Command Center
-let notes = [];
-let leads = [];
 let metaKV = {};  // key → value (jsonb)
+let cBriefs = [];        // Content: per-client briefs
+let cIdeas = [];         // Content: ideas (proposed/banked/scheduled/killed)
+let contentReady = false; // false until content tables exist + first load succeeds
 function newCmdId(prefix){ return prefix + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
 
 function newVidId(){ return 'v' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
@@ -1029,14 +1048,12 @@ async function syncVideo(v, projId){
 // ─── COMMAND DATA LAYER ───────────────────────────────────────────────────────
 async function loadCommandData(opts = {}){
   if(!isAdmin()) return;
-  const [t, n, l, m] = await Promise.all([
+  const [t, m] = await Promise.all([
     db.from('tasks').select('*').order('created_at'),
-    db.from('notes').select('*').order('updated_at', {ascending:false}),
-    db.from('leads').select('*').order('created_at'),
     db.from('meta').select('*'),
   ]);
-  if(t.error || n.error || l.error || m.error){
-    console.error(t.error||n.error||l.error||m.error);
+  if(t.error || m.error){
+    console.error(t.error||m.error);
     toast('⚠ Failed to load command data', true); return;
   }
   tasks = (t.data||[]).map(r => ({
@@ -1044,16 +1061,35 @@ async function loadCommandData(opts = {}){
     assigneeId:r.assignee_id, client:r.client, status:r.status,
     scheduledFor:r.scheduled_for, createdAt:r.created_at, completedAt:r.completed_at
   }));
-  notes = (n.data||[]).map(r => ({
-    id:r.id, client:r.client, title:r.title, body:r.body,
-    pinned:r.pinned, createdAt:r.created_at, updatedAt:r.updated_at
-  }));
-  leads = (l.data||[]).map(r => ({
-    id:r.id, name:r.name, contact:r.contact||'', source:r.source||'',
-    stage:r.stage, meetingAt:r.meeting_at, notes:r.notes||'', createdAt:r.created_at
-  }));
   metaKV = {};
   (m.data||[]).forEach(r => metaKV[r.key] = r.value);
+  renderCommand();
+  updateSideBadges();
+}
+
+// Content loads for EVERYONE (non-admins see the calendar). Failures are caught
+// per-table so a missing table (SQL not yet run) degrades to a setup notice in
+// the Content tab instead of breaking the app.
+async function loadContentData(){
+  const [b, i] = await Promise.all([
+    db.from('content_briefs').select('*').order('client'),
+    db.from('content_ideas').select('*').order('created_at', {ascending:false}),
+  ]);
+  if(b.error || i.error){
+    console.warn('content tables not ready:', (b.error||i.error).message);
+    contentReady = false;
+    return;
+  }
+  contentReady = true;
+  cBriefs = (b.data||[]).map(r => ({
+    client:r.client, positioning:r.positioning||'', audience:r.audience||'',
+    pillars:r.pillars||[], tone:r.tone||'', cadence:r.cadence||3, notes:r.notes||''
+  }));
+  cIdeas = (i.data||[]).map(r => ({
+    id:r.id, client:r.client, title:r.title, angle:r.angle||'', pillar:r.pillar||'',
+    format:r.format||'', status:r.status, scheduledFor:r.scheduled_for,
+    source:r.source, createdAt:r.created_at
+  }));
   renderCommand();
   updateSideBadges();
 }
@@ -1062,8 +1098,7 @@ function renderCommand(){
   const active = document.querySelector('.tab.active')?.id;
   if(active === 'tab-today') renderToday();
   if(active === 'tab-week') renderWeek();
-  if(active === 'tab-research') renderResearch();
-  if(active === 'tab-leads') renderLeads();
+  if(active === 'tab-content') renderContent();
   updateSideBadges();
 }
 
@@ -1082,31 +1117,23 @@ async function deleteTask(id){
   if(error){ console.error('deleteTask:', error); toast('⚠ Failed to delete — check connection', true); return; }
   markSelfWrite('tasks', {id});
 }
-async function syncNote(n){
-  const { error } = await db.from('notes').upsert({
-    id:n.id, client:n.client, title:n.title, body:n.body,
-    pinned:n.pinned, created_at:n.createdAt, updated_at:new Date().toISOString()
+async function syncBrief(b){
+  const { error } = await db.from('content_briefs').upsert({
+    client:b.client, positioning:b.positioning, audience:b.audience,
+    pillars:b.pillars, tone:b.tone, cadence:b.cadence, notes:b.notes,
+    updated_at:new Date().toISOString()
   });
-  if(error){ console.error('syncNote:', error); toast('⚠ Failed to save — check connection', true); return; }
-  markSelfWrite('notes', n);
+  if(error){ console.error('syncBrief:', error); toast('⚠ Failed to save — check connection', true); return; }
+  markSelfWrite('content_briefs', b);
 }
-async function deleteNoteRow(id){
-  const { error } = await db.from('notes').delete().eq('id', id);
-  if(error){ console.error('deleteNoteRow:', error); toast('⚠ Failed to delete — check connection', true); return; }
-  markSelfWrite('notes', {id});
-}
-async function syncLead(l){
-  const { error } = await db.from('leads').upsert({
-    id:l.id, name:l.name, contact:l.contact||null, source:l.source||null,
-    stage:l.stage, meeting_at:l.meetingAt, notes:l.notes||null, created_at:l.createdAt
+async function syncIdea(i){
+  const { error } = await db.from('content_ideas').upsert({
+    id:i.id, client:i.client, title:i.title, angle:i.angle, pillar:i.pillar,
+    format:i.format, status:i.status, scheduled_for:i.scheduledFor,
+    source:i.source, created_at:i.createdAt, updated_at:new Date().toISOString()
   });
-  if(error){ console.error('syncLead:', error); toast('⚠ Failed to save — check connection', true); return; }
-  markSelfWrite('leads', l);
-}
-async function deleteLeadRow(id){
-  const { error } = await db.from('leads').delete().eq('id', id);
-  if(error){ console.error('deleteLeadRow:', error); toast('⚠ Failed to delete — check connection', true); return; }
-  markSelfWrite('leads', {id});
+  if(error){ console.error('syncIdea:', error); toast('⚠ Failed to save — check connection', true); return; }
+  markSelfWrite('content_ideas', i);
 }
 async function syncMeta(key, value){
   metaKV[key] = value;
@@ -1119,7 +1146,8 @@ async function syncMeta(key, value){
 // meta is keyed by `key`, every other table by `id`. A uniform 'table:id' key
 // would yield 'meta:undefined', never match, and leave weekly-focus edits
 // re-rendering on every keystroke.
-const PK_COL = { projects:'id', videos:'id', tasks:'id', notes:'id', leads:'id', meta:'key' };
+const PK_COL = { projects:'id', videos:'id', tasks:'id', meta:'key',
+                 content_briefs:'client', content_ideas:'id' };
 const rowKey = (table, row) => `${table}:${row?.[PK_COL[table]]}`;
 
 // Debounce timers, keyed by name. This must be a plain object, NOT `window[...]`:
@@ -1194,14 +1222,15 @@ function subscribeRealtime(){
 
   const pipeline = () => loadData({silent: true});
   const command  = () => loadCommandData({silent: true});
+  const content  = () => loadContentData();
 
   db.channel(channelName)
     .on('postgres_changes', {event:'*', schema:'public', table:'projects'}, handler('projects', pipeline, '_realtimeDebounce'))
     .on('postgres_changes', {event:'*', schema:'public', table:'videos'},   handler('videos',   pipeline, '_realtimeDebounce'))
     .on('postgres_changes', {event:'*', schema:'public', table:'tasks'},    handler('tasks',    command,  '_cmdRealtimeDebounce'))
-    .on('postgres_changes', {event:'*', schema:'public', table:'notes'},    handler('notes',    command,  '_cmdRealtimeDebounce'))
-    .on('postgres_changes', {event:'*', schema:'public', table:'leads'},    handler('leads',    command,  '_cmdRealtimeDebounce'))
     .on('postgres_changes', {event:'*', schema:'public', table:'meta'},     handler('meta',     command,  '_cmdRealtimeDebounce'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'content_briefs'}, handler('content_briefs', content, '_contentRealtimeDebounce'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'content_ideas'},  handler('content_ideas',  content, '_contentRealtimeDebounce'))
     .subscribe((status, err) => {
       console.log('[Realtime]', status, err || '');
       if(status === 'SUBSCRIBED'){
@@ -1490,6 +1519,8 @@ function renderAll(){ renderKanban(); renderClients(); renderTeam(); renderEffic
 
 function updateSideBadges(){
   const t = document.getElementById('badge-today'), q = document.getElementById('badge-queue');
+  const c = document.getElementById('badge-content');
+  if(c) c.textContent = (isAdmin() && contentReady && proposedIdeas().length) || '';
   if(t){
     const blockers = allVideosFlat().filter(v => v.stage === 2 && !v.draft).length
       + projects.filter(p => p.stage === 4).length;
@@ -2966,14 +2997,14 @@ async function createProject(){
 
 function switchTab(name, btn){
   if(name === 'efficiency' && !isAdmin()){ toast('⚠ Access restricted'); return; }
-  const CMD_TABS = ['today','week','research','leads'];
+  const CMD_TABS = ['today','week'];
   if(CMD_TABS.includes(name) && !isAdmin()){ toast('⚠ Access restricted'); return; }
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
   const TAB_TITLES = {projects:'Projects',clients:'Clients',team:'Team',efficiency:'Efficiency',
-    calendar:'Calendar',queue:'Queue',today:'Today',week:'My Week',research:'Research',leads:'Leads'};
+    calendar:'Calendar',queue:'Queue',today:'Today',week:'My Week',content:'Content'};
   document.getElementById('hdr-title').textContent = TAB_TITLES[name] || name;
   document.body.classList.remove('sidebar-open');
   if(name === 'efficiency'){ renderEfficiency(); }
@@ -2982,8 +3013,7 @@ function switchTab(name, btn){
   if(name === 'queue') renderQueue();
   if(name === 'today') renderToday();
   if(name === 'week') renderWeek();
-  if(name === 'research') renderResearch();
-  if(name === 'leads') renderLeads();
+  if(name === 'content') renderContent();
 }
 
 // ─── COMMAND CENTER ──────────────────────────────────────────────────────────
@@ -3057,11 +3087,10 @@ function needsYouHtml(){
   projects.filter(p => p.stage === 4).forEach(p =>
     items.push({sev:'red', title:`${escHtml(p.client)} · ${escHtml(p.name)} — approval to shoot`,
       why:'crew waiting', go:"switchTab('projects',document.getElementById('nav-projects'))"}));
-  const todayStr = new Date().toDateString();
-  leads.filter(l => l.meetingAt && new Date(l.meetingAt).toDateString() === todayStr).forEach(l =>
-    items.push({sev:'amber', title:`📅 ${escHtml(l.name)} — meeting`,
-      why:new Date(l.meetingAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
-      go:"switchTab('leads',document.getElementById('nav-leads'))"}));
+  const freshIdeas = proposedIdeas().length;
+  if(freshIdeas) items.push({sev:'amber', title:`✦ ${freshIdeas} fresh idea${freshIdeas>1?'s':''} — review`,
+    why:'from the content agent',
+    go:"switchTab('content',document.getElementById('nav-content'))"});
   tasks.filter(t => t.assigneeId === currentUser.id && t.status !== 'done' && t.status !== 'cancelled').forEach(t =>
     items.push({sev:'', title:escHtml(t.title), why:'assigned to you', go:''}));
   if(!items.length) return '<div style="font-size:13px;color:var(--td)">Nothing blocked on you ✓</div>';
@@ -3076,8 +3105,7 @@ function briefBarHtml(){
   const needCount = needs.querySelectorAll('.need-card.sev-red').length;
   const inbox = inboxTasks().length;
   const inProd = projects.filter(p => p.stage === 6).length;
-  const todayStr = new Date().toDateString();
-  const meetings = leads.filter(l => l.meetingAt && new Date(l.meetingAt).toDateString() === todayStr).length;
+  const ideasWaiting = proposedIdeas().length;
   const focus = metaKV['week_focus_' + isoDate(weekMonday(0))] || '';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -3097,7 +3125,7 @@ function briefBarHtml(){
       <span class="${needCount ? 'hero-hot' : ''}">${needCount} need you</span>
       <span>${inbox} inbox</span>
       <span>${inProd} in production</span>
-      <span>${meetings} meeting${meetings===1?'':'s'}</span>
+      <span>${ideasWaiting} idea${ideasWaiting===1?'':'s'} waiting</span>
     </div>
   </div>`;
 }
@@ -3248,153 +3276,211 @@ async function saveWeekFocus(){
   if(text === 'Click to set your weekly focus…') return;
   await syncMeta(el.dataset.key, text);
 }
-let researchClient = null; // active subtab
-let researchClientList = []; // parallel to subtab indices; avoids quoting client names in inline JS
+// ─── CONTENT ─────────────────────────────────────────────────────────────────
+// Per-client content system: agent idea drops, calendar, bank, brief.
+let contentClient = null;      // active subtab
+let contentClientList = [];    // parallel to subtab indices; avoids quoting client names in inline JS
+let briefOpen = false;
+let genPillar = '';
 
-function renderResearch(){
-  const clients = [...new Set([...allClientNames(), ...notes.map(n => n.client)])].sort();
-  if(!researchClient || !clients.includes(researchClient)) researchClient = clients[0] || null;
-  researchClientList = clients;
-  document.getElementById('research-subtabs').innerHTML = clients.map((c, i) =>
-    `<button class="client-subtab ${c===researchClient?'active':''}"
-      onclick="researchClient=researchClientList[${i}];renderResearch()">${escHtml(c)}
-      <span style="opacity:.5">${notes.filter(n=>n.client===c).length}</span></button>`).join('')
-    || '<div style="font-size:13px;color:var(--tm)">No clients yet — add a note to create one.</div>';
+const AGENT_URL = SUPABASE_URL + '/functions/v1/content-agent';
+const AGENT_TOKEN = 'fefa2ac2c65cfab6a16d8304';
 
-  const list = notes.filter(n => n.client === researchClient)
-    .sort((a,b) => (b.pinned - a.pinned) || (new Date(b.updatedAt) - new Date(a.updatedAt)));
-  document.getElementById('research-notes').innerHTML = list.map(n => `<div class="note-card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <input class="note-title" value="${escHtml(n.title)}" placeholder="Note title…"
-        onblur="updateNote('${n.id}','title',this.value)">
-      <span>
-        <button class="loop-del" title="Pin" style="${n.pinned?'color:var(--yellow)':''}"
-          onclick="togglePin('${n.id}')">📌</button>
-        <button class="loop-del" onclick="removeNote('${n.id}')">×</button>
+function contentClients(){
+  return [...new Set([...cBriefs.map(b => b.client), ...cIdeas.map(i => i.client)])]
+    .sort((a,b) => (a==='Bebatzai' ? -1 : b==='Bebatzai' ? 1 : a.localeCompare(b)));
+}
+const clientIdeas = c => cIdeas.filter(i => i.client === c);
+const proposedIdeas = () => cIdeas.filter(i => i.status === 'proposed');
+const briefOf = c => cBriefs.find(b => b.client === c);
+
+function renderContent(){
+  const subtabs = document.getElementById('content-subtabs');
+  const body = document.getElementById('content-body');
+  if(!contentReady){
+    subtabs.innerHTML = '';
+    body.innerHTML = `<div class="content-setup">
+      <b>Content isn't activated yet.</b><br>
+      1. Run <span class="mono">docs/superpowers/sql/2026-07-19-content-tables.sql</span> in the Supabase SQL editor.<br>
+      2. Create the <span class="mono">content-agent</span> edge function (code in the repo) and set its
+      <span class="mono">ANTHROPIC_API_KEY</span> + <span class="mono">AGENT_TOKEN</span> secrets.<br>
+      Then refresh — this tab lights up on its own.</div>`;
+    return;
+  }
+  const clients = contentClients();
+  if(!contentClient || !clients.includes(contentClient)) contentClient = clients[0] || null;
+  contentClientList = clients;
+  subtabs.innerHTML = clients.map((c, i) =>
+    `<button class="client-subtab ${c===contentClient?'active':''}"
+      onclick="contentClient=contentClientList[${i}];genPillar='';renderContent()">${escHtml(c)}
+      <span style="opacity:.5">${clientIdeas(c).filter(x=>x.status==='proposed').length || ''}</span></button>`).join('')
+    || '<div style="font-size:13px;color:var(--tm)">No clients yet — + New Client writes the first brief.</div>';
+  if(!contentClient){ body.innerHTML = ''; return; }
+
+  const admin = isAdmin();
+  body.innerHTML =
+    (admin ? generateRowHtml(contentClient) : '')
+    + calendarStripHtml(contentClient, admin)
+    + (admin ? dropHtml(contentClient) + bankHtml(contentClient) + briefHtml(contentClient) : '');
+}
+
+function generateRowHtml(c){
+  const pillars = briefOf(c)?.pillars || [];
+  return `<div class="gen-row">
+    <span class="gen-pills">${pillars.map(p => `<button class="inbox-chip ${genPillar===p?'gen-on':''}"
+      onclick="genPillar = genPillar==='${escHtml(p)}' ? '' : '${escHtml(p)}'; renderContent()">${escHtml(p)}</button>`).join('')}</span>
+    <input class="inbox-sel gen-seed" id="gen-seed" placeholder="seed a thought, scene, or feeling… (optional)">
+    <button class="cmd-add-btn" id="gen-btn" onclick="generateIdeas()">✦ Generate</button>
+  </div>`;
+}
+
+function calendarStripHtml(c, admin){
+  const items = clientIdeas(c).filter(i => i.scheduledFor && (i.status==='scheduled' || i.status==='proposed'));
+  let html = `<div class="today-label">Calendar — next 2 weeks</div><div class="cstrip">`;
+  for(let d = 0; d < 14; d++){
+    const day = new Date(); day.setDate(day.getDate() + d);
+    const iso = isoDate(day);
+    const dayItems = items.filter(i => i.scheduledFor === iso);
+    html += `<div class="cday ${d===0?'cday-today':''}">
+      <span class="cday-date">${day.toLocaleDateString('en-GB',{weekday:'short',day:'numeric'})}</span>
+      <span class="cday-items">${dayItems.map(i => `<span class="cslot ${i.status}">
+        ${escHtml(i.title)}<span class="cslot-pillar">${escHtml(i.pillar)}</span>
+        ${admin && i.status==='proposed' ? `<button class="loop-del" title="Approve" onclick="ideaApprove('${i.id}')">✓</button>` : ''}
+        ${admin ? `<button class="loop-del" title="Kill" onclick="ideaKill('${i.id}')">×</button>` : ''}
+      </span>`).join('') || '<span class="cday-empty">—</span>'}</span>
+    </div>`;
+  }
+  return html + '</div>';
+}
+
+function ideaCardHtml(i){
+  return `<div class="note-card idea-card">
+    <div class="idea-top">
+      <span class="idea-title">${escHtml(i.title)}</span>
+      <span class="idea-chips">
+        ${i.pillar ? `<span class="idea-chip">${escHtml(i.pillar)}</span>` : ''}
+        ${i.format ? `<span class="idea-chip">${escHtml(i.format)}</span>` : ''}
       </span>
     </div>
-    <textarea class="note-body" placeholder="Research, links, angles…"
-      onblur="updateNote('${n.id}','body',this.value)">${escHtml(n.body)}</textarea>
-    <div class="loop-age">updated ${relAge(n.updatedAt)} ago</div>
-  </div>`).join('') || (researchClient ? '<div style="font-size:13px;color:var(--tm)">No notes yet for this client.</div>' : '');
+    ${i.angle ? `<div class="idea-angle">${escHtml(i.angle)}</div>` : ''}
+    <div class="idea-actions">
+      <input type="date" class="inbox-sel inbox-date" title="Schedule" min="2024-01-01"
+        onchange="ideaSchedule('${i.id}', this.value)">
+      ${i.status==='proposed' ? `<button class="inbox-chip" onclick="ideaSetStatus('${i.id}','banked')">Bank</button>` : ''}
+      <button class="loop-del" title="Kill" onclick="ideaKill('${i.id}')">×</button>
+    </div>
+  </div>`;
 }
 
-// New notes land on the active client subtab; the prompt only appears when no
-// client exists yet (first use). "+ New Client" is the explicit way to start a
-// new client — typing note text into a client prompt was creating junk subtabs.
-async function addNote(client){
-  client = client || researchClient;
-  if(!client){ await addClient(); return; }
-  const n = { id:newCmdId('n'), client, title:'', body:'', pinned:false,
-              createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() };
-  notes.unshift(n); researchClient = client;
-  await syncNote(n);
-  renderResearch();
-  document.querySelector('#research-notes .note-title')?.focus();
+function dropHtml(c){
+  const fresh = clientIdeas(c).filter(i => i.status === 'proposed' && !i.scheduledFor);
+  return `<div class="today-label">Fresh ideas</div>
+    ${fresh.map(ideaCardHtml).join('')
+      || '<div style="font-size:13px;color:var(--td)">Nothing waiting — the agent drops ideas each morning, or hit Generate.</div>'}`;
 }
 
-async function addClient(){
+function bankHtml(c){
+  const banked = clientIdeas(c).filter(i => i.status === 'banked');
+  return `<div class="today-label">Idea bank</div>
+    ${banked.map(ideaCardHtml).join('')
+      || '<div style="font-size:13px;color:var(--td)">Empty — bank drop ideas or file captures here.</div>'}`;
+}
+
+function briefHtml(c){
+  const b = briefOf(c) || {client:c, positioning:'', audience:'', pillars:[], tone:'', cadence:3, notes:''};
+  const guide = c === 'Bebatzai' ? `<div class="beb-guide">
+      <b>The 4:1 ratio.</b> 4× Raw &amp; Real — phone in hand, something just happened: point,
+      shoot, trim, post. The lack of polish IS the content (you edit on phone, 20 min max, same day).
+      1× Has a Shape — Ammi Series, Ramadan, a personal story. Has a spine. Team edits.
+    </div>` : '';
+  return `<div class="today-label" style="cursor:pointer" onclick="briefOpen=!briefOpen;renderContent()">
+      Brief ${briefOpen ? '▾' : '▸'}</div>
+    ${briefOpen ? `<div class="note-card brief-card">
+      ${guide}
+      <label class="bf-label">Positioning</label>
+      <textarea class="note-body" onblur="updateBrief('positioning', this.value)">${escHtml(b.positioning)}</textarea>
+      <label class="bf-label">Audience</label>
+      <input class="cmd-add-input bf-input" value="${escHtml(b.audience)}" onblur="updateBrief('audience', this.value)">
+      <label class="bf-label">Pillars (comma-separated)</label>
+      <input class="cmd-add-input bf-input" value="${escHtml((b.pillars||[]).join(', '))}"
+        onblur="updateBrief('pillars', this.value)">
+      <label class="bf-label">Tone</label>
+      <input class="cmd-add-input bf-input" value="${escHtml(b.tone)}" onblur="updateBrief('tone', this.value)">
+      <label class="bf-label">Cadence (posts/week)</label>
+      <input class="cmd-add-input bf-input" type="number" min="1" max="14" value="${b.cadence}"
+        onblur="updateBrief('cadence', this.value)">
+      <label class="bf-label">Notes for the agent</label>
+      <textarea class="note-body" onblur="updateBrief('notes', this.value)">${escHtml(b.notes)}</textarea>
+    </div>` : ''}`;
+}
+
+async function addContentClient(){
   const typed = await uiPrompt('New client name:');
   if(typed === null) return;
   const client = typed.trim();
   if(!client){ toast('⚠ Client needs a name'); return; }
-  await addNote(client);
+  if(!briefOf(client)){
+    const b = {client, positioning:'', audience:'', pillars:[], tone:'', cadence:3, notes:''};
+    cBriefs.push(b);
+    await syncBrief(b);
+  }
+  contentClient = client; briefOpen = true;
+  renderContent();
 }
 
-async function updateNote(id, field, value){
-  const n = notes.find(x => x.id === id); if(!n) return;
-  if(n[field] === value) return;
-  n[field] = value; n.updatedAt = new Date().toISOString();
-  await syncNote(n);
+async function updateBrief(field, value){
+  const b = briefOf(contentClient); if(!b) return;
+  const v = field === 'pillars' ? value.split(',').map(s => s.trim()).filter(Boolean)
+          : field === 'cadence' ? Math.max(1, parseInt(value) || 3)
+          : value;
+  if(JSON.stringify(b[field]) === JSON.stringify(v)) return;
+  b[field] = v;
+  await syncBrief(b);
 }
 
-async function togglePin(id){
-  const n = notes.find(x => x.id === id); if(!n) return;
-  n.pinned = !n.pinned;
-  await syncNote(n);
-  renderResearch();
+async function ideaSetStatus(id, status){
+  const i = cIdeas.find(x => x.id === id); if(!i) return;
+  i.status = status;
+  renderContent(); updateSideBadges();
+  await syncIdea(i);
+}
+async function ideaApprove(id){
+  const i = cIdeas.find(x => x.id === id); if(!i) return;
+  i.status = 'scheduled';
+  renderContent(); updateSideBadges();
+  await syncIdea(i);
+}
+async function ideaKill(id){ await ideaSetStatus(id, 'killed'); }
+async function ideaSchedule(id, dateStr){
+  if(!dateStr || dateStr < '2024-01-01'){ if(dateStr) toast('⚠ Check the date'); return; }
+  const i = cIdeas.find(x => x.id === id); if(!i) return;
+  i.scheduledFor = dateStr; i.status = 'scheduled';
+  renderContent(); updateSideBadges();
+  await syncIdea(i);
 }
 
-async function removeNote(id){
-  if(!await uiConfirm('Delete this note?', {ok:'Delete', danger:true})) return;
-  notes = notes.filter(x => x.id !== id);
-  await deleteNoteRow(id);
-  renderResearch();
-}
-
-// Stored UTC ISO → value string for <input type="datetime-local"> in the
-// browser's local timezone (slicing the raw ISO would show UTC time)
-function toLocalDT(iso){
-  const d = new Date(iso);
-  return isoDate(d) + 'T' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-}
-
-// datetime-local can hand over strings Date can't parse (e.g. 5+ digit years
-// mid-typing) — toISOString() on an invalid Date throws, killing the onchange
-function toIsoOrNull(v){
-  const d = new Date(v);
-  return v && !isNaN(d) ? d.toISOString() : null;
-}
-
-const LEAD_STAGES = [
-  {key:'new',                 label:'New'},
-  {key:'discovery_scheduled', label:'Discovery Scheduled'},
-  {key:'research',            label:'Research'},
-  {key:'proposal',            label:'Proposal'},
-  {key:'won',                 label:'Won ✓'},
-  {key:'lost',                label:'Lost'},
-];
-
-function renderLeads(){
-  const order = Object.fromEntries(LEAD_STAGES.map((s,i) => [s.key, i]));
-  const list = [...leads].sort((a,b) => order[a.stage] - order[b.stage] || new Date(b.createdAt) - new Date(a.createdAt));
-  document.getElementById('leads-list').innerHTML = list.map(l => `<div class="lead-card"
-      style="${l.stage==='won'?'border-color:var(--accent)':''}${l.stage==='lost'?'opacity:.45':''}">
-    <div>
-      <input class="note-title" value="${escHtml(l.name)}" onblur="updateLead('${l.id}','name',this.value)">
-      <input class="cmd-add-input" style="width:100%" value="${escHtml(l.contact)}" placeholder="contact…"
-        onblur="updateLead('${l.id}','contact',this.value)">
-    </div>
-    <textarea class="note-body" style="min-height:36px" placeholder="notes…"
-      onblur="updateLead('${l.id}','notes',this.value)">${escHtml(l.notes)}</textarea>
-    <select class="inbox-sel" onchange="setLeadStage('${l.id}',this.value)">
-      ${LEAD_STAGES.map(s => `<option value="${s.key}" ${l.stage===s.key?'selected':''}>${s.label}</option>`).join('')}
-    </select>
-    <input type="datetime-local" class="inbox-sel" value="${l.meetingAt ? toLocalDT(l.meetingAt) : ''}"
-      onchange="updateLead('${l.id}','meetingAt',toIsoOrNull(this.value))">
-    <button class="loop-del" onclick="removeLead('${l.id}')">×</button>
-  </div>`).join('') || '<div style="font-size:13px;color:var(--tm)">No leads yet. + New Lead when one lands.</div>';
-}
-
-async function addLead(){
-  const name = await uiPrompt('Lead name (person or company):'); if(!name?.trim()) return;
-  const l = { id:newCmdId('l'), name:name.trim(), contact:'', source:'', stage:'new',
-              meetingAt:null, notes:'', createdAt:new Date().toISOString() };
-  leads.unshift(l);
-  await syncLead(l);
-  renderLeads();
-}
-
-async function updateLead(id, field, value){
-  const l = leads.find(x => x.id === id); if(!l) return;
-  if(l[field] === value) return;
-  l[field] = value;
-  await syncLead(l);
-  if(field === 'meetingAt') renderLeads();
-}
-
-async function setLeadStage(id, stage){
-  const l = leads.find(x => x.id === id); if(!l) return;
-  l.stage = stage;
-  await syncLead(l);
-  renderLeads();
-}
-
-async function removeLead(id){
-  if(!await uiConfirm('Delete this lead?', {ok:'Delete', danger:true})) return;
-  leads = leads.filter(x => x.id !== id);
-  await deleteLeadRow(id);
-  renderLeads();
+async function generateIdeas(){
+  const btn = document.getElementById('gen-btn');
+  const seed = document.getElementById('gen-seed')?.value.trim() || '';
+  if(btn){ btn.disabled = true; btn.textContent = '✦ Thinking…'; }
+  try {
+    const res = await fetch(AGENT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'x-agent-token': AGENT_TOKEN,
+      },
+      body: JSON.stringify({action:'generate', client:contentClient, pillar:genPillar || undefined, seed:seed || undefined}),
+    });
+    const data = await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    await loadContentData();
+  } catch(e) {
+    console.error('generateIdeas:', e);
+    toast('⚠ Generate failed — is the content-agent function deployed?', true);
+    renderContent();
+  }
 }
 
 async function captureTask(){
@@ -3433,8 +3519,8 @@ const openLoops = id => tasks.filter(t => t.assigneeId === id && t.status !== 'd
 
 function allClientNames(){
   const fromProjects = projects.map(p => p.client);
-  const fromLeads = leads.filter(l => l.stage === 'won').map(l => l.name);
-  return [...new Set([...fromProjects, ...fromLeads])].sort();
+  const fromBriefs = cBriefs.map(b => b.client);
+  return [...new Set([...fromProjects, ...fromBriefs])].sort();
 }
 
 function relAge(iso){
@@ -3461,22 +3547,23 @@ function inboxRowHtml(t){
       onchange="sortInbox('${t.id}','schedule',this.value)">
     <select class="inbox-sel" onchange="sortInbox('${t.id}','assignee',this.value)">
       <option value="">assign…</option>${teamOpts}</select>
-    <select class="inbox-sel" onchange="fileToResearch('${t.id}',this.value)">
-      <option value="">file under…</option>${clientOpts}</select>
+    <select class="inbox-sel" onchange="fileToBank('${t.id}',this.value)">
+      <option value="">bank under…</option>${clientOpts}</select>
     <button class="loop-del" title="Done" onclick="setTaskStatus('${t.id}','done')">✓</button>
     <button class="loop-del" title="Delete" onclick="removeTask('${t.id}')">×</button>
   </div>`;
 }
 
-// Sorting to a client files the capture where you'd look for it: as a note
-// under that client in Research. The task itself is absorbed (deleted).
-async function fileToResearch(id, client){
+// Sorting to a client files the capture where you'd look for it: as a banked
+// idea in that client's Content bank. The task itself is absorbed (deleted).
+async function fileToBank(id, client){
   const t = tasks.find(x => x.id === id); if(!t || !client) return;
-  const n = { id:newCmdId('n'), client, title:t.title, body:t.notes||'', pinned:false,
-              createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() };
-  notes.unshift(n);
+  if(!contentReady){ toast('⚠ Content isn\'t activated yet — run the SQL first', true); return; }
+  const i = { id:newCmdId('ci'), client, title:t.title, angle:t.notes||'', pillar:'', format:'',
+              status:'banked', scheduledFor:null, source:'capture', createdAt:new Date().toISOString() };
+  cIdeas.unshift(i);
   tasks = tasks.filter(x => x.id !== id);
-  await syncNote(n);
+  await syncIdea(i);
   await deleteTask(id);
   renderCommand();
 }
@@ -3486,7 +3573,7 @@ function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 async function sortInbox(id, field, value){
   const t = tasks.find(x => x.id === id); if(!t) return;
   // empty value = user cleared the field: null it out (unschedule / unassign)
-  // (client sorting is fileToResearch now, not a task field)
+  // (client sorting is fileToBank now, not a task field)
   if(field === 'assignee') t.assigneeId = value ? parseInt(value) : null;
   if(field === 'schedule'){
     if(value){
@@ -3875,6 +3962,7 @@ async function onSignedIn(member){
   document.getElementById('hdr-user').textContent = member.name;
   await loadData();
   await loadCommandData();
+  await loadContentData();
   subscribeRealtime();
   if(isAdmin()) switchTab('today', document.getElementById('nav-today'));
   else switchTab('projects', document.getElementById('nav-projects'));
@@ -3883,7 +3971,8 @@ async function onSignedIn(member){
 function applyRoleGating(){
   const admin = isAdmin();
   document.getElementById('grp-myday').style.display = admin ? '' : 'none';
-  document.getElementById('grp-growth').style.display = admin ? '' : 'none';
+  // Content is visible to everyone; non-admins get the calendar view only
+  document.getElementById('content-add-client').style.display = admin ? '' : 'none';
   document.getElementById('nav-efficiency').style.display = admin ? '' : 'none';
   document.getElementById('btn-new-project').style.display = admin ? '' : 'none';
   document.getElementById('capture-input').style.display = admin ? '' : 'none';
