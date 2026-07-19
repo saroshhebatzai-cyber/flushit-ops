@@ -8,13 +8,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --bg:#FAF8F4;--surface:#FFFFFF;--s2:#F3F0E9;--s3:#EAE6DC;
+  --bg:#F4F0E6;--surface:#FDFBF6;--s2:#F0EBDF;--s3:#E7E1D3;
   --border:#E9E4DA;--b2:#D8D2C4;
   --accent:#00B368;--adim:rgba(0,179,104,.15);--aglow:rgba(0,179,104,.18);
   --accent-bright:#00E87F;--dark:#1A1A1A;
   --accent-deep:#007A47;--cyan-deep:#006B85;--yellow-deep:#8F5B00;--red-deep:#C13036;--purple-deep:#5B3FA8;
   --cyan:#0090B3;--cdim:rgba(0,144,179,.15);
-  --text:#1A1A1A;--tm:#6E6A60;--td:#757270;--fg:var(--text);
+  --text:#1A1A1A;--tm:#6E6A60;--td:#6E6A60;--fg:var(--text);
   --red:#E5484D;--rdim:rgba(229,72,77,.14);
   --yellow:#C77F00;--ydim:rgba(199,127,0,.14);
   --orange:#D95A25;--odim:rgba(217,90,37,.08);
@@ -72,7 +72,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .side-out:hover{color:var(--red);border-color:var(--red)}
 .side-meta{font-family:var(--mono);font-size:11px;color:var(--td)}
 .sidebar #capture-input{width:100%;margin:4px 0}
-.hdr{grid-area:hdr;min-width:0;position:sticky;top:0;z-index:100;background:rgba(250,248,244,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px}
+.hdr{grid-area:hdr;min-width:0;position:sticky;top:0;z-index:100;background:rgba(244,240,230,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px}
 .hdr-title{font-family:var(--display);font-weight:800;font-size:22px;color:var(--text)}
 .hdr-icon-btn{font-size:14px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer}
 .menu-btn{display:none;background:transparent;border:1px solid var(--border);border-radius:var(--rs);padding:4px 9px;cursor:pointer;color:var(--tm)}
@@ -373,6 +373,19 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .toast-x{background:none;border:none;color:#FAF8F4;font-size:15px;line-height:1;cursor:pointer;padding:0 2px;margin-left:11px;opacity:.65}
 .toast-x:hover{opacity:1}
 
+/* in-app confirm/prompt — window.confirm is suppressed in some browsers (Arc) */
+.modal-backdrop{position:fixed;inset:0;background:rgba(26,26,26,.45);z-index:3000;display:none;align-items:center;justify-content:center}
+.modal-backdrop.show{display:flex}
+.modal-card{background:var(--surface);border-radius:var(--r);padding:22px;width:min(420px,calc(100vw - 48px));box-shadow:0 18px 60px rgba(26,26,26,.28)}
+.modal-msg{font-size:14px;line-height:1.5;white-space:pre-line;margin-bottom:16px}
+.modal-input{display:none;width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-family:var(--sans);font-size:14px;color:var(--text);outline:none;margin-bottom:16px}
+.modal-input:focus{border-color:var(--accent)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px}
+.modal-btn{font-family:var(--mono);font-size:13px;font-weight:600;border-radius:var(--rs);padding:9px 16px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--tm);transition:all .15s}
+.modal-btn:hover{color:var(--text);border-color:var(--tm)}
+.modal-btn.ok{background:var(--dark);border-color:var(--dark);color:#FAF8F4}
+.modal-btn.ok.danger{background:var(--red-deep);border-color:var(--red-deep);color:#fff}
+
 /* WHATSAPP PING */
 .wa-backdrop{position:fixed;inset:0;background:rgba(26,26,26,.35);backdrop-filter:blur(4px);z-index:2099;opacity:0;pointer-events:none;transition:opacity .25s}
 .wa-backdrop.show{opacity:1;pointer-events:all}
@@ -458,7 +471,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
 
 /* LOADING */
-.loading-ov{position:fixed;inset:0;background:rgba(250,248,244,.94);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(8px)}
+.loading-ov{position:fixed;inset:0;background:rgba(244,240,230,.94);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(8px)}
 .loading-ov.hidden{display:none}
 .loading-spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -490,12 +503,26 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
 /* ─── COMMAND CENTER ─── */
-.brief-bar{background:var(--dark);border-radius:var(--r);padding:14px 18px;margin-bottom:18px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+.brief-bar{background:var(--dark);border-radius:var(--r);padding:20px 24px 18px;margin-bottom:18px}
+.hero-greet{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A8A93;margin-bottom:5px}
+.hero-name{font-family:var(--display);font-weight:800;font-size:36px;letter-spacing:-.5px;line-height:1.05;color:#FAF8F4;margin-bottom:12px}
+.hero-name span{color:#FFD000}
+.hero-focus{display:flex;gap:12px;align-items:baseline;border-left:4px solid var(--pink);padding-left:12px;margin-bottom:14px}
+.hero-focus-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--pink);white-space:nowrap}
+.hero-focus-text{font-size:13px;color:#FAF8F4}
+.hero-focus.unset{cursor:pointer}
+.hero-focus.unset .hero-focus-text{color:#8A8A93}
+.hero-focus.unset:hover .hero-focus-text{color:#FAF8F4}
+.hero-counts{font-family:var(--mono);font-size:12px;color:#8A8A93;display:flex;gap:16px;flex-wrap:wrap}
+.hero-hot{color:var(--accent-bright)}
+.hero-done{color:#FFD000}
 .brief-date{font-family:var(--display);font-weight:800;font-size:19px;color:#FAF8F4}
 .brief-hot{font-family:var(--mono);font-size:12px;color:var(--accent-bright)}
 .brief-cool{font-family:var(--mono);font-size:12px;color:#8A8A93}
 .brief-focus{font-family:var(--mono);font-size:11px;color:#5E5E66;margin-left:auto}
-.today-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--td);margin:16px 0 7px;font-weight:600}
+.today-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--td);margin:16px 0 7px;font-weight:600;display:flex;align-items:baseline;gap:10px}
+.inbox-sweep{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.06em;background:transparent;border:none;color:var(--tm);cursor:pointer;padding:0;text-transform:none}
+.inbox-sweep:hover{color:var(--text);text-decoration:underline}
 .need-card{background:var(--surface);border-radius:var(--rs);padding:11px 13px;margin-bottom:6px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;border-left:3px solid var(--td)}
 .need-card.no-action{cursor:default}
 .need-card.sev-red{border-left-color:var(--red)}
@@ -741,7 +768,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div id="today-brief"></div>
     <div class="today-label">Needs you</div>
     <div id="today-needs"></div>
-    <div class="today-label">Inbox</div>
+    <div class="today-label">Inbox <button class="inbox-sweep" id="inbox-sweep" onclick="sweepInbox()">sweep old →</button></div>
     <div id="today-inbox"></div>
     <div class="today-label">Team</div>
     <div id="today-team" class="team-strip"></div>
@@ -827,6 +854,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-msg" id="modal-msg"></div>
+    <input class="modal-input" id="modal-input" autocomplete="off">
+    <div class="modal-actions">
+      <button class="modal-btn" id="modal-cancel" type="button">Cancel</button>
+      <button class="modal-btn ok" id="modal-ok" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
 <div class="wa-backdrop" id="wa-backdrop" onclick="hideWaPing()"></div>
 <div class="wa-ping" id="wa-ping">
   <div class="wa-ping-label">
@@ -1387,6 +1424,49 @@ function hideToast(){
 function clearToast(msg){
   if(_toastMsg === msg) hideToast();
 }
+// window.confirm/prompt are suppressed in some browsers (Arc) → destructive
+// actions silently no-op. These are the in-app replacements; both resolve a
+// Promise so call sites `await` them.
+let _modalResolve = null;
+function _openModal({msg, input = null, ok = 'Confirm', danger = false}){
+  return new Promise(resolve => {
+    _modalResolve = resolve;
+    document.getElementById('modal-msg').textContent = msg;
+    const inp = document.getElementById('modal-input');
+    inp.style.display = input === null ? 'none' : 'block';
+    inp.value = input === null ? '' : input;
+    const okBtn = document.getElementById('modal-ok');
+    okBtn.textContent = ok;
+    okBtn.classList.toggle('danger', danger);
+    document.getElementById('modal-backdrop').classList.add('show');
+    if(input === null){ okBtn.focus(); } else { inp.focus(); inp.select(); }
+  });
+}
+function _closeModal(result){
+  if(!_modalResolve) return;
+  document.getElementById('modal-backdrop').classList.remove('show');
+  const r = _modalResolve; _modalResolve = null; r(result);
+}
+async function uiConfirm(msg, opts = {}){
+  return (await _openModal({msg, ...opts})) !== null;
+}
+function uiPrompt(msg, initial = ''){
+  return _openModal({msg, input: initial, ok: 'Save'});   // string, or null on cancel
+}
+document.getElementById('modal-ok').onclick = () => {
+  const inp = document.getElementById('modal-input');
+  _closeModal(inp.style.display === 'none' ? true : inp.value);
+};
+document.getElementById('modal-cancel').onclick = () => _closeModal(null);
+document.getElementById('modal-backdrop').addEventListener('click', e => {
+  if(e.target.id === 'modal-backdrop') _closeModal(null);
+});
+document.addEventListener('keydown', e => {
+  if(!_modalResolve) return;
+  if(e.key === 'Escape') _closeModal(null);
+  else if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('modal-ok').click(); }
+});
+
 function toast(msg, persist = false){
   const el = document.getElementById('toast');
   clearTimeout(_toastTimer);
@@ -1570,11 +1650,14 @@ async function moveBack(id){
 
 async function removeProject(id){
   const p = projects.find(x => x.id === id);
-  if(!p || !confirm(`Remove "${p.client} · ${p.name}"?\n\nThis cannot be undone.`)) return;
+  if(!p) return;
+  if(!await uiConfirm(`Remove "${p.client} · ${p.name}"?\n\nThis cannot be undone.`, {ok:'Remove', danger:true})) return;
   projects = projects.filter(x => x.id !== id);
   if(currentPanelId === id) closePanel();
   renderAll();
-  await db.from('projects').delete().eq('id', id);
+  markSelfWrite('projects', p);
+  const { error } = await db.from('projects').delete().eq('id', id);
+  if(error){ console.error('removeProject:', error); toast('⚠ Delete failed — refresh and retry', true); }
 }
 
 function editDeadline(id, el){
@@ -1999,7 +2082,7 @@ async function moveVideoBack(projId, vidId){
   // Return to Edit = internal revision
   if(prev === 0){
     const warning = v.revisions >= 2 ? `\n\n⚠️ This is internal revision ${v.revisions + 1} — flagged for review.` : '';
-    if(!confirm(`Send "${v.name}" back for internal revision? (${v.revisions}/2 standard)${warning}`)) return;
+    if(!await uiConfirm(`Send "${v.name}" back for internal revision? (${v.revisions}/2 standard)${warning}`, {ok:'Send back'})) return;
     v.revisions++;
     v.deliveredAt = null;
     v.startedAt = null;
@@ -2016,7 +2099,7 @@ async function clientVideoRevision(projId, vidId){
   const p = projects.find(x => x.id === projId);
   const v = p?.videos.find(x => x.id === vidId);
   if(!v || v.stage !== 3) return;
-  if(!confirm(`Mark "${v.name}" as a client revision? This sends it back to Edit.`)) return;
+  if(!await uiConfirm(`Mark "${v.name}" as a client revision? This sends it back to Edit.`, {ok:'Client revision'})) return;
   v.clientRevs = (v.clientRevs||0) + 1;
   v.stage = 0;
   v.deliveredAt = null;
@@ -2031,11 +2114,14 @@ async function removeVideo(projId, vidId){
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   const v = p.videos.find(x => x.id === vidId);
-  if(!v || !confirm(`Remove "${v.name}"?`)) return;
+  if(!v) return;
+  if(!await uiConfirm(`Remove "${v.name}"?`, {ok:'Remove', danger:true})) return;
   p.videos = p.videos.filter(x => x.id !== vidId);
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
-  await db.from('videos').delete().eq('id', vidId);
+  markSelfWrite('videos', v);
+  const { error } = await db.from('videos').delete().eq('id', vidId);
+  if(error){ console.error('removeVideo:', error); toast('⚠ Delete failed — refresh and retry', true); }
 }
 
 function editVideoDl(projId, vidId, el){
@@ -2110,7 +2196,7 @@ async function editPanelField(field){
   if(!p) return;
   const current = field === 'client' ? p.client : p.name;
   const label = field === 'client' ? 'Client name' : 'Project name';
-  const val = prompt(`Edit ${label}:`, current);
+  const val = await uiPrompt(`Edit ${label}:`, current);
   if(!val || !val.trim() || val.trim() === current) return;
   p[field] = val.trim();
   syncProject(p);
@@ -2206,10 +2292,13 @@ async function removeDraftVideo(projId, vidId){
   const p = projects.find(x => x.id === projId);
   if(!p) return;
   const v = p.videos.find(x => x.id === vidId);
-  if(!v || !confirm(`Remove draft task "${v.name}"?`)) return;
+  if(!v) return;
+  if(!await uiConfirm(`Remove draft task "${v.name}"?`, {ok:'Remove', danger:true})) return;
   p.videos = p.videos.filter(x => x.id !== vidId);
   renderPanelBody(projId);
-  await db.from('videos').delete().eq('id', vidId);
+  markSelfWrite('videos', v);
+  const { error } = await db.from('videos').delete().eq('id', vidId);
+  if(error){ console.error('removeDraftVideo:', error); toast('⚠ Delete failed — refresh and retry', true); }
 }
 
 // ─── SHOOT DATE ──────────────────────────────────────────────────────────────
@@ -2990,11 +3079,26 @@ function briefBarHtml(){
   const todayStr = new Date().toDateString();
   const meetings = leads.filter(l => l.meetingAt && new Date(l.meetingAt).toDateString() === todayStr).length;
   const focus = metaKV['week_focus_' + isoDate(weekMonday(0))] || '';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const todayIso = isoDate(new Date());
+  const doneToday = tasks.filter(t => t.status === 'done' && t.scheduledFor === todayIso).length;
+  const deliveredToday = allVideosFlat().filter(v => v.deliveredAt && v.deliveredAt.startsWith(todayIso)).length;
+  const wins = [doneToday && `✓ ${doneToday} done today`, deliveredToday && `${deliveredToday} delivered`].filter(Boolean);
   return `<div class="brief-bar">
-    <span class="brief-date">${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</span>
-    <span class="brief-hot">${needCount} NEED YOU</span>
-    <span class="brief-cool">${inbox} INBOX · ${inProd} IN PRODUCTION · ${meetings} MEETING${meetings===1?'':'S'}</span>
-    ${focus ? `<span class="brief-focus">week focus: ${escHtml(focus)}</span>` : ''}
+    <div class="hero-greet">${greeting} — ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</div>
+    <div class="hero-name">${escHtml(currentUser.name.split(' ')[0])}<span>.</span></div>
+    ${focus
+      ? `<div class="hero-focus"><span class="hero-focus-label">This week</span><span class="hero-focus-text">${escHtml(focus)}</span></div>`
+      : `<div class="hero-focus unset" onclick="switchTab('week', document.getElementById('nav-week'))">
+           <span class="hero-focus-label">This week</span><span class="hero-focus-text">Set your focus →</span></div>`}
+    <div class="hero-counts">
+      ${wins.length ? `<span class="hero-done">${wins.join(' · ')}</span>` : ''}
+      <span class="${needCount ? 'hero-hot' : ''}">${needCount} need you</span>
+      <span>${inbox} inbox</span>
+      <span>${inProd} in production</span>
+      <span>${meetings} meeting${meetings===1?'':'s'}</span>
+    </div>
   </div>`;
 }
 
@@ -3025,6 +3129,7 @@ function renderToday(){
   const inbox = inboxTasks();
   document.getElementById('today-inbox').innerHTML =
     inbox.length ? inbox.map(inboxRowHtml).join('') : '<div style="font-size:13px;color:var(--td)">Inbox zero ✓</div>';
+  document.getElementById('inbox-sweep').style.display = staleInboxTasks().length ? 'inline' : 'none';
   document.getElementById('today-team').innerHTML =
     TEAM.filter(m => m.id !== currentUser.id).map(teamPillHtml).join('');
   const detail = document.getElementById('today-team-detail');
@@ -3189,7 +3294,7 @@ async function addNote(client){
 }
 
 async function addClient(){
-  const typed = prompt('New client name:');
+  const typed = await uiPrompt('New client name:');
   if(typed === null) return;
   const client = typed.trim();
   if(!client){ toast('⚠ Client needs a name'); return; }
@@ -3211,7 +3316,7 @@ async function togglePin(id){
 }
 
 async function removeNote(id){
-  if(!confirm('Delete this note?')) return;
+  if(!await uiConfirm('Delete this note?', {ok:'Delete', danger:true})) return;
   notes = notes.filter(x => x.id !== id);
   await deleteNoteRow(id);
   renderResearch();
@@ -3262,7 +3367,7 @@ function renderLeads(){
 }
 
 async function addLead(){
-  const name = prompt('Lead name (person or company):'); if(!name?.trim()) return;
+  const name = await uiPrompt('Lead name (person or company):'); if(!name?.trim()) return;
   const l = { id:newCmdId('l'), name:name.trim(), contact:'', source:'', stage:'new',
               meetingAt:null, notes:'', createdAt:new Date().toISOString() };
   leads.unshift(l);
@@ -3286,7 +3391,7 @@ async function setLeadStage(id, stage){
 }
 
 async function removeLead(id){
-  if(!confirm('Delete this lead?')) return;
+  if(!await uiConfirm('Delete this lead?', {ok:'Delete', danger:true})) return;
   leads = leads.filter(x => x.id !== id);
   await deleteLeadRow(id);
   renderLeads();
@@ -3308,7 +3413,7 @@ async function captureTask(){
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){ document.body.classList.remove('sidebar-open'); return; }
   if(e.key !== 'c' || e.metaKey || e.ctrlKey || e.altKey) return;
-  if(!isAdmin()) return;
+  if(!isAdmin() || _modalResolve) return;
   const tag = document.activeElement?.tagName;
   if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || document.activeElement?.isContentEditable) return;
   e.preventDefault();
@@ -3349,7 +3454,6 @@ function inboxRowHtml(t){
   const mon = new Date(); mon.setDate(mon.getDate() + ((8 - mon.getDay()) % 7 || 7));
   return `<div class="inbox-row">
     <span class="loop-title">${escHtml(t.title)}</span>
-    <span class="loop-age">${relAge(t.createdAt)}</span>
     <button class="inbox-chip" onclick="sortInbox('${t.id}','schedule','${isoDate(tod)}')">Today</button>
     <button class="inbox-chip" onclick="sortInbox('${t.id}','schedule','${isoDate(tom)}')">Tmrw</button>
     <button class="inbox-chip" onclick="sortInbox('${t.id}','schedule','${isoDate(mon)}')">Mon</button>
@@ -3408,6 +3512,22 @@ async function removeTask(id){
   tasks = tasks.filter(x => x.id !== id);
   await deleteTask(id);
   renderCommand();
+}
+
+// Captures older than 3 days have gone stale — clear them in one move
+// instead of letting them age on screen.
+function staleInboxTasks(){
+  const cutoff = Date.now() - 3 * 864e5;
+  return inboxTasks().filter(t => t.createdAt && new Date(t.createdAt).getTime() < cutoff);
+}
+async function sweepInbox(){
+  const old = staleInboxTasks();
+  if(!old.length) return;
+  const list = old.map(t => '· ' + t.title).join('\n');
+  if(!await uiConfirm(`Clear ${old.length} capture${old.length>1?'s':''} older than 3 days?\n\n${list}`, {ok:'Sweep', danger:true})) return;
+  tasks = tasks.filter(t => !old.some(o => o.id === t.id));
+  renderCommand();
+  for(const t of old) await deleteTask(t.id);
 }
 
 let weekOffset = 0; // 0 = this week
