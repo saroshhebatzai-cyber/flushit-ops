@@ -4033,7 +4033,8 @@ async function onSignedIn(member){
   await loadCommandData();
   await loadContentData();
   subscribeRealtime();
-  if(isAdmin()) switchTab('today', document.getElementById('nav-today'));
+  // Sarosh's call (2026-07-20): land on My Week, not Today — the planner is home.
+  if(isAdmin()) switchTab('week', document.getElementById('nav-week'));
   else switchTab('projects', document.getElementById('nav-projects'));
 }
 
