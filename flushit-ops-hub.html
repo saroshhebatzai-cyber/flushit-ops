@@ -3846,8 +3846,13 @@ function renderQueue(){
   const statsEl = document.getElementById('queue-stats');
   if(statsEl) statsEl.textContent = `${unstarted} unstarted · ${inProg} in progress · ${done} delivered`;
 
-  // Sort
+  // Sort. In-edit videos surface first, unstarted sit below them, delivered
+  // sink to the bottom (same principle as done tasks in My Week); the chosen
+  // sort applies within each band.
+  const band = v => v.stage === 3 ? 2 : (v.assigneeId || v.stage > 0) ? 0 : 1;
   allVids.sort((a, b) => {
+    const bd = band(a) - band(b);
+    if(bd) return bd;
     if(sortBy === 'client-due'){
       if(!a.clientDueDate && !b.clientDueDate) return 0;
       if(!a.clientDueDate) return 1;
