@@ -195,8 +195,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .v-row.overdue{border-color:rgba(229,72,77,.3)}
 .v-row-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 .v-name{font-size:13px;font-weight:500;color:var(--text);flex:1}
-.v-name.editable{cursor:text;border-radius:3px;padding:1px 3px;margin:-1px -3px}
-.v-name.editable:hover{background:var(--s2)}
+.v-name.editable,.queue-vid-name.editable{cursor:text;border-radius:3px;padding:1px 3px;margin:-1px -3px}
+.v-name.editable:hover,.queue-vid-name.editable:hover{background:var(--s2)}
 .v-name-edit{width:100%;font-family:inherit;font-size:13px;font-weight:500;color:var(--text);background:var(--surface);border:1px solid var(--purple);border-radius:3px;padding:0 2px;outline:none}
 .v-rev{font-size:11px;padding:2px 6px;border-radius:20px;background:var(--ydim);color:var(--yellow-deep);border:1px solid rgba(199,127,0,.2)}
 .v-rev.max{background:var(--rdim);color:var(--red-deep);border-color:rgba(229,72,77,.2)}
@@ -2309,11 +2309,13 @@ async function generateDraftVideos(projId){
 }
 
 async function saveVideoName(projId, vidId, name){
-  const p = projects.find(x => x.id === projId);
+  // kanban passes a numeric id, the queue passes it through a quoted onclick
+  // string — coerce like the other queue handlers do
+  const p = projects.find(x => x.id === parseInt(projId) || x.id === projId);
   const v = p?.videos.find(x => x.id === vidId);
   if(!v || !name.trim()) return;
   v.name = name.trim();
-  syncVideo(v, projId);
+  syncVideo(v, p.id);
 }
 
 function beginRenameVideo(el, projId, vidId){
@@ -3963,7 +3965,7 @@ function renderQueueRow(v){
   }
 
   return `<tr class="queue-row${isUnstarted?' unstarted':''}">
-    <td class="queue-cell"><div class="queue-vid-name">${v.name}</div><div class="queue-vid-project">${v.projectName}</div></td>
+    <td class="queue-cell"><div class="queue-vid-name editable" title="Click to rename" onclick="beginRenameVideo(this,'${v.projectId}','${v.id}')">${escHtml(v.name)}</div><div class="queue-vid-project">${escHtml(v.projectName)}</div></td>
     <td class="queue-cell"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span></td>
     <td class="queue-cell">${clientDueHtml}</td>
     <td class="queue-cell">${internalDeadlineHtml}</td>
