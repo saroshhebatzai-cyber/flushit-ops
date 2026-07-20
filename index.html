@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flush It — Ops Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -560,50 +560,74 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .inbox-date{width:26px;padding:3px 2px;cursor:pointer}
 #capture-input{font-family:var(--mono);font-size:13px;padding:6px 10px;width:210px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
 #capture-input:focus{border-color:var(--accent);outline:none}
-/* My Week — collapsible day bars + expanded day table */
-/* All seven collapsed days share one style: 11px mono caps. The old OS split
-   past (mono caps) from future (Syne sentence case), but that reads as a font
-   bug rather than a hierarchy — Sarosh called it on sight. Today's pink bar is
-   the only tier marker now. */
-.wd-collapsed{display:flex;align-items:center;justify-content:space-between;background:var(--s3);border:1px solid var(--border);border-radius:var(--rs);padding:12px 16px;margin-bottom:8px;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--tm);text-transform:uppercase;letter-spacing:.1em;opacity:.75}
-.wd-collapsed:hover{background:var(--s2);border-color:var(--b2)}
-.wd-c-count{font-family:var(--mono);font-size:11px;color:var(--td);margin-left:12px}
-.wd-c-chev{color:var(--td);font-size:14px}
-.wd-open{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
-.wd-head{display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer;background:var(--s2)}
-.wd-head-title{font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-.01em;color:var(--text)}
-.wd-head-pill{font-family:var(--mono);font-size:11px;padding:2px 10px;border-radius:20px;background:var(--s3);color:var(--tm)}
-.wd-head.today{background:var(--pink)}
-.wd-head.today .wd-head-title{color:#fff}
-.wd-head.today .wd-head-pill{background:rgba(255,255,255,.25);color:#fff}
-.wd-thead{display:flex;background:var(--dark);color:var(--td);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:7px 18px}
-.wd-thead .th-task{flex:1}
-.wd-thead .th-status{width:130px}
-.wd-row{display:flex;align-items:center;padding:11px 18px;border-top:1px solid var(--border)}
-.wd-bullet{width:16px;height:16px;border-radius:50%;border:2px solid var(--b2);margin-right:12px;flex-shrink:0;cursor:pointer;position:relative}
-.wd-bullet.inprog{border-color:var(--yellow)}
-.wd-bullet.done{background:var(--accent);border-color:var(--accent)}
-.wd-bullet.done::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
-.wd-title{flex:1;font-size:15px;color:var(--text)}
-.wd-row.done .wd-title{text-decoration:line-through;color:var(--td)}
+/* My Week — the old OS planner, recreated 1:1 (DM Sans/DM Mono, white day
+   bars, #FFF3CD in-progress select, pill week nav, pink stats strip). Fonts
+   are scoped to the two planner tabs so the data-dense tabs keep JetBrains.
+   Colors are the old OS literals (ink #3D3830, muted #8C8476, rule #E5DDD3,
+   beige2 #EDE8DC, yellow #FFD000) — hub tokens shifted warm in July and no
+   longer match the reference. All collapsed days share ONE font tier (Syne
+   sentence case, past at .6 opacity) — the old past-day mono-caps split read
+   as a font bug, Sarosh called it on sight; don't reintroduce it. */
+#tab-week,#tab-today{--sans:'DM Sans',sans-serif;--mono:'DM Mono',monospace;font-family:var(--sans)}
+.week-nav-bar{display:flex;gap:6px;margin-bottom:28px;flex-wrap:wrap}
+.wp-pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:6px 14px;border-radius:2px;cursor:pointer;border:1px solid #D0C8BE;background:transparent;color:#8C8476;transition:all .15s;text-transform:uppercase}
+.wp-pill:hover{color:#3D3830;border-color:#3D3830}
+.wp-pill.active{background:var(--dark);color:#FFD000;border-color:var(--dark)}
+.wd-collapsed{display:flex;align-items:center;gap:10px;background:#fff;border:none;border-bottom:1px solid #E5DDD3;border-radius:2px;padding:10px 22px;margin-bottom:8px;cursor:pointer;font-family:var(--display);font-size:13px;font-weight:700;color:#3D3830}
+.wd-collapsed.past{opacity:.6}
+.wd-collapsed:hover{background:#FAFAF8}
+.wd-c-chev{margin-left:auto;color:#8C8476;font-size:14px}
+.tc-badge{font-family:var(--mono);font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;background:#EDE8DC;color:#8C8476}
+.tc-badge.all-done{background:#EBF4EE;color:#4A7459}
+.wd-open{background:#fff;border:none;border-radius:2px;box-shadow:none;overflow:hidden;margin-bottom:20px}
+.wd-head{display:flex;align-items:center;gap:10px;padding:10px 22px;cursor:pointer;background:#fff;border-bottom:1px solid #E5DDD3}
+.wd-head-title{font-family:var(--display);font-weight:700;font-size:13px;color:#3D3830}
+.wd-head.today{background:var(--pink);border-bottom:none;padding:14px 22px}
+.wd-head.today .wd-head-title{font-size:20px;font-weight:800;color:#fff}
+.wd-thead{display:grid;grid-template-columns:32px 1fr 130px 36px;background:var(--dark);padding:7px 14px}
+.wd-thead .th{font-family:var(--mono);font-size:10px;color:#AAA;letter-spacing:.1em;text-transform:uppercase}
+.wd-row{display:grid;grid-template-columns:32px 1fr 130px 36px;align-items:center;min-height:48px;padding:0 14px;border-bottom:1px solid #E5DDD3;transition:background .1s}
+.wd-row:last-of-type{border-bottom:none}
+.wd-row:hover{background:#FAFAF8}
+.wd-row.done{opacity:.45}
+.wd-bullet{width:9px;height:9px;border-radius:50%;border:2px solid #8C8476;background:#EDE8DC;justify-self:center;cursor:pointer;transition:all .2s}
+.wd-bullet.inprog{background:#FFD000;border-color:#FFD000}
+.wd-bullet.done{background:#4A7459;border-color:#4A7459}
+.wd-title-cell{padding:10px 14px 10px 10px}
+.wd-title{font-size:14px;font-weight:500;color:var(--dark);line-height:1.4}
+.wd-row.done .wd-title{text-decoration:line-through;color:#8C8476}
+.wd-notes{font-size:12px;color:#8C8476;margin-top:2px;font-style:italic;font-weight:300}
 .wd-title-client{font-family:var(--mono);font-size:12px;color:var(--cyan);margin-left:8px}
-.wd-status-cell{width:130px;position:relative}
-.wd-status{background:none;border:none;font-family:var(--mono);font-size:11px;color:var(--tm);cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:3px 4px}
-.wd-status:hover{color:var(--text)}
-.wd-caret{color:var(--td);font-size:14px}
+.wd-status-cell{position:relative}
+.wd-status{width:100%;text-align:left;background:transparent;border:none;font-family:var(--mono);font-size:11px;color:#8C8476;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:7px;padding:5px 8px;border-radius:2px;transition:background .15s}
+.wd-status.s-progress{color:#7D4F00;background:#FFF3CD}
+.wd-status.s-done{color:#4A7459;background:#EBF4EE}
+.wd-caret{color:#8C8476;font-size:11px}
 .wd-menu{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);box-shadow:0 8px 24px rgba(26,26,26,.14);z-index:30;display:none;min-width:140px;overflow:hidden}
 .wd-menu.open{display:block}
 .wd-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 13px;font-size:14px;color:var(--text);cursor:pointer}
 .wd-menu button:hover{background:var(--s2)}
-.wd-del{background:none;border:none;color:var(--td);cursor:pointer;font-size:15px;padding:0 4px;margin-left:6px}
-.wd-del:hover{color:var(--red)}
-.wd-add{display:flex;align-items:center;gap:10px;padding:11px 18px;border-top:1px dashed var(--border)}
-.wd-add-task{flex:1.4;font-size:13px;padding:7px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
-.wd-add-notes{flex:1;font-size:13px;padding:7px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
-.wd-add-task::placeholder,.wd-add-notes::placeholder{font-style:italic;color:var(--td)}
-.wd-add-btn{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:8px 14px;background:var(--s3);border:1px solid var(--b2);border-radius:var(--rs);color:var(--tm);cursor:pointer;white-space:nowrap}
-.wd-add-btn:hover{background:var(--dark);color:#fff;border-color:var(--dark)}
-.wd-empty{padding:16px 20px;font-size:13px;font-style:italic;color:var(--tm)}
+.wd-del{opacity:0;background:none;border:none;color:#8C8476;cursor:pointer;font-size:15px;padding:4px 8px;border-radius:2px;transition:all .15s}
+.wd-row:hover .wd-del{opacity:1}
+.wd-del:hover{color:var(--pink);background:#FFE5E5}
+.today-stats{display:flex;gap:14px;padding:10px 22px;background:rgba(255,39,117,.06);border-top:1px solid rgba(255,39,117,.12)}
+.stat{font-family:var(--mono);font-size:11px;color:var(--pink);letter-spacing:.06em}
+.stat span{font-weight:700;font-size:15px;display:block;line-height:1.2;color:var(--dark)}
+.wd-add{display:flex;align-items:center;gap:8px;padding:8px 14px 8px 56px;border-top:1px dashed #E5DDD3}
+.wd-add-task{flex:1.4;border:none;background:transparent;font-family:var(--sans);font-size:13px;color:#3D3830;outline:none;padding:7px 0}
+.wd-add-notes{flex:1;border:none;background:transparent;font-family:var(--sans);font-size:13px;color:#3D3830;outline:none;padding:7px 0}
+.wd-add-task::placeholder,.wd-add-notes::placeholder{font-style:italic;color:#8C8476}
+.wd-add-btn{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;background:#EDE8DC;border:none;border-radius:2px;color:#8C8476;cursor:pointer;white-space:nowrap;transition:all .15s}
+.wd-add-btn:hover{background:var(--dark);color:#FFD000}
+.wd-empty{padding:18px 22px;font-size:13px;font-style:italic;color:#8C8476}
+.parking-section{margin-top:36px;border-top:2px dashed #E5DDD3;padding-top:28px}
+.parking-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.parking-title{font-family:var(--display);font-weight:700;font-size:13px;color:#8C8476;text-transform:uppercase;letter-spacing:.1em}
+.parking-sub{font-size:12px;color:#8C8476;font-style:italic;font-weight:300}
+#tab-week .inbox-row{background:#fff;box-shadow:none;border-radius:2px;border-bottom:1px solid #E5DDD3;margin-bottom:0}
+#tab-week .inbox-row:first-of-type{border-top:1px solid #E5DDD3}
+.parking-empty{font-size:13px;color:#8C8476;font-style:italic;padding:10px 14px;background:#fff;border-top:1px solid #E5DDD3;border-bottom:1px solid #E5DDD3}
+.parking-add{display:flex;align-items:center;gap:8px;padding:8px 14px}
 /* My Week reads as a single column of days, not a dashboard — cap it so the
    status column stays next to the task name instead of stranded at the far
    right of a wide monitor. Mirrors the old OS planner: 860px, centred.
@@ -614,7 +638,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
    No border-radius — a single-sided border with rounded corners reads broken,
    and the old planner had none either. */
 .week-focus{background:var(--dark);border-left:4px solid var(--pink);padding:12px 18px;margin-bottom:28px;display:flex;align-items:center;gap:12px}
-.week-focus-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--pink);text-transform:uppercase;white-space:nowrap}
+.week-focus-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--pink);text-transform:uppercase;white-space:nowrap}
 .week-focus-text{font-size:13px;font-weight:400;line-height:1.5;color:#fff;outline:none;flex:1;min-height:20px}
 .note-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
 .note-title{width:100%;background:transparent;border:none;color:var(--text);font-weight:700;font-size:15px;outline:none;margin-bottom:6px}
@@ -806,23 +830,24 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div id="today-team-detail"></div>
   </div>
   <div class="tab" id="tab-week">
-    <div class="sec-hdr">
-      <div class="sec-title">My Week</div>
-      <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="weekPrev()">←</button>
-        <div class="cal-month-label" id="week-label"></div>
-        <button class="cal-nav-btn" onclick="weekNext()">→</button>
-      </div>
-    </div>
+    <div class="sec-hdr"><div class="sec-title">My Week</div></div>
     <div class="week-focus">
       <div class="week-focus-label">This week</div>
       <div class="week-focus-text" id="week-focus-text" contenteditable="true" spellcheck="false"
            onblur="saveWeekFocus()">Click to set your weekly focus…</div>
     </div>
+    <div class="week-nav-bar" id="week-pills"></div>
     <div id="week-days"></div>
-    <div class="sec-hdr" style="margin-top:18px"><div class="sec-title" style="font-size:15px">Parking Lot</div>
-      <div style="font-size:12px;color:var(--tm)">Tasks without a day — same list as the Today inbox</div></div>
-    <div id="week-parking"></div>
+    <div class="parking-section">
+      <div class="parking-hdr"><div class="parking-title">Parking Lot</div>
+        <div class="parking-sub">Tasks without a day — same list as the Today inbox</div></div>
+      <div id="week-parking"></div>
+      <div class="parking-add">
+        <input class="wd-add-task" id="parking-input" placeholder="Add to parking lot…"
+          onkeydown="if(event.key==='Enter')addParkingTask()">
+        <button class="wd-add-btn" onclick="addParkingTask()">+ ADD</button>
+      </div>
+    </div>
   </div>
   <div class="tab" id="tab-content">
     <div class="sec-hdr"><div class="sec-title">Content</div>
@@ -3173,10 +3198,20 @@ const WK_STATUS = { open:'Not started', in_progress:'In progress', done:'Done' }
 
 function renderWeek(){
   const mon = weekMonday(weekOffset);
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
   const fmt = d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  document.getElementById('week-label').textContent =
-    (weekOffset === 0 ? 'This week · ' : '') + `${fmt(mon)} – ${fmt(sun)}`;
+
+  // Old-OS pill row: named pills near the present, explicit date ranges beyond.
+  const pillLabel = o => {
+    if(o === -1) return 'Last week';
+    if(o === 0) return 'This week';
+    if(o === 1) return 'Next week';
+    const m = weekMonday(o), s = new Date(m); s.setDate(m.getDate() + 6);
+    return `${fmt(m)} - ${fmt(s)}`;
+  };
+  const offsets = [-1,0,1,2,3];
+  if(!offsets.includes(weekOffset)) offsets.push(weekOffset);
+  document.getElementById('week-pills').innerHTML = offsets.sort((a,b) => a-b).map(o =>
+    `<button class="wp-pill ${o === weekOffset ? 'active' : ''}" onclick="setWeekOffset(${o})">${pillLabel(o)}</button>`).join('');
 
   const focusKey = 'week_focus_' + isoDate(mon);
   const focusEl = document.getElementById('week-focus-text');
@@ -3197,9 +3232,11 @@ function renderWeek(){
     const dnum = fmt(day);
     const isExpanded = weekExpandedIso === 'none' ? false : iso === expandedIso;
 
+    const badge = total ? `<span class="tc-badge ${done === total ? 'all-done' : ''}">${done}/${total}</span>` : '';
+
     if(!isExpanded){
-      html += `<div class="wd-collapsed" onclick="toggleWeekDay('${iso}')">
-        <span><strong>${wday} ${dnum}</strong>${total ? `<span class="wd-c-count">${done}/${total}</span>` : ''}</span>
+      html += `<div class="wd-collapsed ${iso < todayIso ? 'past' : ''}" onclick="toggleWeekDay('${iso}')">
+        <span>${wday} ${dnum}</span>${badge}
         <span class="wd-c-chev">▸</span>
       </div>`;
       continue;
@@ -3207,11 +3244,12 @@ function renderWeek(){
 
     const rows = dayTasks.map(t => {
       const bulletCls = t.status === 'done' ? 'done' : (t.status === 'in_progress' ? 'inprog' : '');
+      const selCls = t.status === 'done' ? 's-done' : (t.status === 'in_progress' ? 's-progress' : '');
       return `<div class="wd-row ${t.status === 'done' ? 'done' : ''}">
         <span class="wd-bullet ${bulletCls}" onclick="setTaskStatus('${t.id}','${t.status==='done'?'open':'done'}')"></span>
-        <span class="wd-title">${escHtml(t.title)}${t.client ? `<span class="wd-title-client">${escHtml(t.client)}</span>` : ''}</span>
+        <span class="wd-title-cell"><span class="wd-title">${escHtml(t.title)}${t.client ? `<span class="wd-title-client">${escHtml(t.client)}</span>` : ''}</span>${t.notes ? `<div class="wd-notes">${escHtml(t.notes)}</div>` : ''}</span>
         <span class="wd-status-cell">
-          <button class="wd-status" onclick="openWkStatus(event,'${t.id}')">${WK_STATUS[t.status] || 'Not started'} <span class="wd-caret">⌄</span></button>
+          <button class="wd-status ${selCls}" onclick="openWkStatus(event,'${t.id}')">${WK_STATUS[t.status] || 'Not started'} <span class="wd-caret">⌄</span></button>
           <span class="wd-menu" id="wkmenu-${t.id}">
             <button onclick="setTaskStatus('${t.id}','open')">Not started</button>
             <button onclick="setTaskStatus('${t.id}','in_progress')">In progress</button>
@@ -3222,13 +3260,22 @@ function renderWeek(){
       </div>`;
     }).join('');
 
+    const inProg = dayTasks.filter(t => t.status === 'in_progress').length;
+    const stats = isToday && total ? `<div class="today-stats">
+        <div class="stat"><span>${total}</span>Total</div>
+        <div class="stat"><span>${done}</span>Done</div>
+        ${inProg ? `<div class="stat"><span>${inProg}</span>In progress</div>` : ''}
+      </div>` : '';
+
     html += `<div class="wd-open">
       <div class="wd-head ${isToday ? 'today' : ''}" onclick="toggleWeekDay('${iso}')">
         <span class="wd-head-title">${isToday ? 'Today — ' : ''}${wday} ${dnum}</span>
-        ${total ? `<span class="wd-head-pill">${done}/${total}</span>` : ''}
+        ${badge}
+        ${isToday ? '' : '<span class="wd-c-chev">▾</span>'}
       </div>
-      <div class="wd-thead"><span class="th-task">Task</span><span class="th-status">Status</span></div>
+      <div class="wd-thead"><span></span><span class="th">Task</span><span class="th">Status</span><span></span></div>
       ${rows || '<div class="wd-empty">No tasks yet.</div>'}
+      ${stats}
       <div class="wd-add">
         <input class="wd-add-task" id="wk-t-${iso}" placeholder="Add task…"
           onkeydown="if(event.key==='Enter')addWeekTask('${iso}')">
@@ -3239,9 +3286,9 @@ function renderWeek(){
   }
   document.getElementById('week-days').innerHTML = html;
   const parking = inboxTasks();
-  document.getElementById('week-parking').innerHTML = `<div class="stream-card">
-    ${parking.length ? parking.map(inboxRowHtml).join('') : '<div style="font-size:13px;color:var(--td)">Parking lot empty ✓</div>'}
-  </div>`;
+  document.getElementById('week-parking').innerHTML =
+    parking.length ? parking.map(inboxRowHtml).join('')
+                   : '<div class="parking-empty">Parking lot empty ✓</div>';
 }
 
 function toggleWeekDay(iso){
@@ -3640,8 +3687,18 @@ function isoDate(d){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-function weekPrev(){ weekOffset--; renderWeek(); }
-function weekNext(){ weekOffset++; renderWeek(); }
+function setWeekOffset(n){ weekOffset = n; renderWeek(); }
+
+async function addParkingTask(){
+  const input = document.getElementById('parking-input');
+  const title = input.value.trim(); if(!title) return;
+  const t = { id:newCmdId('t'), title, notes:'', ownerId:currentUser.id, assigneeId:null,
+              client:null, status:'open', scheduledFor:null,
+              createdAt:new Date().toISOString(), completedAt:null };
+  tasks.push(t); input.value = '';
+  await syncTask(t);
+  renderWeek();
+}
 
 // ─── CALENDAR ────────────────────────────────────────────────────────────────
 
