@@ -503,6 +503,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-event.proj-over{background:#B8434A}
 .cal-event.vid-dl{background:var(--dark)}
 .cal-event.shoot-day{background:#7C5CD6}
+.cal-event.task-ev{background:var(--pink)}
+.cal-event[draggable="true"]{cursor:grab}
+.cal-event[draggable="true"]:active{cursor:grabbing}
+.cal-day.drag-over{outline:2px dashed var(--pink);outline-offset:-2px;background:#FFF5F9}
+.cal-add-input{width:100%;border:none;background:#EDE8DC;border-radius:2px;font-family:var(--sans);font-size:12px;color:#3D3830;padding:4px 7px;outline:none;margin-top:2px}
+.cal-add-input::placeholder{font-style:italic;color:#8C8476}
 .cal-more{font-family:var(--mono);font-size:10px;color:#8C8476;padding:2px 3px}
 .cal-legend{display:flex;gap:14px;align-items:center;margin-top:14px;flex-wrap:wrap}
 .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--td)}
@@ -805,7 +811,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#B8434A"></div>Project deadline (overdue)</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--dark)"></div>Video deadline</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#7C5CD6"></div>Shoot day</div>
-      <div class="cal-legend-item" style="margin-left:auto">dot inside a chip = client color</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--pink)"></div>Task</div>
+      <div class="cal-legend-item" style="margin-left:auto">click a day to add a task · drag a chip to move its date</div>
     </div>
   </div>
 
@@ -3742,18 +3749,27 @@ function renderCalendar(){
     if(p.deadline && p.stage < 7){
       const dd = daysFromNow(p.deadline);
       const cls = dd < 0 ? 'proj-over' : dd <= 3 ? 'proj-warn' : 'proj-safe';
-      addEv(p.deadline, {cls, dot, label:`${p.client} · ${p.name}`});
+      addEv(p.deadline, {cls, dot, label:`${p.client} · ${p.name}`, kind:'proj', id:p.id});
     }
     // Shoot day — show on the actual shoot date if set
     if(p.shootDate && p.stage < 7){
-      addEv(p.shootDate, {cls:'shoot-day', dot, label:`Shoot · ${p.client} · ${p.name}`});
+      addEv(p.shootDate, {cls:'shoot-day', dot, label:`Shoot · ${p.client} · ${p.name}`, kind:'shoot', id:p.id});
     }
     // Video deadlines
     p.videos.forEach(v => {
       if(v.deadline && v.stage < 3){
-        addEv(v.deadline, {cls:'vid-dl', dot, label:`${v.name} · ${p.client}`});
+        addEv(v.deadline, {cls:'vid-dl', dot, label:`${v.name} · ${p.client}`, kind:'vid', id:v.id, pid:p.id});
       }
     });
+  });
+
+  // Scheduled tasks (tasks[] is empty for editors, so this is admin-only by
+  // construction) — pink chips, same planner pink as My Week.
+  tasks.forEach(t => {
+    if(t.scheduledFor && t.status !== 'done' && t.status !== 'cancelled'){
+      addEv(t.scheduledFor, {cls:'task-ev', dot: t.client ? cColor(t.client) : 'rgba(255,255,255,.9)',
+        label:t.title, kind:'task', id:t.id});
+    }
   });
 
   // Build grid
@@ -3779,11 +3795,21 @@ function renderCalendar(){
     const dayEvs = evMap[dateStr] || [];
     const shown = dayEvs.slice(0, 3);
     const extra = dayEvs.length - shown.length;
-    const evHTML = shown.map(ev => `<div class="cal-event ${ev.cls}" title="${escHtml(ev.label)}"><span class="cdot" style="background:${ev.dot}"></span>${escHtml(ev.label)}</div>`).join('');
+    const admin = isAdmin();
+    const evHTML = shown.map(ev => `<div class="cal-event ${ev.cls}" title="${escHtml(ev.label)}"
+      ${admin ? `draggable="true" ondragstart="calDragStart(event,'${ev.kind}','${ev.id}','${ev.pid || ''}')"` : ''}
+      ><span class="cdot" style="background:${ev.dot}"></span>${escHtml(ev.label)}</div>`).join('');
     const moreHTML = extra > 0 ? `<div class="cal-more">+${extra} more</div>` : '';
-    html += `<div class="cal-day${isToday?' today':''}${isWeekend?' weekend':''}">
+    const addHTML = calQuickAddIso === dateStr
+      ? `<input class="cal-add-input" id="cal-add-input" placeholder="Add task…" maxlength="200"
+           onclick="event.stopPropagation()" onkeydown="calQuickAddKey(event,'${dateStr}')" onblur="calQuickAddCancel()">`
+      : '';
+    html += `<div class="cal-day${isToday?' today':''}${isWeekend?' weekend':''}"
+      ${admin ? `ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')" ondrop="calDrop(event,'${dateStr}')"
+      onclick="calQuickAdd(event,'${dateStr}')"` : ''}>
       <div class="cal-day-num">${d}</div>
-      ${evHTML}${moreHTML}
+      ${evHTML}${moreHTML}${addHTML}
     </div>`;
   }
 
@@ -3795,6 +3821,69 @@ function renderCalendar(){
   }
 
   wrap.innerHTML = html;
+  const addInput = document.getElementById('cal-add-input');
+  if(addInput) addInput.focus();
+}
+
+// ── Calendar interactions: click a day to add a task, drag a chip to move
+//    its real date (project deadline / video deadline / shoot / task day) ──
+let calQuickAddIso = null;
+
+function calQuickAdd(e, iso){
+  if(e.target.closest('.cal-event') || e.target.closest('.cal-add-input')) return;
+  calQuickAddIso = iso;
+  renderCalendar();
+}
+function calQuickAddCancel(){
+  if(!calQuickAddIso) return;
+  calQuickAddIso = null;
+  renderCalendar();
+}
+async function calQuickAddKey(e, iso){
+  if(e.key === 'Escape'){ calQuickAddCancel(); return; }
+  if(e.key !== 'Enter') return;
+  const title = e.target.value.trim();
+  if(!title){ calQuickAddCancel(); return; }
+  const t = { id:newCmdId('t'), title, notes:'', ownerId:currentUser.id, assigneeId:null,
+              client:null, status:'open', scheduledFor:iso,
+              createdAt:new Date().toISOString(), completedAt:null };
+  tasks.push(t);
+  calQuickAddIso = null;
+  renderCalendar(); updateSideBadges();
+  await syncTask(t);
+}
+
+function calDragStart(e, kind, id, pid){
+  e.dataTransfer.setData('text/plain', JSON.stringify({kind, id, pid}));
+  e.dataTransfer.effectAllowed = 'move';
+}
+async function calDrop(e, iso){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  let d; try{ d = JSON.parse(e.dataTransfer.getData('text/plain')); }catch{ return; }
+  if(d.kind === 'task'){
+    const t = tasks.find(x => x.id === d.id);
+    if(!t || t.scheduledFor === iso) return;
+    t.scheduledFor = iso;
+    renderCalendar(); updateSideBadges();
+    await syncTask(t); return;
+  }
+  if(d.kind === 'proj' || d.kind === 'shoot'){
+    const p = projects.find(x => x.id === parseInt(d.id) || x.id === d.id);
+    if(!p) return;
+    if(d.kind === 'proj'){ if(p.deadline === iso) return; p.deadline = iso; }
+    else { if(p.shootDate === iso) return; p.shootDate = iso; }
+    renderCalendar(); renderKanban();
+    await syncProject(p); return;
+  }
+  if(d.kind === 'vid'){
+    const p = projects.find(x => x.id === parseInt(d.pid) || x.id === d.pid);
+    const v = p?.videos.find(x => x.id === d.id);
+    if(!v || v.deadline === iso) return;
+    v.deadline = iso;
+    renderCalendar(); renderQueue();
+    await syncVideo(v, p.id);
+  }
 }
 
 function calPrev(){
