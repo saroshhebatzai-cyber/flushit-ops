@@ -509,7 +509,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-day.drag-over{outline:2px dashed var(--pink);outline-offset:-2px;background:#FFF5F9}
 .cal-add-input{width:100%;border:none;background:#EDE8DC;border-radius:2px;font-family:var(--sans);font-size:12px;color:#3D3830;padding:4px 7px;outline:none;margin-top:2px}
 .cal-add-input::placeholder{font-style:italic;color:#8C8476}
-.cal-more{font-family:var(--mono);font-size:10px;color:#8C8476;padding:2px 3px}
+.cal-more{font-family:var(--mono);font-size:10px;color:var(--pink);padding:3px;cursor:pointer;width:fit-content}
+.cal-more:hover{text-decoration:underline}
 .cal-legend{display:flex;gap:14px;align-items:center;margin-top:14px;flex-wrap:wrap}
 .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--td)}
 .cal-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
@@ -3793,13 +3794,18 @@ function renderCalendar(){
     const dow = new Date(calYear, calMonth, d).getDay();
     const isWeekend = dow === 0 || dow === 6;
     const dayEvs = evMap[dateStr] || [];
-    const shown = dayEvs.slice(0, 3);
+    const isDayExpanded = calExpandedIso === dateStr;
+    const shown = isDayExpanded ? dayEvs : dayEvs.slice(0, 3);
     const extra = dayEvs.length - shown.length;
     const admin = isAdmin();
     const evHTML = shown.map(ev => `<div class="cal-event ${ev.cls}" title="${escHtml(ev.label)}"
       ${admin ? `draggable="true" ondragstart="calDragStart(event,'${ev.kind}','${ev.id}','${ev.pid || ''}')"` : ''}
       ><span class="cdot" style="background:${ev.dot}"></span>${escHtml(ev.label)}</div>`).join('');
-    const moreHTML = extra > 0 ? `<div class="cal-more">+${extra} more</div>` : '';
+    const moreHTML = extra > 0
+      ? `<div class="cal-more" onclick="event.stopPropagation();calExpandDay('${dateStr}')">+${extra} more</div>`
+      : (isDayExpanded && dayEvs.length > 3
+        ? `<div class="cal-more" onclick="event.stopPropagation();calExpandDay(null)">show less</div>`
+        : '');
     const addHTML = calQuickAddIso === dateStr
       ? `<input class="cal-add-input" id="cal-add-input" placeholder="Add task…" maxlength="200"
            onclick="event.stopPropagation()" onkeydown="calQuickAddKey(event,'${dateStr}')" onblur="calQuickAddCancel()">`
@@ -3826,8 +3832,15 @@ function renderCalendar(){
 }
 
 // ── Calendar interactions: click a day to add a task, drag a chip to move
-//    its real date (project deadline / video deadline / shoot / task day) ──
+//    its real date (project deadline / video deadline / shoot / task day),
+//    "+N more" expands the day in place ──
 let calQuickAddIso = null;
+let calExpandedIso = null;
+
+function calExpandDay(iso){
+  calExpandedIso = iso;
+  renderCalendar();
+}
 
 function calQuickAdd(e, iso){
   if(e.target.closest('.cal-event') || e.target.closest('.cal-add-input')) return;
