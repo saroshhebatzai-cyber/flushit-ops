@@ -3225,7 +3225,12 @@ function renderWeek(){
     const day = new Date(mon); day.setDate(mon.getDate() + i);
     const iso = isoDate(day);
     const isToday = iso === todayIso;
-    const dayTasks = tasks.filter(t => t.scheduledFor === iso && t.status !== 'cancelled');
+    // Done tasks sink to the bottom (in completion order); open/in-progress
+    // keep their added order. Renders are optimistic, so checking a task off
+    // moves it down instantly.
+    const dayTasks = tasks.filter(t => t.scheduledFor === iso && t.status !== 'cancelled')
+      .sort((a, b) => ((a.status === 'done') - (b.status === 'done'))
+        || (a.status === 'done' ? new Date(a.completedAt || 0) - new Date(b.completedAt || 0) : 0));
     const done = dayTasks.filter(t => t.status === 'done').length;
     const total = dayTasks.length;
     const wday = day.toLocaleDateString('en-GB',{weekday:'long'});
