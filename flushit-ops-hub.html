@@ -482,22 +482,28 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-month-label{font-family:var(--display);font-size:19px;font-weight:700;min-width:160px;text-align:center}
 .cal-nav-btn{font-family:var(--mono);font-size:15px;background:transparent;border:1px solid var(--border);color:var(--tm);width:28px;height:28px;border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .cal-nav-btn:hover{border-color:var(--accent);color:var(--accent)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal-dow{text-align:center;font-size:11px;color:var(--td);padding:7px 4px;text-transform:uppercase;letter-spacing:1.2px}
-.cal-day{min-height:96px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:7px;transition:border-color .15s;overflow:hidden}
-.cal-day:hover{border-color:var(--b2)}
-.cal-day.today{border-color:var(--accent);background:rgba(0,179,104,.03)}
-.cal-day.other-month{opacity:.25;pointer-events:none}
-.cal-day.weekend .cal-day-num{color:var(--td)}
-.cal-day-num{font-size:12px;color:var(--tm);margin-bottom:5px;font-weight:600;line-height:1}
-.cal-day.today .cal-day-num{color:var(--accent);font-size:13px}
-.cal-event{font-size:11px;padding:2px 5px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;border-left:2px solid}
-.cal-event.proj-safe{background:rgba(0,179,104,.08);color:var(--accent);border-left-color:var(--accent)}
-.cal-event.proj-warn{background:rgba(199,127,0,.12);color:var(--yellow);border-left-color:var(--yellow)}
-.cal-event.proj-over{background:rgba(229,72,77,.12);color:var(--red);border-left-color:var(--red)}
-.cal-event.vid-dl{background:rgba(0,144,179,.08);color:var(--cyan);border-left-color:var(--cyan)}
-.cal-event.shoot-day{background:var(--pdim);color:var(--purple);border-left-color:var(--purple)}
-.cal-more{font-size:11px;color:var(--td);padding:1px 3px}
+/* Calendar — "Solid Month" (Option A, Sarosh's pick 2026-07-20). The old
+   chips were 11px colored text on a 10% tint of the same color (~2:1) and
+   truncated to nothing. Now: solid fills with white 12px text (7-9:1),
+   2-line labels, 132px white cells, planner-pink today. Fill = meaning
+   (project health / video / shoot); the small dot inside = client color. */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-dow{font-family:var(--mono);text-align:center;font-size:10px;color:#8C8476;padding:8px 4px;text-transform:uppercase;letter-spacing:.14em}
+.cal-day{min-height:132px;background:#fff;border:none;border-bottom:1px solid #E5DDD3;border-radius:2px;padding:9px 8px 7px;overflow:hidden}
+.cal-day.weekend{background:#FAF7EF}
+.cal-day.other-month{background:transparent;border-bottom-color:transparent;pointer-events:none}
+.cal-day.other-month .cal-day-num{color:#C9C2B4}
+.cal-day-num{font-family:var(--display);font-size:14px;font-weight:700;color:#3D3830;margin-bottom:7px;line-height:1}
+.cal-day.today{outline:2px solid var(--pink);outline-offset:-2px}
+.cal-day.today .cal-day-num{display:inline-block;background:var(--pink);color:#fff;padding:2px 7px 3px;margin:-2px 0 5px -2px;border-radius:2px}
+.cal-event{font-size:12px;font-weight:500;line-height:1.35;padding:4px 7px;border-radius:2px;margin-bottom:3px;color:#fff;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cal-event .cdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:rgba(255,255,255,.9);vertical-align:1px}
+.cal-event.proj-safe{background:#4A7459}
+.cal-event.proj-warn{background:#C8760A}
+.cal-event.proj-over{background:#B8434A}
+.cal-event.vid-dl{background:var(--dark)}
+.cal-event.shoot-day{background:#7C5CD6}
+.cal-more{font-family:var(--mono);font-size:10px;color:#8C8476;padding:2px 3px}
 .cal-legend{display:flex;gap:14px;align-items:center;margin-top:14px;flex-wrap:wrap}
 .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--td)}
 .cal-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
@@ -568,7 +574,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
    longer match the reference. All collapsed days share ONE font tier (Syne
    sentence case, past at .6 opacity) — the old past-day mono-caps split read
    as a font bug, Sarosh called it on sight; don't reintroduce it. */
-#tab-week,#tab-today{--sans:'DM Sans',sans-serif;--mono:'DM Mono',monospace;font-family:var(--sans)}
+#tab-week,#tab-today,#tab-calendar{--sans:'DM Sans',sans-serif;--mono:'DM Mono',monospace;font-family:var(--sans)}
 .week-nav-bar{display:flex;gap:6px;margin-bottom:28px;flex-wrap:wrap}
 .wp-pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:6px 14px;border-radius:2px;cursor:pointer;border:1px solid #D0C8BE;background:transparent;color:#8C8476;transition:all .15s;text-transform:uppercase}
 .wp-pill:hover{color:#3D3830;border-color:#3D3830}
@@ -794,11 +800,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
     <div class="cal-grid" id="cal-wrap"></div>
     <div class="cal-legend">
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--accent)"></div>Project deadline (on track)</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--yellow)"></div>Project deadline (≤3 days)</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--red)"></div>Project deadline (overdue)</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--cyan)"></div>Video deadline</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--purple)"></div>Shoot day</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#4A7459"></div>Project deadline (on track)</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#C8760A"></div>Project deadline (≤3 days)</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#B8434A"></div>Project deadline (overdue)</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--dark)"></div>Video deadline</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#7C5CD6"></div>Shoot day</div>
+      <div class="cal-legend-item" style="margin-left:auto">dot inside a chip = client color</div>
     </div>
   </div>
 
@@ -3730,20 +3737,21 @@ function renderCalendar(){
   const todayStr = today.toISOString().split('T')[0];
 
   projects.forEach(p => {
+    const dot = cColor(p.client);
     // Project deadline
     if(p.deadline && p.stage < 7){
       const dd = daysFromNow(p.deadline);
       const cls = dd < 0 ? 'proj-over' : dd <= 3 ? 'proj-warn' : 'proj-safe';
-      addEv(p.deadline, {cls, label:`📁 ${p.client} · ${p.name}`});
+      addEv(p.deadline, {cls, dot, label:`${p.client} · ${p.name}`});
     }
     // Shoot day — show on the actual shoot date if set
     if(p.shootDate && p.stage < 7){
-      addEv(p.shootDate, {cls:'shoot-day', label:`📷 Shoot: ${p.client} · ${p.name}`});
+      addEv(p.shootDate, {cls:'shoot-day', dot, label:`Shoot · ${p.client} · ${p.name}`});
     }
     // Video deadlines
     p.videos.forEach(v => {
       if(v.deadline && v.stage < 3){
-        addEv(v.deadline, {cls:'vid-dl', label:`🎬 ${p.client} · ${v.name}`});
+        addEv(v.deadline, {cls:'vid-dl', dot, label:`${v.name} · ${p.client}`});
       }
     });
   });
@@ -3771,7 +3779,7 @@ function renderCalendar(){
     const dayEvs = evMap[dateStr] || [];
     const shown = dayEvs.slice(0, 3);
     const extra = dayEvs.length - shown.length;
-    const evHTML = shown.map(ev => `<div class="cal-event ${ev.cls}" title="${ev.label}">${ev.label}</div>`).join('');
+    const evHTML = shown.map(ev => `<div class="cal-event ${ev.cls}" title="${escHtml(ev.label)}"><span class="cdot" style="background:${ev.dot}"></span>${escHtml(ev.label)}</div>`).join('');
     const moreHTML = extra > 0 ? `<div class="cal-more">+${extra} more</div>` : '';
     html += `<div class="cal-day${isToday?' today':''}${isWeekend?' weekend':''}">
       <div class="cal-day-num">${d}</div>
