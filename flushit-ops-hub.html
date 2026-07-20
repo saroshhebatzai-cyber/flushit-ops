@@ -3318,8 +3318,8 @@ async function addWeekTask(iso){
               client:null, status:'open', scheduledFor:iso,
               createdAt:new Date().toISOString(), completedAt:null };
   tasks.push(t); input.value = ''; if(notesEl) notesEl.value = '';
-  await syncTask(t);
   renderWeek();
+  await syncTask(t);
 }
 
 async function saveWeekFocus(){
@@ -3549,8 +3549,8 @@ async function captureTask(){
               createdAt:new Date().toISOString(), completedAt:null };
   tasks.push(t);
   input.value = '';
-  await syncTask(t);
   renderCommand();
+  await syncTask(t);
 }
 
 document.addEventListener('keydown', e => {
@@ -3640,22 +3640,24 @@ async function sortInbox(id, field, value){
     }
     t.scheduledFor = value || null;
   }
-  await syncTask(t);
+  // Render before the ~500ms Supabase round-trip — syncTask's persistent
+  // failure toast is the error path, and markSelfWrite suppresses the echo.
   renderCommand();
+  await syncTask(t);
 }
 
 async function setTaskStatus(id, status){
   const t = tasks.find(x => x.id === id); if(!t) return;
   t.status = status;
   t.completedAt = (status === 'done') ? new Date().toISOString() : null;
-  await syncTask(t);
   renderCommand();
+  await syncTask(t);
 }
 
 async function removeTask(id){
   tasks = tasks.filter(x => x.id !== id);
-  await deleteTask(id);
   renderCommand();
+  await deleteTask(id);
 }
 
 // Captures older than 3 days have gone stale — clear them in one move
@@ -3696,8 +3698,8 @@ async function addParkingTask(){
               client:null, status:'open', scheduledFor:null,
               createdAt:new Date().toISOString(), completedAt:null };
   tasks.push(t); input.value = '';
-  await syncTask(t);
   renderWeek();
+  await syncTask(t);
 }
 
 // ─── CALENDAR ────────────────────────────────────────────────────────────────
