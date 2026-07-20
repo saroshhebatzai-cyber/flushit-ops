@@ -515,54 +515,52 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--td)}
 .cal-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
-/* ─── COMMAND CENTER ─── */
-.brief-bar{background:var(--dark);border-radius:var(--r);padding:20px 24px 18px;margin-bottom:18px}
-.hero-greet{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A8A93;margin-bottom:5px}
-.hero-name{font-family:var(--display);font-weight:800;font-size:36px;letter-spacing:-.5px;line-height:1.05;color:#FAF8F4;margin-bottom:12px}
-.hero-name span{color:#FFD000}
-.hero-focus{display:flex;gap:12px;align-items:baseline;border-left:4px solid var(--pink);padding-left:12px;margin-bottom:14px}
-.hero-focus-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--pink);white-space:nowrap}
-.hero-focus-text{font-size:13px;color:#FAF8F4}
-.hero-focus.unset{cursor:pointer}
-.hero-focus.unset .hero-focus-text{color:#8A8A93}
-.hero-focus.unset:hover .hero-focus-text{color:#FAF8F4}
-.hero-counts{font-family:var(--mono);font-size:12px;color:#8A8A93;display:flex;gap:16px;flex-wrap:wrap}
-.hero-hot{color:var(--accent-bright)}
-.hero-done{color:#FFD000}
-.brief-date{font-family:var(--display);font-weight:800;font-size:19px;color:#FAF8F4}
-.brief-hot{font-family:var(--mono);font-size:12px;color:var(--accent-bright)}
-.brief-cool{font-family:var(--mono);font-size:12px;color:#8A8A93}
-.brief-focus{font-family:var(--mono);font-size:11px;color:#5E5E66;margin-left:auto}
+/* ─── TEAM TAB (was Today; hero/brief bar retired 2026-07-20) ───
+   Old-OS planner language, matching My Week: white rows on beige, literal
+   old-OS colors (ink #3D3830, muted #8C8476, rule #E5DDD3, beige2 #EDE8DC). */
+.today-label-sub{font-family:var(--sans);font-size:12px;color:#8C8476;font-style:italic;font-weight:300;letter-spacing:0;text-transform:none}
+.needs-row{display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid #E5DDD3;padding:10px 14px;cursor:pointer;border-radius:2px;margin-bottom:4px}
+.needs-row:hover{background:#FAFAF8}
+.n-mark{width:4px;align-self:stretch;border-radius:2px;flex-shrink:0}
+.n-title{flex:1;font-size:14px;font-weight:500;color:var(--dark)}
+.n-client{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:2px;color:#fff;margin-right:8px;vertical-align:1px}
+.n-why{font-size:12px;font-style:italic;color:#8C8476}
+.n-age{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#B8434A;background:#FCEEF0;padding:3px 8px;border-radius:2px;white-space:nowrap}
+.n-age.ok{color:#8C8476;background:#EDE8DC}
+.needs-empty{font-size:13px;font-style:italic;color:#8C8476;background:#fff;border-radius:2px;padding:10px 14px;border-bottom:1px solid #E5DDD3}
+.person{background:#fff;border-radius:2px;border-bottom:1px solid #E5DDD3;margin-bottom:8px}
+.p-head{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #E5DDD3}
+.p-name{font-family:var(--display);font-weight:700;font-size:13px;color:var(--dark)}
+.p-role{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8C8476}
+.p-sheet{font-family:var(--mono);font-size:10px;color:var(--cyan);text-decoration:none}
+.p-load{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#8C8476}
+.p-hot{color:#B8434A;font-weight:700}
+.p-item{display:flex;align-items:center;gap:10px;padding:8px 16px 8px 26px;border-bottom:1px solid #E5DDD3;font-size:13px}
+.p-kind{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:#EDE8DC;color:#8C8476;cursor:pointer;white-space:nowrap}
+.p-kind.vid{background:var(--dark);color:#fff;cursor:default}
+.p-kind.prog{background:#FFF3CD;color:#7D4F00}
+.p-what{flex:1;color:var(--dark)}
+.p-client{font-family:var(--mono);font-size:11px;color:var(--cyan)}
+.p-stale{font-family:var(--mono);font-size:10px;color:#7D4F00;background:#FFF3CD;padding:2px 8px;border-radius:2px;white-space:nowrap}
+.p-fine{font-family:var(--mono);font-size:10px;color:#8C8476;white-space:nowrap}
+.p-del{opacity:0;background:none;border:none;color:#8C8476;cursor:pointer;font-size:14px;padding:0 2px}
+.p-item:hover .p-del{opacity:1}
+.p-del:hover{color:var(--pink)}
+.p-idle{padding:10px 16px;font-size:13px;font-style:italic;color:#8C8476}
+.p-nudge{font-family:var(--mono);font-size:10px;color:var(--pink);background:transparent;border:1px solid var(--pink);padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase}
+.p-nudge:hover{background:var(--pink);color:#fff}
+.p-add{display:flex;align-items:center;gap:8px;padding:8px 16px;border-top:1px dashed #E5DDD3}
+.p-add-input{flex:1;border:none;background:transparent;font-family:var(--sans);font-size:13px;color:#3D3830;outline:none;padding:5px 0}
+.p-add-input::placeholder{font-style:italic;color:#8C8476}
+.p-add-btn{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;background:#EDE8DC;border:none;border-radius:2px;color:#8C8476;cursor:pointer;transition:all .15s}
+.p-add-btn:hover{background:var(--dark);color:#FFD000}
 .today-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--td);margin:16px 0 7px;font-weight:600;display:flex;align-items:baseline;gap:10px}
 .inbox-sweep{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.06em;background:transparent;border:none;color:var(--tm);cursor:pointer;padding:0;text-transform:none}
 .inbox-sweep:hover{color:var(--text);text-decoration:underline}
-.need-card{background:var(--surface);border-radius:var(--rs);padding:11px 13px;margin-bottom:6px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;border-left:3px solid var(--td)}
-.need-card.no-action{cursor:default}
-.need-card.sev-red{border-left-color:var(--red)}
-.need-card.sev-amber{border-left-color:var(--yellow)}
-.need-title{font-size:14px;color:var(--text);font-weight:600}
-.need-why{font-family:var(--mono);font-size:11px;color:var(--tm);white-space:nowrap}
-.need-card.sev-red .need-why{color:var(--red)}
-.team-strip{display:flex;gap:8px;flex-wrap:wrap}
-.team-pill{background:var(--surface);border-radius:16px;padding:5px 12px;font-size:12px;color:var(--text);box-shadow:var(--shadow);cursor:pointer;border:1px solid transparent}
-.team-pill:hover,.team-pill.open{border-color:var(--accent)}
-.team-pill .dot-on{color:var(--accent)} .team-pill .dot-busy{color:var(--yellow)} .team-pill .dot-free{color:var(--td)}
-#today-team-detail{margin-top:10px}
-.person-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
-.person-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.person-card-name{font-weight:700;font-size:15px}
-.person-card-meta{font-family:var(--mono);font-size:12px;color:var(--tm)}
-.loop-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dashed var(--border);font-size:14px}
-.loop-status{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:9px;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--tm);white-space:nowrap}
-.loop-status.inprog{color:var(--yellow);background:var(--ydim);border-color:rgba(199,127,0,.22)}
+/* loop-title/loop-del are shared by the inbox rows (parking lot) */
 .loop-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.loop-client{font-family:var(--mono);font-size:11px;color:var(--cyan)}
-.loop-age{font-family:var(--mono);font-size:11px;color:var(--td);white-space:nowrap}
 .loop-del{background:none;border:none;color:var(--td);cursor:pointer;font-size:14px;padding:0 2px}
 .loop-del:hover{color:var(--red)}
-.pipe-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:var(--tm);border-top:1px dashed var(--border)}
-.pipe-row .ov{color:var(--red)}
-.cmd-add-row{display:flex;gap:6px;margin-top:8px}
 .cmd-add-input{flex:1;font-family:var(--mono);font-size:13px;padding:6px 9px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)}
 .cmd-add-btn{font-family:var(--mono);font-size:13px;padding:6px 10px;background:var(--adim);color:var(--accent);border:1px solid var(--accent);border-radius:var(--rs);cursor:pointer}
 .stream-card{background:var(--surface);border:1px dashed var(--b2);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
@@ -725,9 +723,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <input id="capture-input" style="display:none" placeholder="＋ capture… (c)"
          onkeydown="if(event.key==='Enter')captureTask()" />
   <div class="side-group" id="grp-myday" style="display:none">
-    <div class="side-label">My Day</div>
-    <button class="nav-btn" id="nav-today" onclick="switchTab('today',this)">Today <span class="side-badge" id="badge-today"></span></button>
+    <div class="side-label">Home</div>
     <button class="nav-btn" id="nav-week" onclick="switchTab('week',this)">My Week</button>
+    <!-- tab id stays 'today' to avoid churn; this is the Team keep-tabs view since 2026-07-20 -->
+    <button class="nav-btn" id="nav-today" onclick="switchTab('today',this)">Team <span class="side-badge" id="badge-today"></span></button>
   </div>
   <div class="side-group">
     <div class="side-label">Delivery</div>
@@ -741,7 +740,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
   <div class="side-group">
     <div class="side-label">Studio</div>
-    <button class="nav-btn" id="nav-team" onclick="switchTab('team',this)">Team</button>
+    <button class="nav-btn" id="nav-team" onclick="switchTab('team',this)">Capacity</button>
     <button class="nav-btn" id="nav-clients" onclick="switchTab('clients',this)">Clients</button>
     <button class="nav-btn" id="nav-efficiency" onclick="switchTab('efficiency',this)">Efficiency</button>
   </div>
@@ -834,15 +833,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
     <div class="charts-grid" id="charts-grid"></div>
   </div>
+  <!-- tab-today is the TEAM view since 2026-07-20 (Today retired; My Week is home).
+       Inbox moved to My Week's parking lot, the greeting hero was cut. -->
   <div class="tab" id="tab-today">
-    <div id="today-brief"></div>
+    <div class="sec-hdr"><div class="sec-title">Team</div></div>
     <div class="today-label">Needs you</div>
-    <div id="today-needs"></div>
-    <div class="today-label">Inbox <button class="inbox-sweep" id="inbox-sweep" onclick="sweepInbox()">sweep old →</button></div>
-    <div id="today-inbox"></div>
-    <div class="today-label">Team</div>
-    <div id="today-team" class="team-strip"></div>
-    <div id="today-team-detail"></div>
+    <div id="team-needs"></div>
+    <div class="today-label" style="margin-top:26px">Keep tabs
+      <span class="today-label-sub">everyone's open items — stale ones light up</span></div>
+    <div id="team-people"></div>
   </div>
   <div class="tab" id="tab-week">
     <div class="sec-hdr"><div class="sec-title">My Week</div></div>
@@ -855,7 +854,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div id="week-days"></div>
     <div class="parking-section">
       <div class="parking-hdr"><div class="parking-title">Parking Lot</div>
-        <div class="parking-sub">Tasks without a day — same list as the Today inbox</div></div>
+        <div class="parking-sub">Tasks without a day</div>
+        <button class="inbox-sweep" id="inbox-sweep" onclick="sweepInbox()">sweep old →</button></div>
       <div id="week-parking"></div>
       <div class="parking-add">
         <input class="wd-add-task" id="parking-input" placeholder="Add to parking lot…"
@@ -1567,9 +1567,11 @@ function updateSideBadges(){
   const c = document.getElementById('badge-content');
   if(c) c.textContent = (isAdmin() && contentReady && proposedIdeas().length) || '';
   if(t){
+    // Team badge: things stuck on Sarosh + team tasks gone stale (inbox count
+    // moved out with the inbox — it lives in My Week's parking lot now)
     const blockers = allVideosFlat().filter(v => v.stage === 2 && !v.draft).length
       + projects.filter(p => p.stage === 4).length;
-    const n = blockers + (typeof inboxTasks === 'function' ? inboxTasks().length : 0);
+    const n = blockers + (typeof staleTeamTasks === 'function' ? staleTeamTasks().length : 0);
     t.textContent = n || '';
   }
   if(q && currentUser){
@@ -3050,8 +3052,8 @@ function switchTab(name, btn){
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
-  const TAB_TITLES = {projects:'Projects',clients:'Clients',team:'Team',efficiency:'Efficiency',
-    calendar:'Calendar',queue:'Queue',today:'Today',week:'My Week',content:'Content'};
+  const TAB_TITLES = {projects:'Projects',clients:'Clients',team:'Capacity',efficiency:'Efficiency',
+    calendar:'Calendar',queue:'Queue',today:'Team',week:'My Week',content:'Content'};
   document.getElementById('hdr-title').textContent = TAB_TITLES[name] || name;
   document.body.classList.remove('sidebar-open');
   if(name === 'efficiency'){ renderEfficiency(); }
@@ -3068,50 +3070,6 @@ function allVideosFlat(){
   return projects.flatMap(p => p.videos.map(v => ({...v, projClient:p.client, projName:p.name, projId:p.id})));
 }
 
-function personCardHtml(m){
-  const loops = openLoops(m.id);
-  const loopHtml = loops.map(t => `<div class="loop-row">
-    <span class="loop-status ${t.status==='in_progress'?'inprog':''}"
-      onclick="setTaskStatus('${t.id}','${t.status==='open'?'in_progress':'done'}')">${t.status==='in_progress'?'IN PROG':'OPEN'}</span>
-    <span class="loop-title">${escHtml(t.title)}</span>
-    ${t.client?`<span class="loop-client">${escHtml(t.client)}</span>`:''}
-    <span class="loop-age">asked ${relAge(t.createdAt)} ago</span>
-    <button class="loop-del" onclick="removeTask('${t.id}')">×</button>
-  </div>`).join('');
-
-  let liveHtml = '';
-  if(m.isEditor){
-    const vids = allVideosFlat().filter(v => v.assigneeId === m.id && v.stage < 3 && !v.draft);
-    liveHtml = vids.map(v => {
-      const od = v.deadline && daysFromNow(v.deadline) < 0;
-      return `<div class="pipe-row">🎬 <span class="loop-title">${escHtml(v.name)}</span>
-        <span class="${od?'ov':''}">${VIDEO_STAGES[v.stage]}${od?' · overdue':''}</span></div>`;
-    }).join('') || '<div class="pipe-row" style="color:var(--tm)">no active edits</div>';
-  }
-  if(m.id === 7){ // Arsal — next shoot
-    const upcoming = projects.filter(p => p.shootDate && daysFromNow(p.shootDate) >= 0)
-      .sort((a,b) => new Date(a.shootDate) - new Date(b.shootDate))[0];
-    liveHtml += `<div class="pipe-row">📸 ${upcoming
-      ? `Next shoot: ${escHtml(upcoming.client)} — ${new Date(upcoming.shootDate).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}`
-      : 'No shoot scheduled'}</div>`;
-  }
-  const sheetLink = (m.id === 3 && CPC_SHEET_URL)
-    ? `<a href="${CPC_SHEET_URL}" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--cyan)">📊 Cpc sheet ↗</a>` : '';
-
-  return `<div class="person-card">
-    <div class="person-card-hdr">
-      <span class="person-card-name">${m.name}</span>
-      <span class="person-card-meta">${loops.length} open ${sheetLink}</span>
-    </div>
-    ${liveHtml}${loopHtml}
-    <div class="cmd-add-row">
-      <input class="cmd-add-input" id="loop-add-${m.id}" placeholder="Ask ${m.name.split(' ')[0]}…"
-        onkeydown="if(event.key==='Enter')addLoop(${m.id})">
-      <button class="cmd-add-btn" onclick="addLoop(${m.id})">+</button>
-    </div>
-  </div>`;
-}
-
 async function addLoop(memberId){
   const input = document.getElementById('loop-add-' + memberId);
   const title = input.value.trim(); if(!title) return;
@@ -3123,92 +3081,117 @@ async function addLoop(memberId){
   renderCommand();
 }
 
+// ── TEAM TAB (was "Today") ── Needs-you exceptions + per-person keep-tabs.
+// Sarosh's own tasks live in My Week; nothing here duplicates them.
 function needsYouHtml(){
   const items = [];
   allVideosFlat().filter(v => v.stage === 2 && !v.draft).forEach(v => {
     const who = TEAM.find(m => m.id === v.assigneeId);
-    items.push({sev:'red', title:`${escHtml(v.projClient)} · ${escHtml(v.name)} — your review`,
-      why: who ? `blocking ${who.name.split(' ')[0]}` : 'blocking delivery',
+    items.push({sev:'red', client:v.projClient, title:`${escHtml(v.name)} — your review`,
+      why: who ? `blocking ${who.name.split(' ')[0]}` : 'blocking delivery', age:'',
       go:"switchTab('queue',document.getElementById('nav-queue'))"});
   });
   projects.filter(p => p.stage === 4).forEach(p =>
-    items.push({sev:'red', title:`${escHtml(p.client)} · ${escHtml(p.name)} — approval to shoot`,
-      why:'crew waiting', go:"switchTab('projects',document.getElementById('nav-projects'))"}));
+    items.push({sev:'red', client:p.client, title:`${escHtml(p.name)} — approval to shoot`,
+      why:'crew waiting', age:'', go:"switchTab('projects',document.getElementById('nav-projects'))"}));
+  projects.filter(p => p.deadline && p.stage < 7).forEach(p => {
+    const dd = daysFromNow(p.deadline);
+    if(dd > 3) return;
+    items.push({sev: dd < 0 ? 'red' : 'amber', client:p.client, title:`${escHtml(p.name)} — project deadline`,
+      why:'', age: dd < 0 ? `${Math.abs(dd)}d overdue` : dd === 0 ? 'due today' : `due in ${dd}d`, hot: dd <= 0,
+      go:"switchTab('projects',document.getElementById('nav-projects'))"});
+  });
   const freshIdeas = proposedIdeas().length;
-  if(freshIdeas) items.push({sev:'amber', title:`✦ ${freshIdeas} fresh idea${freshIdeas>1?'s':''} — review`,
-    why:'from the content agent',
-    go:"switchTab('content',document.getElementById('nav-content'))"});
-  tasks.filter(t => t.assigneeId === currentUser.id && t.status !== 'done' && t.status !== 'cancelled').forEach(t =>
-    items.push({sev:'', title:escHtml(t.title), why:'assigned to you', go:''}));
-  if(!items.length) return '<div style="font-size:13px;color:var(--td)">Nothing blocked on you ✓</div>';
-  const order = {red:0, amber:1, '':2};
+  if(freshIdeas) items.push({sev:'amber', client:'', title:`✦ ${freshIdeas} fresh idea${freshIdeas>1?'s':''} from the content agent`,
+    why:'review & approve', age:'', go:"switchTab('content',document.getElementById('nav-content'))"});
+  if(!items.length) return '<div class="needs-empty">Nothing needs you ✓</div>';
+  const order = {red:0, amber:1};
   items.sort((a,b) => order[a.sev] - order[b.sev]);
-  return items.map(i => `<div class="need-card sev-${i.sev}${i.go?'':' no-action'}" ${i.go?`onclick="${i.go}"`:''}>
-    <span class="need-title">${i.title}</span><span class="need-why">${i.why}</span></div>`).join('');
+  return items.map(i => `<div class="needs-row" onclick="${i.go}">
+    <span class="n-mark" style="background:${i.sev === 'red' ? '#B8434A' : '#C8760A'}"></span>
+    <span class="n-title">${i.client ? `<span class="n-client" style="background:${cColor(i.client)}">${escHtml(i.client)}</span>` : ''}${i.title}</span>
+    ${i.why ? `<span class="n-why">${i.why}</span>` : ''}
+    ${i.age ? `<span class="n-age${i.hot ? '' : ' ok'}">${i.age}</span>` : ''}
+  </div>`).join('');
 }
 
-function briefBarHtml(){
-  const needs = document.createElement('div'); needs.innerHTML = needsYouHtml();
-  const needCount = needs.querySelectorAll('.need-card.sev-red').length;
-  const inbox = inboxTasks().length;
-  const inProd = projects.filter(p => p.stage === 6).length;
-  const ideasWaiting = proposedIdeas().length;
-  const focus = metaKV['week_focus_' + isoDate(weekMonday(0))] || '';
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const todayIso = isoDate(new Date());
-  const doneToday = tasks.filter(t => t.status === 'done' && t.scheduledFor === todayIso).length;
-  const deliveredToday = allVideosFlat().filter(v => v.deliveredAt && v.deliveredAt.startsWith(todayIso)).length;
-  const wins = [doneToday && `✓ ${doneToday} done today`, deliveredToday && `${deliveredToday} delivered`].filter(Boolean);
-  return `<div class="brief-bar">
-    <div class="hero-greet">${greeting} — ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</div>
-    <div class="hero-name">${escHtml(currentUser.name.split(' ')[0])}<span>.</span></div>
-    ${focus
-      ? `<div class="hero-focus"><span class="hero-focus-label">This week</span><span class="hero-focus-text">${escHtml(focus)}</span></div>`
-      : `<div class="hero-focus unset" onclick="switchTab('week', document.getElementById('nav-week'))">
-           <span class="hero-focus-label">This week</span><span class="hero-focus-text">Set your focus →</span></div>`}
-    <div class="hero-counts">
-      ${wins.length ? `<span class="hero-done">${wins.join(' · ')}</span>` : ''}
-      <span class="${needCount ? 'hero-hot' : ''}">${needCount} need you</span>
-      <span>${inbox} inbox</span>
-      <span>${inProd} in production</span>
-      <span>${ideasWaiting} idea${ideasWaiting===1?'':'s'} waiting</span>
-    </div>
-  </div>`;
+const STALE_DAYS = 3;
+const isStaleTask = t => t.createdAt && (Date.now() - new Date(t.createdAt)) > STALE_DAYS * 864e5;
+function staleTeamTasks(){
+  return tasks.filter(t => t.assigneeId && t.assigneeId !== currentUser.id
+    && t.status !== 'done' && t.status !== 'cancelled' && isStaleTask(t));
 }
 
-function teamPillHtml(m){
-  const vids = allVideosFlat().filter(v => v.assigneeId === m.id && v.stage < 3 && !v.draft);
-  const live = vids.find(v => v.startedAt && !v.completedAt);
-  const loops = openLoops(m.id);
-  const dot = live ? 'dot-on' : (vids.length || loops.length) ? 'dot-busy' : 'dot-free';
-  const glyph = dot === 'dot-free' ? '○' : '●';
-  const now = live ? `${escHtml(live.name)}, ${VIDEO_STAGES[live.stage]}`
-    : vids.length ? `${vids.length} edit${vids.length>1?'s':''}`
-    : loops.length ? `${loops.length} open` : 'free';
-  return `<span class="team-pill" id="pill-${m.id}" onclick="togglePersonDetail(${m.id})">
-    <span class="${dot}">${glyph}</span> ${m.name.split(' ')[0]} — ${now}</span>`;
+function teamKeepTabsHtml(){
+  return TEAM.filter(m => m.id !== currentUser.id).map(m => {
+    const vids = allVideosFlat().filter(v => v.assigneeId === m.id && v.stage < 3 && !v.draft);
+    const loops = openLoops(m.id);
+    const stale = loops.filter(isStaleTask).length;
+    const open = loops.length + vids.length;
+    const first = m.name.split(' ')[0];
+    const sheetLink = (m.id === 3 && CPC_SHEET_URL)
+      ? `<a href="${CPC_SHEET_URL}" target="_blank" class="p-sheet" onclick="event.stopPropagation()">📊 Cpc ↗</a>` : '';
+    const vidRows = vids.map(v => {
+      const od = v.deadline && daysFromNow(v.deadline) < 0;
+      const state = v.startedAt && v.stage === 0
+        ? `${workingHoursBetween(v.startedAt, new Date().toISOString()).toFixed(1)}h in`
+        : VIDEO_STAGES[v.stage];
+      return `<div class="p-item"><span class="p-kind vid">Edit</span>
+        <span class="p-what">${escHtml(v.name)} · ${escHtml(v.projClient)}</span>
+        <span class="${od ? 'p-stale' : 'p-fine'}">${od ? 'overdue' : state}</span></div>`;
+    }).join('');
+    const taskRows = loops.map(t => `<div class="p-item">
+      <span class="p-kind${t.status === 'in_progress' ? ' prog' : ''}" title="${t.status === 'open' ? 'mark in progress' : 'mark done'}"
+        onclick="setTaskStatus('${t.id}','${t.status === 'open' ? 'in_progress' : 'done'}')">${t.status === 'in_progress' ? 'In prog' : 'Task'}</span>
+      <span class="p-what">${escHtml(t.title)}${t.client ? ` <span class="p-client">${escHtml(t.client)}</span>` : ''}</span>
+      <span class="${isStaleTask(t) ? 'p-stale' : 'p-fine'}">${isStaleTask(t) ? `assigned ${relAge(t.createdAt)} ago` : relAge(t.createdAt)}</span>
+      <button class="p-del" onclick="removeTask('${t.id}')">×</button>
+    </div>`).join('');
+    let extra = '';
+    if(m.id === 7){ // Arsal — next shoot
+      const up = projects.filter(p => p.shootDate && daysFromNow(p.shootDate) >= 0)
+        .sort((a,b) => new Date(a.shootDate) - new Date(b.shootDate))[0];
+      extra = `<div class="p-item"><span class="p-kind">Shoot</span><span class="p-what">${up
+        ? `Next: ${escHtml(up.client)} — ${new Date(up.shootDate).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}`
+        : 'No shoot scheduled'}</span></div>`;
+    }
+    const idle = !vids.length && !loops.length;
+    const load = idle ? '<span class="p-hot">idle</span>'
+      : `${stale ? `<span class="p-hot">${stale} stale</span> · ` : ''}${open} open`;
+    return `<div class="person">
+      <div class="p-head"><span class="p-name">${first}</span>
+        <span class="p-role">${m.role}${m.partTime ? ' · part-time' : ''}</span>${sheetLink}
+        <span class="p-load">${load}</span>
+        <button class="p-nudge" onclick="nudgeMember(${m.id})">Nudge</button></div>
+      ${idle ? `<div class="p-idle">Nothing assigned — ask ${first} for something below, or drop a parking-lot task.</div>` : vidRows + taskRows}
+      ${extra}
+      <div class="p-add"><input class="p-add-input" id="loop-add-${m.id}" placeholder="Ask ${first}…"
+        onkeydown="if(event.key==='Enter')addLoop(${m.id})">
+        <button class="p-add-btn" onclick="addLoop(${m.id})">+ ADD</button></div>
+    </div>`;
+  }).join('');
 }
 
-let openPersonId = null;
-function togglePersonDetail(id){
-  openPersonId = (openPersonId === id) ? null : id;
-  const el = document.getElementById('today-team-detail');
-  el.innerHTML = openPersonId ? personCardHtml(TEAM.find(m => m.id === openPersonId)) : '';
-  document.querySelectorAll('.team-pill').forEach(p => p.classList.toggle('open', p.id === 'pill-' + openPersonId));
+// Copies a WhatsApp-ready reminder listing their open items (no phone numbers
+// stored, so clipboard beats a broken wa.me deep link).
+function nudgeMember(id){
+  const m = TEAM.find(x => x.id === id); if(!m) return;
+  const loops = openLoops(id);
+  const vids = allVideosFlat().filter(v => v.assigneeId === id && v.stage < 3 && !v.draft);
+  const lines = [
+    ...vids.map(v => `• ${v.name} (${v.projClient}) — ${VIDEO_STAGES[v.stage]}`),
+    ...loops.map(t => `• ${t.title}${isStaleTask(t) ? ` (asked ${relAge(t.createdAt)} ago)` : ''}`)
+  ];
+  const msg = `Yo ${m.waName || m.name.split(' ')[0]} — quick check on your open items:\n`
+    + (lines.join('\n') || '• nothing assigned — come grab something');
+  navigator.clipboard.writeText(msg)
+    .then(() => toast(`✓ Nudge copied — paste it to ${m.name.split(' ')[0]}`))
+    .catch(() => toast('⚠ Couldn\'t copy — clipboard blocked', true));
 }
 
 function renderToday(){
-  document.getElementById('today-brief').innerHTML = briefBarHtml();
-  document.getElementById('today-needs').innerHTML = needsYouHtml();
-  const inbox = inboxTasks();
-  document.getElementById('today-inbox').innerHTML =
-    inbox.length ? inbox.map(inboxRowHtml).join('') : '<div style="font-size:13px;color:var(--td)">Inbox zero ✓</div>';
-  document.getElementById('inbox-sweep').style.display = staleInboxTasks().length ? 'inline' : 'none';
-  document.getElementById('today-team').innerHTML =
-    TEAM.filter(m => m.id !== currentUser.id).map(teamPillHtml).join('');
-  const detail = document.getElementById('today-team-detail');
-  detail.innerHTML = openPersonId ? personCardHtml(TEAM.find(m => m.id === openPersonId)) : '';
+  document.getElementById('team-needs').innerHTML = needsYouHtml();
+  document.getElementById('team-people').innerHTML = teamKeepTabsHtml();
 }
 let weekExpandedIso = null;              // null = today expanded (default); 'none' = all collapsed
 const WK_STATUS = { open:'Not started', in_progress:'In progress', done:'Done' };
@@ -3311,6 +3294,8 @@ function renderWeek(){
   document.getElementById('week-parking').innerHTML =
     parking.length ? parking.map(inboxRowHtml).join('')
                    : '<div class="parking-empty">Parking lot empty ✓</div>';
+  const sweep = document.getElementById('inbox-sweep');
+  if(sweep) sweep.style.display = staleInboxTasks().length ? 'inline' : 'none';
 }
 
 function toggleWeekDay(iso){
