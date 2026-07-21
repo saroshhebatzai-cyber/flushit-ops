@@ -522,6 +522,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .needs-row{display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid #E5DDD3;padding:10px 14px;cursor:pointer;border-radius:2px;margin-bottom:4px}
 .needs-row:hover{background:#FAFAF8}
 .n-mark{width:4px;align-self:stretch;border-radius:2px;flex-shrink:0}
+.n-type{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#8C8476;width:64px;flex-shrink:0}
+.n-also{font-family:var(--mono);font-size:10.5px;color:#C8760A;background:#FDF3E0;padding:2px 7px;border-radius:2px;margin-left:8px;white-space:nowrap}
 .n-title{flex:1;font-size:14px;font-weight:500;color:var(--dark)}
 .n-client{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:2px;color:#fff;margin-right:8px;vertical-align:1px}
 .n-why{font-size:12px;font-style:italic;color:#8C8476}
@@ -533,7 +535,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
    read capacity before items, plus a sage "done this week" strip so keeping
    tabs includes what they finished, not just what they owe. */
 .person{background:#fff;border-radius:2px;border-bottom:1px solid #E5DDD3;margin-bottom:12px;overflow:hidden}
-.p-head{display:flex;align-items:center;gap:10px;padding:9px 16px;background:var(--dark);flex-wrap:wrap}
+.p-head{display:flex;align-items:center;gap:10px;padding:9px 16px;background:var(--dark);flex-wrap:wrap;cursor:pointer}
+.p-head:hover{background:#242220}
+.p-chev{color:#8A8A93;font-size:12px;width:12px;text-align:center}
+.p-win{font-family:var(--mono);font-size:10px;color:#7FB08D;white-space:nowrap}
+.team-grp{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8C8476;margin:18px 0 7px;display:flex;align-items:center;gap:10px}
+.team-grp:first-child{margin-top:0}
+.team-grp::after{content:'';flex:1;height:1px;background:#E5DDD3}
+.team-grp.hot{color:#B8434A}
 .p-name{font-family:var(--display);font-weight:700;font-size:13px;color:#fff}
 .p-role{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#8A8A93}
 .p-sheet{font-family:var(--mono);font-size:10px;color:#4FC3E0;text-decoration:none}
@@ -3093,33 +3102,61 @@ async function addLoop(memberId){
 
 // ── TEAM TAB (was "Today") ── Needs-you exceptions + per-person keep-tabs.
 // Sarosh's own tasks live in My Week; nothing here duplicates them.
+// Type hierarchy (Sarosh, 2026-07-21): a date bearing down outranks everything,
+// then whoever is blocked on you, then ideas. Type is PRINTED, not implied by
+// colour, so the ordering explains itself.
+const NEEDS_RANK = { deadline:0, review:1, approval:2, ideas:3 };
+const NEEDS_LABEL = { deadline:'Deadline', review:'Review', approval:'Approval', ideas:'Ideas' };
+
 function needsYouHtml(){
   const items = [];
+  const goProjects = "switchTab('projects',document.getElementById('nav-projects'))";
+
+  // One row per project, not one per fact: a project that's both due soon AND
+  // awaiting approval used to appear twice. Now it's a deadline row carrying an
+  // "also: approval" tag.
+  projects.filter(p => p.stage < 7).forEach(p => {
+    const dd = p.deadline ? daysFromNow(p.deadline) : null;
+    const dueSoon = dd !== null && dd <= 3;
+    const needsApproval = p.stage === 4;
+    if(!dueSoon && !needsApproval) return;
+    if(dueSoon){
+      items.push({type:'deadline', sev: dd <= 0 ? 'red' : 'amber', dd, client:p.client,
+        title: escHtml(p.name), also: needsApproval ? 'approval to shoot' : '',
+        why: needsApproval ? 'crew waiting' : '',
+        age: dd < 0 ? `${Math.abs(dd)}d overdue` : dd === 0 ? 'due today' : dd === 1 ? 'due tmrw' : `due in ${dd}d`,
+        hot: true, go: goProjects});
+    } else {
+      items.push({type:'approval', sev:'amber', dd, client:p.client,
+        title: escHtml(p.name), also:'', why:'crew waiting',
+        age: dd === null ? '' : `due ${new Date(p.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`,
+        hot: false, go: goProjects});
+    }
+  });
+
   allVideosFlat().filter(v => v.stage === 2 && !v.draft).forEach(v => {
     const who = TEAM.find(m => m.id === v.assigneeId);
-    items.push({sev:'red', client:v.projClient, title:`${escHtml(v.name)} — your review`,
-      why: who ? `blocking ${who.name.split(' ')[0]}` : 'blocking delivery', age:'',
+    items.push({type:'review', sev:'red', dd:null, client:v.projClient,
+      title:`${escHtml(v.name)} — your review`, also:'',
+      why: who ? `blocking ${who.name.split(' ')[0]}` : 'blocking delivery', age:'', hot:false,
       go:"switchTab('queue',document.getElementById('nav-queue'))"});
   });
-  projects.filter(p => p.stage === 4).forEach(p =>
-    items.push({sev:'red', client:p.client, title:`${escHtml(p.name)} — approval to shoot`,
-      why:'crew waiting', age:'', go:"switchTab('projects',document.getElementById('nav-projects'))"}));
-  projects.filter(p => p.deadline && p.stage < 7).forEach(p => {
-    const dd = daysFromNow(p.deadline);
-    if(dd > 3) return;
-    items.push({sev: dd < 0 ? 'red' : 'amber', client:p.client, title:`${escHtml(p.name)} — project deadline`,
-      why:'', age: dd < 0 ? `${Math.abs(dd)}d overdue` : dd === 0 ? 'due today' : `due in ${dd}d`, hot: dd <= 0,
-      go:"switchTab('projects',document.getElementById('nav-projects'))"});
-  });
+
   const freshIdeas = proposedIdeas().length;
-  if(freshIdeas) items.push({sev:'amber', client:'', title:`✦ ${freshIdeas} fresh idea${freshIdeas>1?'s':''} from the content agent`,
-    why:'review & approve', age:'', go:"switchTab('content',document.getElementById('nav-content'))"});
+  if(freshIdeas) items.push({type:'ideas', sev:'amber', dd:null, client:'',
+    title:`✦ ${freshIdeas} fresh idea${freshIdeas>1?'s':''} from the content agent`, also:'',
+    why:'review & approve', age:'', hot:false,
+    go:"switchTab('content',document.getElementById('nav-content'))"});
+
   if(!items.length) return '<div class="needs-empty">Nothing needs you ✓</div>';
-  const order = {red:0, amber:1};
-  items.sort((a,b) => order[a.sev] - order[b.sev]);
+  // type first, then soonest deadline within a type
+  items.sort((a,b) => (NEEDS_RANK[a.type] - NEEDS_RANK[b.type])
+    || ((a.dd ?? 99) - (b.dd ?? 99)));
+
   return items.map(i => `<div class="needs-row" onclick="${i.go}">
     <span class="n-mark" style="background:${i.sev === 'red' ? '#B8434A' : '#C8760A'}"></span>
-    <span class="n-title">${i.client ? `<span class="n-client" style="background:${cColor(i.client)}">${escHtml(i.client)}</span>` : ''}${i.title}</span>
+    <span class="n-type">${NEEDS_LABEL[i.type]}</span>
+    <span class="n-title">${i.client ? `<span class="n-client" style="background:${cColor(i.client)}">${escHtml(i.client)}</span>` : ''}${i.title}${i.also ? `<span class="n-also">also: ${i.also}</span>` : ''}</span>
     ${i.why ? `<span class="n-why">${i.why}</span>` : ''}
     ${i.age ? `<span class="n-age${i.hot ? '' : ' ok'}">${i.age}</span>` : ''}
   </div>`).join('');
@@ -3155,8 +3192,18 @@ function doneThisWeek(id){
   return { done, delivered };
 }
 
+// Attention ranking: anyone with a stale task, an edit due within a day, or
+// nothing assigned at all is a problem — they sort to the top and stay open.
+// Everyone else collapses to their header bar. Clicking flips a person's
+// default, so the set of open cards shrinks as the team gets on top of things.
+let teamToggled = new Set();
+function toggleTeamPerson(id){
+  teamToggled.has(id) ? teamToggled.delete(id) : teamToggled.add(id);
+  renderToday();
+}
+
 function teamKeepTabsHtml(){
-  return TEAM.filter(m => m.id !== currentUser.id).map(m => {
+  const cards = TEAM.filter(m => m.id !== currentUser.id).map(m => {
     const vids = allVideosFlat().filter(v => v.assigneeId === m.id && v.stage < 3 && !v.draft);
     const loops = openLoops(m.id);
     const stale = loops.filter(isStaleTask).length;
@@ -3209,20 +3256,37 @@ function teamKeepTabsHtml(){
     const doneStrip = wins.length
       ? `<div class="p-done">✓ ${wins.join(' · ')} this week</div>`
       : '<div class="p-done none">nothing wrapped up yet this week</div>';
-    return `<div class="person">
-      <div class="p-head"><span class="p-name">${first}</span>
-        <span class="p-role">${m.role}${m.partTime ? ' · part-time' : ''}</span>${sheetLink}
-        <span class="p-bar" title="${idle ? 'nothing assigned' : `~${hours}h queued`}"><span class="p-fill ${idle ? 'r' : cls}" style="width:${barPct}%"></span></span>
-        <span class="p-load">${load}</span>
-        <button class="p-nudge" onclick="nudgeMember(${m.id})">Nudge</button></div>
+
+    const urgentVid = vids.some(v => v.deadline && daysFromNow(v.deadline) <= 1);
+    const needsLook = idle || stale > 0 || urgentVid;
+    const isOpen = needsLook ? !teamToggled.has(m.id) : teamToggled.has(m.id);
+    // Collapsed bars still carry the week's wins, so a quiet person isn't blank
+    const winChip = !isOpen && wins.length
+      ? `<span class="p-win">✓ ${delivered || done}</span>` : '';
+
+    const body = `
       ${idle ? `<div class="p-idle">Nothing assigned — ask ${first} for something below, or drop a parking-lot task.</div>` : vidRows + taskRows}
       ${extra}
       ${doneStrip}
       <div class="p-add"><input class="p-add-input" id="loop-add-${m.id}" placeholder="Ask ${first}…"
         onkeydown="if(event.key==='Enter')addLoop(${m.id})">
-        <button class="p-add-btn" onclick="addLoop(${m.id})">+ ADD</button></div>
+        <button class="p-add-btn" onclick="addLoop(${m.id})">+ ADD</button></div>`;
+
+    const html = `<div class="person">
+      <div class="p-head" onclick="toggleTeamPerson(${m.id})"><span class="p-name">${first}</span>
+        <span class="p-role">${m.role}${m.partTime ? ' · part-time' : ''}</span>${sheetLink}
+        <span class="p-bar" title="${idle ? 'nothing assigned' : `~${hours}h queued`}"><span class="p-fill ${idle ? 'r' : cls}" style="width:${barPct}%"></span></span>
+        <span class="p-load">${load}</span>${winChip}
+        <button class="p-nudge" onclick="event.stopPropagation();nudgeMember(${m.id})">Nudge</button>
+        <span class="p-chev">${isOpen ? '▾' : '▸'}</span></div>
+      ${isOpen ? body : ''}
     </div>`;
-  }).join('');
+    return { needsLook, html };
+  });
+
+  const hot = cards.filter(c => c.needsLook), calm = cards.filter(c => !c.needsLook);
+  return (hot.length ? `<div class="team-grp hot">Needs a look</div>` + hot.map(c => c.html).join('') : '')
+    + (calm.length ? `<div class="team-grp">All good</div>` + calm.map(c => c.html).join('') : '');
 }
 
 // Copies a WhatsApp-ready reminder listing their open items (no phone numbers
