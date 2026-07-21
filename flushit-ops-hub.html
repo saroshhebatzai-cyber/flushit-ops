@@ -503,12 +503,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-event.proj-over{background:#B8434A}
 .cal-event.vid-dl{background:var(--dark)}
 .cal-event.shoot-day{background:#7C5CD6}
-.cal-event.task-ev{background:var(--pink)}
 .cal-event[draggable="true"]{cursor:grab}
 .cal-event[draggable="true"]:active{cursor:grabbing}
 .cal-day.drag-over{outline:2px dashed var(--pink);outline-offset:-2px;background:#FFF5F9}
-.cal-add-input{width:100%;border:none;background:#EDE8DC;border-radius:2px;font-family:var(--sans);font-size:12px;color:#3D3830;padding:4px 7px;outline:none;margin-top:2px}
-.cal-add-input::placeholder{font-style:italic;color:#8C8476}
 .cal-more{font-family:var(--mono);font-size:10px;color:var(--pink);padding:3px;cursor:pointer;width:fit-content}
 .cal-more:hover{text-decoration:underline}
 .cal-legend{display:flex;gap:14px;align-items:center;margin-top:14px;flex-wrap:wrap}
@@ -830,8 +827,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#B8434A"></div>Project deadline (overdue)</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--dark)"></div>Video deadline</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#7C5CD6"></div>Shoot day</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--pink)"></div>Task</div>
-      <div class="cal-legend-item" style="margin-left:auto">click a day to add a task · drag a chip to move its date</div>
+      <div class="cal-legend-item" style="margin-left:auto">drag a chip to move its date</div>
     </div>
   </div>
 
@@ -3866,14 +3862,9 @@ function renderCalendar(){
     });
   });
 
-  // Scheduled tasks (tasks[] is empty for editors, so this is admin-only by
-  // construction) — pink chips, same planner pink as My Week.
-  tasks.forEach(t => {
-    if(t.scheduledFor && t.status !== 'done' && t.status !== 'cancelled'){
-      addEv(t.scheduledFor, {cls:'task-ev', dot: t.client ? cColor(t.client) : 'rgba(255,255,255,.9)',
-        label:t.title, kind:'task', id:t.id});
-    }
-  });
+  // Sarosh's own tasks deliberately do NOT render here (2026-07-21) — they
+  // live in My Week. The calendar is client-facing work only: deadlines,
+  // video deadlines and shoots.
 
   // Build grid
   const firstDay = new Date(calYear, calMonth, 1);
@@ -3908,16 +3899,11 @@ function renderCalendar(){
       : (isDayExpanded && dayEvs.length > 3
         ? `<div class="cal-more" onclick="event.stopPropagation();calExpandDay(null)">show less</div>`
         : '');
-    const addHTML = calQuickAddIso === dateStr
-      ? `<input class="cal-add-input" id="cal-add-input" placeholder="Add task…" maxlength="200"
-           onclick="event.stopPropagation()" onkeydown="calQuickAddKey(event,'${dateStr}')" onblur="calQuickAddCancel()">`
-      : '';
     html += `<div class="cal-day${isToday?' today':''}${isWeekend?' weekend':''}"
       ${admin ? `ondragover="event.preventDefault();this.classList.add('drag-over')"
-      ondragleave="this.classList.remove('drag-over')" ondrop="calDrop(event,'${dateStr}')"
-      onclick="calQuickAdd(event,'${dateStr}')"` : ''}>
+      ondragleave="this.classList.remove('drag-over')" ondrop="calDrop(event,'${dateStr}')"` : ''}>
       <div class="cal-day-num">${d}</div>
-      ${evHTML}${moreHTML}${addHTML}
+      ${evHTML}${moreHTML}
     </div>`;
   }
 
@@ -3929,43 +3915,16 @@ function renderCalendar(){
   }
 
   wrap.innerHTML = html;
-  const addInput = document.getElementById('cal-add-input');
-  if(addInput) addInput.focus();
 }
 
-// ── Calendar interactions: click a day to add a task, drag a chip to move
-//    its real date (project deadline / video deadline / shoot / task day),
-//    "+N more" expands the day in place ──
-let calQuickAddIso = null;
+// ── Calendar interactions: drag a chip to move its real date (project
+//    deadline / video deadline / shoot), "+N more" expands the day in place.
+//    Quick-add was removed with the pink task chips — tasks belong to My Week.
 let calExpandedIso = null;
 
 function calExpandDay(iso){
   calExpandedIso = iso;
   renderCalendar();
-}
-
-function calQuickAdd(e, iso){
-  if(e.target.closest('.cal-event') || e.target.closest('.cal-add-input')) return;
-  calQuickAddIso = iso;
-  renderCalendar();
-}
-function calQuickAddCancel(){
-  if(!calQuickAddIso) return;
-  calQuickAddIso = null;
-  renderCalendar();
-}
-async function calQuickAddKey(e, iso){
-  if(e.key === 'Escape'){ calQuickAddCancel(); return; }
-  if(e.key !== 'Enter') return;
-  const title = e.target.value.trim();
-  if(!title){ calQuickAddCancel(); return; }
-  const t = { id:newCmdId('t'), title, notes:'', ownerId:currentUser.id, assigneeId:null,
-              client:null, status:'open', scheduledFor:iso,
-              createdAt:new Date().toISOString(), completedAt:null };
-  tasks.push(t);
-  calQuickAddIso = null;
-  renderCalendar(); updateSideBadges();
-  await syncTask(t);
 }
 
 function calDragStart(e, kind, id, pid){
@@ -3976,13 +3935,6 @@ async function calDrop(e, iso){
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
   let d; try{ d = JSON.parse(e.dataTransfer.getData('text/plain')); }catch{ return; }
-  if(d.kind === 'task'){
-    const t = tasks.find(x => x.id === d.id);
-    if(!t || t.scheduledFor === iso) return;
-    t.scheduledFor = iso;
-    renderCalendar(); updateSideBadges();
-    await syncTask(t); return;
-  }
   if(d.kind === 'proj' || d.kind === 'shoot'){
     const p = projects.find(x => x.id === parseInt(d.id) || x.id === d.id);
     if(!p) return;
