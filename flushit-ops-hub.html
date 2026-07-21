@@ -528,13 +528,22 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .n-age{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#B8434A;background:#FCEEF0;padding:3px 8px;border-radius:2px;white-space:nowrap}
 .n-age.ok{color:#8C8476;background:#EDE8DC}
 .needs-empty{font-size:13px;font-style:italic;color:#8C8476;background:#fff;border-radius:2px;padding:10px 14px;border-bottom:1px solid #E5DDD3}
-.person{background:#fff;border-radius:2px;border-bottom:1px solid #E5DDD3;margin-bottom:8px}
-.p-head{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #E5DDD3}
-.p-name{font-family:var(--display);font-weight:700;font-size:13px;color:var(--dark)}
-.p-role{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8C8476}
-.p-sheet{font-family:var(--mono);font-size:10px;color:var(--cyan);text-decoration:none}
-.p-load{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#8C8476}
-.p-hot{color:#B8434A;font-weight:700}
+/* "The Ledger" (Sarosh's pick 2026-07-21): dark header bar per person — same
+   slab as the planner's TASK/STATUS thead — carrying a workload bar so you
+   read capacity before items, plus a sage "done this week" strip so keeping
+   tabs includes what they finished, not just what they owe. */
+.person{background:#fff;border-radius:2px;border-bottom:1px solid #E5DDD3;margin-bottom:12px;overflow:hidden}
+.p-head{display:flex;align-items:center;gap:10px;padding:9px 16px;background:var(--dark);flex-wrap:wrap}
+.p-name{font-family:var(--display);font-weight:700;font-size:13px;color:#fff}
+.p-role{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#8A8A93}
+.p-sheet{font-family:var(--mono);font-size:10px;color:#4FC3E0;text-decoration:none}
+.p-bar{flex:1;min-width:70px;max-width:170px;height:5px;background:#33302B;border-radius:3px;overflow:hidden;margin-left:auto}
+.p-fill{display:block;height:100%;border-radius:3px;transition:width .3s}
+.p-fill.g{background:#4A7459}.p-fill.y{background:#C8760A}.p-fill.r{background:#B8434A}
+.p-load{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#8A8A93;white-space:nowrap}
+.p-hot{color:#FF8A8F;font-weight:700}
+.p-done{padding:6px 16px;background:#EBF4EE;font-family:var(--mono);font-size:10px;color:#4A7459;border-top:1px solid rgba(74,116,89,.15)}
+.p-done.none{background:#F7F5EF;color:#8C8476}
 .p-item{display:flex;align-items:center;gap:10px;padding:8px 16px 8px 26px;border-bottom:1px solid #E5DDD3;font-size:13px}
 .p-kind{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:#EDE8DC;color:#8C8476;cursor:pointer;white-space:nowrap}
 .p-kind.vid{background:var(--dark);color:#fff;cursor:default}
@@ -547,8 +556,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .p-item:hover .p-del{opacity:1}
 .p-del:hover{color:var(--pink)}
 .p-idle{padding:10px 16px;font-size:13px;font-style:italic;color:#8C8476}
-.p-nudge{font-family:var(--mono);font-size:10px;color:var(--pink);background:transparent;border:1px solid var(--pink);padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase}
-.p-nudge:hover{background:var(--pink);color:#fff}
+/* yellow-on-offblack, the planner's convention for a control on a dark slab */
+.p-nudge{font-family:var(--mono);font-size:9px;color:#FFD000;background:transparent;border:1px solid rgba(255,208,0,.4);padding:3px 9px;border-radius:2px;cursor:pointer;letter-spacing:.08em;text-transform:uppercase;transition:all .15s}
+.p-nudge:hover{background:#FFD000;color:var(--dark);border-color:#FFD000}
 .p-add{display:flex;align-items:center;gap:8px;padding:8px 16px;border-top:1px dashed #E5DDD3}
 .p-add-input{flex:1;border:none;background:transparent;font-family:var(--sans);font-size:13px;color:#3D3830;outline:none;padding:5px 0}
 .p-add-input::placeholder{font-style:italic;color:#8C8476}
@@ -3122,6 +3132,29 @@ function staleTeamTasks(){
     && t.status !== 'done' && t.status !== 'cancelled' && isStaleTask(t));
 }
 
+// Workload bar. Edit hours come from the same source the Capacity tab uses
+// (editorLoad → EDIT_TYPES hours on unstarted edits); tasks have no estimates,
+// so each counts as 1h. Capacity is a working day, halved for part-timers.
+// Thresholds match the Capacity tab: <60% green, <100% amber, over = red.
+const TASK_HOURS = 1;
+function personLoad(m, vids, loops){
+  const hours = editorLoad(m.id) + loops.length * TASK_HOURS;
+  const cap = m.partTime ? EDITOR_HOURS / 2 : EDITOR_HOURS;
+  const pct = Math.min(100, Math.round((hours / cap) * 100));
+  const cls = pct >= 100 ? 'r' : pct >= 60 ? 'y' : 'g';
+  return { hours, pct, cls };
+}
+
+// What they finished since Monday — keeping tabs shouldn't only count debts.
+function doneThisWeek(id){
+  const monIso = isoDate(weekMonday(0));
+  const done = tasks.filter(t => t.assigneeId === id && t.status === 'done'
+    && t.completedAt && isoDate(new Date(t.completedAt)) >= monIso).length;
+  const delivered = allVideosFlat().filter(v => v.assigneeId === id && !v.draft
+    && v.deliveredAt && v.deliveredAt.slice(0,10) >= monIso).length;
+  return { done, delivered };
+}
+
 function teamKeepTabsHtml(){
   return TEAM.filter(m => m.id !== currentUser.id).map(m => {
     const vids = allVideosFlat().filter(v => v.assigneeId === m.id && v.stage < 3 && !v.draft);
@@ -3131,14 +3164,23 @@ function teamKeepTabsHtml(){
     const first = m.name.split(' ')[0];
     const sheetLink = (m.id === 3 && CPC_SHEET_URL)
       ? `<a href="${CPC_SHEET_URL}" target="_blank" class="p-sheet" onclick="event.stopPropagation()">📊 Cpc ↗</a>` : '';
+    // Right-hand label answers "how worried should I be": urgency wins over
+    // stage, because a not-started edit due tomorrow is the thing to catch.
     const vidRows = vids.map(v => {
-      const od = v.deadline && daysFromNow(v.deadline) < 0;
-      const state = v.startedAt && v.stage === 0
-        ? `${workingHoursBetween(v.startedAt, new Date().toISOString()).toFixed(1)}h in`
-        : VIDEO_STAGES[v.stage];
-      return `<div class="p-item"><span class="p-kind vid">Edit</span>
+      const dd = v.deadline ? daysFromNow(v.deadline) : null;
+      let label, urgent = true;
+      if(dd !== null && dd < 0) label = `${Math.abs(dd)}d overdue`;
+      else if(dd === 0) label = 'due today';
+      else if(dd === 1) label = 'due tmrw';
+      else if(v.startedAt && v.stage === 0){
+        label = `${workingHoursBetween(v.startedAt, new Date().toISOString()).toFixed(1)}h in`; urgent = false;
+      } else if(dd !== null){
+        label = `due ${new Date(v.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`; urgent = false;
+      } else { label = 'no deadline'; urgent = false; }
+      const notStarted = !v.startedAt && v.stage === 0 ? ' · not started' : '';
+      return `<div class="p-item"><span class="p-kind vid">${VIDEO_STAGES[v.stage]}</span>
         <span class="p-what">${escHtml(v.name)} · ${escHtml(v.projClient)}</span>
-        <span class="${od ? 'p-stale' : 'p-fine'}">${od ? 'overdue' : state}</span></div>`;
+        <span class="${urgent ? 'p-stale' : 'p-fine'}">${label}${urgent ? notStarted : ''}</span></div>`;
     }).join('');
     const taskRows = loops.map(t => `<div class="p-item">
       <span class="p-kind${t.status === 'in_progress' ? ' prog' : ''}" title="${t.status === 'open' ? 'mark in progress' : 'mark done'}"
@@ -3156,15 +3198,26 @@ function teamKeepTabsHtml(){
         : 'No shoot scheduled'}</span></div>`;
     }
     const idle = !vids.length && !loops.length;
+    const { hours, pct, cls } = personLoad(m, vids, loops);
+    // Idle reads as a problem, not as "comfortable" — empty bar, red.
+    const barPct = idle ? 4 : Math.max(pct, 6);
     const load = idle ? '<span class="p-hot">idle</span>'
-      : `${stale ? `<span class="p-hot">${stale} stale</span> · ` : ''}${open} open`;
+      : `${stale ? `<span class="p-hot">${stale} stale</span> · ` : ''}${open} open${hours ? ` · ~${hours}h` : ''}`;
+    const { done, delivered } = doneThisWeek(m.id);
+    const wins = [delivered && `${delivered} video${delivered > 1 ? 's' : ''} delivered`,
+                  done && `${done} task${done > 1 ? 's' : ''} done`].filter(Boolean);
+    const doneStrip = wins.length
+      ? `<div class="p-done">✓ ${wins.join(' · ')} this week</div>`
+      : '<div class="p-done none">nothing wrapped up yet this week</div>';
     return `<div class="person">
       <div class="p-head"><span class="p-name">${first}</span>
         <span class="p-role">${m.role}${m.partTime ? ' · part-time' : ''}</span>${sheetLink}
+        <span class="p-bar" title="${idle ? 'nothing assigned' : `~${hours}h queued`}"><span class="p-fill ${idle ? 'r' : cls}" style="width:${barPct}%"></span></span>
         <span class="p-load">${load}</span>
         <button class="p-nudge" onclick="nudgeMember(${m.id})">Nudge</button></div>
       ${idle ? `<div class="p-idle">Nothing assigned — ask ${first} for something below, or drop a parking-lot task.</div>` : vidRows + taskRows}
       ${extra}
+      ${doneStrip}
       <div class="p-add"><input class="p-add-input" id="loop-add-${m.id}" placeholder="Ask ${first}…"
         onkeydown="if(event.key==='Enter')addLoop(${m.id})">
         <button class="p-add-btn" onclick="addLoop(${m.id})">+ ADD</button></div>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team — A vs C (real data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F0E6;--white:#fff;--ink:#3D3830;--muted:#8C8476;--rule:#E5DDD3;--beige2:#EDE8DC;
+  --dark:#1A1A1A;--pink:#FF2775;--yellow:#FFD000;
+  --sage:#4A7459;--sage-lt:#EBF4EE;--amber:#C8760A;--red:#B8434A;--cyan:#0090B3;
+  --wingos:#C8380A;--ivs:#3D5A80;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;padding:44px 28px 120px}
+.wrap{max-width:1080px;margin:0 auto}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:var(--dark);margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:14px;max-width:760px;line-height:1.6}
+.data-note{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:var(--beige2);border-radius:2px;padding:8px 12px;margin-bottom:40px;line-height:1.7}
+.data-note b{color:var(--ink);font-weight:500}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+.col-hd{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.col-tag{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.14em;background:var(--dark);color:var(--yellow);padding:4px 10px;border-radius:2px}
+.col-name{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;color:var(--dark)}
+.col-why{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:20px;min-height:52px}
+
+/* ── A: LEDGER ── */
+.lg-person{margin-bottom:12px;border-radius:2px;overflow:hidden}
+.lg-head{display:flex;align-items:center;gap:9px;background:var(--dark);padding:8px 13px;flex-wrap:wrap}
+.lg-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#fff}
+.lg-role{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#8A8A93}
+.lg-bar{flex:1;min-width:70px;max-width:130px;height:5px;background:#33302B;border-radius:3px;overflow:hidden;margin-left:auto}
+.lg-fill{height:100%;border-radius:3px}
+.lg-load{font-family:'DM Mono',monospace;font-size:9px;color:#8A8A93;white-space:nowrap}
+.lg-load .hot{color:#FF8A8F;font-weight:700}
+.lg-nudge{font-family:'DM Mono',monospace;font-size:8px;color:var(--yellow);background:transparent;border:1px solid rgba(255,208,0,.4);padding:2px 7px;border-radius:2px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase}
+.lg-row{display:grid;grid-template-columns:52px 1fr auto;align-items:center;background:#fff;border-bottom:1px solid var(--rule);min-height:38px;padding:0 13px;font-size:12px;gap:4px}
+.lg-kind{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--beige2);color:var(--muted);width:fit-content}
+.lg-kind.vid{background:var(--dark);color:#fff}
+.lg-what{color:var(--dark);padding:7px 6px}
+.lg-what .due{color:var(--red);font-family:'DM Mono',monospace;font-size:10px}
+.lg-status{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-align:right;white-space:nowrap}
+.lg-status.stale{color:#7D4F00;background:#FFF3CD;padding:2px 7px;border-radius:2px}
+.lg-done{padding:6px 13px;background:var(--sage-lt);font-family:'DM Mono',monospace;font-size:9px;color:var(--sage)}
+.lg-idle{padding:9px 13px;background:#fff;font-size:12px;font-style:italic;color:var(--muted)}
+.lg-add{display:flex;align-items:center;gap:7px;padding:6px 13px;background:#fff;border-top:1px dashed var(--rule)}
+.lg-add input{flex:1;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);outline:none}
+.lg-add input::placeholder{font-style:italic;color:var(--muted)}
+.lg-add button{font-family:'DM Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;background:var(--beige2);border:none;border-radius:2px;color:var(--muted);cursor:pointer}
+
+/* ── C: STANDUP ── */
+.su-digest{background:var(--dark);border-left:4px solid var(--yellow);padding:13px 16px;margin-bottom:14px}
+.su-digest-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:7px}
+.su-digest-line{font-size:12.5px;color:#FAF8F4;line-height:1.75}
+.su-digest-line b{color:var(--yellow);font-weight:500}
+.su-digest-line .r{color:#FF8A8F}
+.su-row{display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--rule);border-radius:2px;padding:11px 14px;margin-bottom:5px;cursor:pointer}
+.su-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.su-status.on{background:var(--yellow)}
+.su-status.busy{background:var(--sage)}
+.su-status.idle{background:var(--red)}
+.su-name{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--dark);width:62px;flex-shrink:0}
+.su-line{flex:1;font-size:12px;color:var(--ink);line-height:1.5}
+.su-line .warn{color:#7D4F00;background:#FFF3CD;padding:1px 5px;border-radius:2px;font-size:11px;white-space:nowrap}
+.su-line .idle-w{color:var(--red);font-weight:500}
+.su-line b{font-weight:500;color:var(--ivs)}
+.su-chev{color:var(--muted);font-size:12px}
+.su-open{background:#fff;border-bottom:1px solid var(--rule);margin:-5px 0 5px;padding:2px 14px 8px 34px}
+.su-item{display:flex;gap:9px;align-items:center;padding:6px 0;border-top:1px dashed var(--rule);font-size:12px}
+.su-item .k{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--beige2);color:var(--muted)}
+.su-item .k.vid{background:var(--dark);color:#fff}
+.su-item .a{margin-left:auto;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap}
+.su-item .a.st{color:#7D4F00;background:#FFF3CD;padding:2px 7px;border-radius:2px}
+.su-item .a.due{color:var(--red)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="page-title">Team — A vs C, side by side</div>
+  <div class="page-sub">Exactly the same real data in both columns, so the only thing changing is the design. Scroll each independently.</div>
+  <div class="data-note">Live right now (Tue 21 Jul): <b>Ayesha</b> — 2 fresh tasks. <b>Tanzeel</b> — editing Let me drive (IVS), delivered 4 Mon. <b>Osama</b> — 2 Wingos edits not started (one due tomorrow) + a 5-day-old "hm?" task, delivered 7 Mon. <b>Arsal</b> — idle, next shoot Oraan 29 Jul.</div>
+
+  <div class="cols">
+    <!-- ══ LEFT: A ══ -->
+    <div>
+      <div class="col-hd"><span class="col-tag">A</span><span class="col-name">The Ledger</span></div>
+      <div class="col-why">Per-person black header + workload bar (read capacity first), the planner's row grid, a sage "done this week" strip. You see the full plate.</div>
+
+      <div class="lg-person">
+        <div class="lg-head"><span class="lg-name">Osama</span><span class="lg-role">Video editor</span>
+          <span class="lg-bar"><span class="lg-fill" style="width:92%;background:var(--red)"></span></span>
+          <span class="lg-load"><span class="hot">1 stale</span> · 3 open</span><button class="lg-nudge">Nudge</button></div>
+        <div class="lg-row"><span class="lg-kind vid">Edit</span><span class="lg-what">Ep Gen Alpha Kid · Wingos <span class="due">· due tmrw, not started</span></span><span class="lg-status">stage 0</span></div>
+        <div class="lg-row"><span class="lg-kind vid">Edit</span><span class="lg-what">Ep Artist · Wingos</span><span class="lg-status">due 27 Jul</span></div>
+        <div class="lg-row"><span class="lg-kind">Task</span><span class="lg-what">hm?</span><span class="lg-status stale">assigned 5d ago</span></div>
+        <div class="lg-done">✓ 7 videos delivered this week</div>
+        <div class="lg-add"><input placeholder="Ask Osama…"><button>+ ADD</button></div>
+      </div>
+
+      <div class="lg-person">
+        <div class="lg-head"><span class="lg-name">Tanzeel</span><span class="lg-role">Video editor</span>
+          <span class="lg-bar"><span class="lg-fill" style="width:44%;background:var(--sage)"></span></span>
+          <span class="lg-load">1 open</span><button class="lg-nudge">Nudge</button></div>
+        <div class="lg-row"><span class="lg-kind vid">Edit</span><span class="lg-what">Let me drive · IVS</span><span class="lg-status">due 24 Jul</span></div>
+        <div class="lg-done">✓ 4 videos delivered this week</div>
+        <div class="lg-add"><input placeholder="Ask Tanzeel…"><button>+ ADD</button></div>
+      </div>
+
+      <div class="lg-person">
+        <div class="lg-head"><span class="lg-name">Ayesha</span><span class="lg-role">Social · part-time</span>
+          <span class="lg-bar"><span class="lg-fill" style="width:38%;background:var(--sage)"></span></span>
+          <span class="lg-load">2 open</span><button class="lg-nudge">Nudge</button></div>
+        <div class="lg-row"><span class="lg-kind">Task</span><span class="lg-what">Flush edit finalization</span><span class="lg-status">1d</span></div>
+        <div class="lg-row"><span class="lg-kind">Task</span><span class="lg-what">Rida Google Drive</span><span class="lg-status">1d</span></div>
+        <div class="lg-done">nothing delivered yet this week</div>
+        <div class="lg-add"><input placeholder="Ask Ayesha…"><button>+ ADD</button></div>
+      </div>
+
+      <div class="lg-person">
+        <div class="lg-head"><span class="lg-name">Arsal</span><span class="lg-role">Videographer</span>
+          <span class="lg-bar"><span class="lg-fill" style="width:4%;background:var(--red)"></span></span>
+          <span class="lg-load"><span class="hot">idle</span></span><button class="lg-nudge">Nudge</button></div>
+        <div class="lg-idle">Nothing assigned — next shoot: Oraan, Wed 29 Jul.</div>
+        <div class="lg-add"><input placeholder="Ask Arsal…"><button>+ ADD</button></div>
+      </div>
+    </div>
+
+    <!-- ══ RIGHT: C ══ -->
+    <div>
+      <div class="col-hd"><span class="col-tag">C</span><span class="col-name">The Standup</span></div>
+      <div class="col-why">A digest slab auto-writes the 2 sentences that matter, then one line per person. Click a row to expand. Whole team fits above the fold.</div>
+
+      <div class="su-digest">
+        <div class="su-digest-label">Standup — Tuesday 21 Jul</div>
+        <div class="su-digest-line"><b>1 task's gone stale:</b> Osama's "hm?" (5d). <span class="r">Arsal is idle.</span> And Ep Gen Alpha Kid is due tomorrow, still not started.</div>
+      </div>
+
+      <div class="su-row"><span class="su-status on"></span><span class="su-name">Osama</span>
+        <span class="su-line">2 Wingos edits not started — <b style="color:var(--wingos)">Ep Gen Alpha Kid due tmrw</b> · 1 task <span class="warn">stale — hm?, 5d</span></span><span class="su-chev">▾</span></div>
+      <div class="su-open">
+        <div class="su-item"><span class="k vid">Edit</span>Ep Gen Alpha Kid · Wingos<span class="a due">due tmrw</span></div>
+        <div class="su-item"><span class="k vid">Edit</span>Ep Artist · Wingos<span class="a">due 27 Jul</span></div>
+        <div class="su-item"><span class="k">Task</span>hm?<span class="a st">5d</span></div>
+      </div>
+
+      <div class="su-row"><span class="su-status on"></span><span class="su-name">Tanzeel</span>
+        <span class="su-line">Editing <b>Let me drive · IVS</b> (due 24 Jul) · nothing stale · delivered 4 this week</span><span class="su-chev">▸</span></div>
+
+      <div class="su-row"><span class="su-status busy"></span><span class="su-name">Ayesha</span>
+        <span class="su-line">2 tasks open, both fresh (1d) — Flush edit finalization, Rida Google Drive</span><span class="su-chev">▸</span></div>
+
+      <div class="su-row"><span class="su-status idle"></span><span class="su-name">Arsal</span>
+        <span class="su-line"><span class="idle-w">Idle — nothing assigned.</span> Next shoot: Oraan, Wed 29 Jul</span><span class="su-chev">▸</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
