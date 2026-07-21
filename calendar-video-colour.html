@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video deadline — colour options</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F0E6;--white:#fff;--ink:#3D3830;--muted:#8C8476;--rule:#E5DDD3;--beige2:#EDE8DC;
+  --dark:#1A1A1A;--pink:#FF2775;
+  --sage:#4A7459;--amber:#C8760A;--red:#B8434A;--purple:#7C5CD6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;padding:44px 28px 120px}
+.wrap{max-width:1060px;margin:0 auto}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:27px;color:var(--dark);margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:16px;max-width:760px;line-height:1.6}
+.warn{font-family:'DM Mono',monospace;font-size:11px;background:#FFF3CD;color:#7D4F00;border-radius:2px;padding:9px 12px;margin-bottom:40px;line-height:1.8}
+.warn b{font-weight:500}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.opt{}
+.ohd{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+.otag{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.12em;background:var(--dark);color:#FFD000;padding:3px 8px;border-radius:2px}
+.otag.now{background:var(--beige2);color:var(--muted)}
+.oname{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--dark)}
+.ohex{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:9px}
+.owhy{font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:10px;min-height:76px}
+.owhy b{color:var(--ink);font-weight:500}
+/* mini calendar */
+.dow{font-family:'DM Mono',monospace;text-align:center;font-size:8px;color:var(--muted);padding:5px 2px;text-transform:uppercase;letter-spacing:.12em}
+.cal{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.day{min-height:104px;background:#fff;border-radius:2px;border-bottom:1px solid var(--rule);padding:6px 5px}
+.day.today{outline:2px solid var(--pink);outline-offset:-2px}
+.num{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--ink);margin-bottom:5px;line-height:1}
+.day.today .num{display:inline-block;background:var(--pink);color:#fff;padding:1px 5px 2px;margin:-1px 0 4px -1px;border-radius:2px}
+.ev{font-size:9.5px;font-weight:500;line-height:1.3;padding:3px 5px;border-radius:2px;margin-bottom:2px;color:#fff;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ev .cdot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:4px;background:rgba(255,255,255,.9)}
+.ev.warn2{background:var(--amber)}
+.ev.safe{background:var(--sage)}
+.ev.shoot{background:var(--purple)}
+.leg{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:8px}
+.leg i{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.rec{border-top:2px dashed var(--rule);margin-top:52px;padding-top:30px;font-size:13.5px;line-height:1.75;color:var(--ink)}
+.rec b{font-weight:600}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="page-title">Video deadline — what colour instead of black?</div>
+  <div class="page-sub">Same three July days in each. The chip that changes is the video deadline; project health (green/amber/red) and shoots (purple) stay fixed.</div>
+  <div class="warn"><b>Constraint I checked first:</b> the small dot inside each chip is the client colour, so the new colour can't collide with them — Oraan <b>#C77F00</b>, Eterna <b>#0090B3</b>, Shine <b>#FF6B35</b>, Safepay <b>#9B6DFF</b>, Paymob <b>#00B368</b>, WearZane <b>#E5484D</b>. That rules out green, amber, orange, red, purple and cyan. <b>Blue is the only clear lane left.</b></div>
+
+  <div class="opts">
+    <!-- NOW -->
+    <div class="opt">
+      <div class="ohd"><span class="otag now">Now</span><span class="oname">Black</span></div>
+      <div class="ohex">#1A1A1A · 17:1</div>
+      <div class="cal">
+        <div class="day today"><div class="num">21</div>
+          <div class="ev warn2"><span class="cdot" style="background:#C77F00"></span>Oraan · Actor Final.</div>
+          <div class="ev warn2"><span class="cdot" style="background:#00B368"></span>IVS · Merch Shoot</div></div>
+        <div class="day"><div class="num">22</div>
+          <div class="ev" style="background:#1A1A1A"><span class="cdot" style="background:#FF6B35"></span>Ep Gen Alpha Kid · Wingos</div></div>
+        <div class="day"><div class="num">29</div>
+          <div class="ev safe"><span class="cdot" style="background:#C77F00"></span>Oraan · Office series</div>
+          <div class="ev shoot"><span class="cdot" style="background:#C77F00"></span>Shoot · Oraan</div></div>
+      </div>
+      <div class="leg"><i style="background:#1A1A1A"></i>Video deadline</div>
+      <div class="owhy">Heaviest possible value on a light page, so a routine video deadline <b>out-shouts an overdue project</b>. Also the same colour as the app's own chrome (headers, table bars), so it reads as furniture, not a category.</div>
+    </div>
+
+    <!-- A -->
+    <div class="opt">
+      <div class="ohd"><span class="otag">A</span><span class="oname">Steel blue</span></div>
+      <div class="ohex">#3D5A80 · 7.1:1</div>
+      <div class="cal">
+        <div class="day today"><div class="num">21</div>
+          <div class="ev warn2"><span class="cdot" style="background:#C77F00"></span>Oraan · Actor Final.</div>
+          <div class="ev warn2"><span class="cdot" style="background:#00B368"></span>IVS · Merch Shoot</div></div>
+        <div class="day"><div class="num">22</div>
+          <div class="ev" style="background:#3D5A80"><span class="cdot" style="background:#FF6B35"></span>Ep Gen Alpha Kid · Wingos</div></div>
+        <div class="day"><div class="num">29</div>
+          <div class="ev safe"><span class="cdot" style="background:#C77F00"></span>Oraan · Office series</div>
+          <div class="ev shoot"><span class="cdot" style="background:#C77F00"></span>Shoot · Oraan</div></div>
+      </div>
+      <div class="leg"><i style="background:#3D5A80"></i>Video deadline</div>
+      <div class="owhy">Already in the old OS palette as <b>--steel</b>, so it's not a new invention. Blue reads as "in production" against green→red "health". Sits calmly <b>below</b> the urgency colours, which is the correct hierarchy.</div>
+    </div>
+
+    <!-- B -->
+    <div class="opt">
+      <div class="ohd"><span class="otag">B</span><span class="oname">Deep teal</span></div>
+      <div class="ohex">#1F5F5B · 7.4:1</div>
+      <div class="cal">
+        <div class="day today"><div class="num">21</div>
+          <div class="ev warn2"><span class="cdot" style="background:#C77F00"></span>Oraan · Actor Final.</div>
+          <div class="ev warn2"><span class="cdot" style="background:#00B368"></span>IVS · Merch Shoot</div></div>
+        <div class="day"><div class="num">22</div>
+          <div class="ev" style="background:#1F5F5B"><span class="cdot" style="background:#FF6B35"></span>Ep Gen Alpha Kid · Wingos</div></div>
+        <div class="day"><div class="num">29</div>
+          <div class="ev safe"><span class="cdot" style="background:#C77F00"></span>Oraan · Office series</div>
+          <div class="ev shoot"><span class="cdot" style="background:#C77F00"></span>Shoot · Oraan</div></div>
+      </div>
+      <div class="leg"><i style="background:#1F5F5B"></i>Video deadline</div>
+      <div class="owhy">Warmer, more editorial — pairs nicely with the beige. But it's <b>a green</b>, and "on track" projects are already sage green; on a busy day the two can read as related when they aren't.</div>
+    </div>
+
+    <!-- C -->
+    <div class="opt">
+      <div class="ohd"><span class="otag">C</span><span class="oname">Ink navy</span></div>
+      <div class="ohex">#24385B · 11.7:1</div>
+      <div class="cal">
+        <div class="day today"><div class="num">21</div>
+          <div class="ev warn2"><span class="cdot" style="background:#C77F00"></span>Oraan · Actor Final.</div>
+          <div class="ev warn2"><span class="cdot" style="background:#00B368"></span>IVS · Merch Shoot</div></div>
+        <div class="day"><div class="num">22</div>
+          <div class="ev" style="background:#24385B"><span class="cdot" style="background:#FF6B35"></span>Ep Gen Alpha Kid · Wingos</div></div>
+        <div class="day"><div class="num">29</div>
+          <div class="ev safe"><span class="cdot" style="background:#C77F00"></span>Oraan · Office series</div>
+          <div class="ev shoot"><span class="cdot" style="background:#C77F00"></span>Shoot · Oraan</div></div>
+      </div>
+      <div class="leg"><i style="background:#24385B"></i>Video deadline</div>
+      <div class="owhy">The smallest step from black — clearly blue up close, still authoritative from across the room. Safest if you like the current weight and only want it to stop being <b>literally</b> black.</div>
+    </div>
+  </div>
+
+  <div class="rec">
+    <b>My pick: A, steel blue <span class="sw" style="background:#3D5A80"></span>#3D5A80.</b><br>
+    It's the only option that fixes the actual problem rather than just softening it. Black currently makes every video deadline look more urgent than an overdue project; steel blue puts videos in their own calm lane and lets red/amber own urgency. It's also already a token in the old OS palette, and it's the one hue no client colour is using — so the dot inside the chip always stays legible.<br><br>
+    If you want to keep the current heft, <b>C</b> is the conservative version of the same idea. I'd skip <b>B</b> — a second green next to sage muddies the health colours.
+  </div>
+</div>
+</body>
+</html>

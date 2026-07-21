@@ -20,6 +20,11 @@
   --orange:#D95A25;--odim:rgba(217,90,37,.08);
   --purple:#7C5CD6;--pdim:rgba(124,92,214,.08);
   --pink:#FF2775;--pinkdim:rgba(255,39,117,.12);
+  /* Video work gets its own lane (2026-07-21). Was black, which out-shouted
+     overdue projects and matched the app's chrome. Blue is the one hue no
+     client colour uses, so the client dot inside a chip stays legible.
+     7.1:1 with white text. From the old OS palette (--steel). */
+  --video:#3D5A80;
   --shadow:0 1px 5px rgba(26,26,26,.07);
   --display:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
   --sans:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
@@ -501,7 +506,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .cal-event.proj-safe{background:#4A7459}
 .cal-event.proj-warn{background:#C8760A}
 .cal-event.proj-over{background:#B8434A}
-.cal-event.vid-dl{background:var(--dark)}
+.cal-event.vid-dl{background:var(--video)}
 .cal-event.shoot-day{background:#7C5CD6}
 .cal-event[draggable="true"]{cursor:grab}
 .cal-event[draggable="true"]:active{cursor:grabbing}
@@ -552,7 +557,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .p-done.none{background:#F7F5EF;color:#8C8476}
 .p-item{display:flex;align-items:center;gap:10px;padding:8px 16px 8px 26px;border-bottom:1px solid #E5DDD3;font-size:13px}
 .p-kind{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:#EDE8DC;color:#8C8476;cursor:pointer;white-space:nowrap}
-.p-kind.vid{background:var(--dark);color:#fff;cursor:default}
+.p-kind.vid{background:var(--video);color:#fff;cursor:default}
 .p-kind.prog{background:#FFF3CD;color:#7D4F00}
 .p-what{flex:1;color:var(--dark)}
 .p-client{font-family:var(--mono);font-size:11px;color:var(--cyan)}
@@ -825,7 +830,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#4A7459"></div>Project deadline (on track)</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#C8760A"></div>Project deadline (≤3 days)</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#B8434A"></div>Project deadline (overdue)</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--dark)"></div>Video deadline</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--video)"></div>Video deadline</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#7C5CD6"></div>Shoot day</div>
       <div class="cal-legend-item" style="margin-left:auto">drag a chip to move its date</div>
     </div>
