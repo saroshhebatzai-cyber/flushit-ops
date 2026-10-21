@@ -210,7 +210,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .v-stage-pill.s0{background:rgba(0,144,179,.12);color:var(--cyan-deep);border-color:rgba(0,144,179,.25)}
 .v-stage-pill.s1{background:rgba(199,127,0,.12);color:var(--yellow-deep);border-color:rgba(199,127,0,.25)}
 .v-stage-pill.s2{background:rgba(0,179,104,.12);color:var(--accent-deep);border-color:rgba(0,179,104,.25)}
-.v-stage-pill.s3{background:var(--pdim);color:var(--purple-deep);border-color:rgba(124,92,214,.25)}
+.v-stage-pill.s3{background:var(--odim);color:#A8431A;border-color:rgba(217,90,37,.3)}
+.v-stage-pill.s4{background:var(--pdim);color:var(--purple-deep);border-color:rgba(124,92,214,.25)}
 .v-dl{font-size:11px;color:var(--td);cursor:pointer;border-bottom:1px dashed transparent;transition:all .15s}
 .v-dl:hover{color:var(--tm);border-bottom-color:var(--b2)}
 .v-dl.od{color:var(--red)}
@@ -711,6 +712,53 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .bf-input{width:100%}
 .beb-guide{background:var(--dark);color:#FAF8F4;border-radius:var(--rs);padding:12px 14px;font-size:13px;line-height:1.6;margin-bottom:4px}
 .beb-guide b{color:#FFD000}
+
+/* QUEUE · DROPS (2026-10-21). Calm palette: ink + greys, one warning colour. */
+.q2-ctl{font-family:var(--mono);font-size:13px;padding:6px 10px;background:var(--surface);border:1px solid var(--b2);border-radius:var(--rs);color:var(--text);cursor:pointer}
+.q2-toggle{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tm);cursor:pointer;white-space:nowrap}
+.q2-toggle input{width:15px;height:15px;accent-color:#1A1A1A}
+.q2-legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;font-size:12px;color:var(--tm);margin:-4px 0 18px}
+.q2-legend span{display:flex;align-items:center;gap:6px}
+.q2-client{margin-bottom:30px}
+.q2-client-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--dark)}
+.q2-client-name{font-family:var(--display);font-size:17px;font-weight:700}
+.q2-client-meta{font-size:12px;color:var(--tm)}
+.q2-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.q2-table{width:100%;border-collapse:collapse;min-width:780px}
+.q2-table th{font-size:11px;color:var(--td);text-transform:uppercase;letter-spacing:1px;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);font-weight:500;white-space:nowrap;background:var(--bg)}
+.q2-table td{padding:7px 12px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle}
+.q2-vn{font-weight:500;color:var(--text)}
+.q2-vp{font-size:11px;color:var(--td);margin-top:1px}
+.q2-type{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:4px;border:1px solid var(--b2);color:#4A463F;white-space:nowrap}
+.q2-sel{font-family:var(--sans);font-size:13px;padding:5px 8px;border:1px solid var(--b2);border-radius:var(--rs);background:var(--surface);color:var(--text);cursor:pointer;min-height:32px;max-width:170px}
+.q2-note{font-size:12.5px;color:var(--tm);white-space:nowrap}
+.q2-note.warn{color:#B4481A;font-weight:600}
+tr.q2-row-client td{opacity:.45}
+tr.q2-row-done td{opacity:.6}
+tr.q2-row-done .q2-vn{text-decoration:line-through;color:#8C877C}
+tr.q2-row-client td.keep,tr.q2-row-done td.keep{opacity:1}
+tr.q2-band td{background:var(--s2);border-bottom:1px solid var(--b2);padding:9px 12px}
+tr.q2-band.risk td{background:#FBEADF;border-bottom-color:#E8B79A}
+tr.q2-fold td{background:var(--bg);color:var(--tm);padding:9px 12px}
+.q2-bandrow{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.q2-dlbl{font-family:var(--display);font-weight:700;font-size:14px;color:var(--text)}
+.q2-dfield{font-size:12.5px;color:var(--tm);display:flex;align-items:center;gap:5px}
+.q2-date{font-family:var(--mono);font-size:12.5px;border:none;border-bottom:1px dashed #B5AE9F;background:transparent;color:var(--text);padding:2px 0}
+.q2-prog{display:inline-flex;gap:2px}
+.q2-prog i{display:block;width:14px;height:6px;border-radius:2px;background:#D8D2C4}
+.q2-prog i.c{background:#8C877C}.q2-prog i.d{background:#1A1A1A}
+.q2-status{font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;background:var(--s3);color:#4A463F}
+.q2-status.risk{background:#B4481A;color:#fff}
+.q2-btn{font:inherit;font-size:12.5px;background:transparent;border:1px solid var(--b2);border-radius:var(--rs);padding:6px 11px;color:var(--text);cursor:pointer;margin-left:auto}
+.q2-btn:hover{background:var(--surface)}
+.q2-move-list{display:flex;flex-direction:column;gap:6px;margin:4px 0 16px;max-height:280px;overflow-y:auto}
+.q2-move-list label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.q2-move-list input{width:16px;height:16px;accent-color:#1A1A1A}
+/* Calendar shows only shoots and drops */
+.cal-event.shoot-day{background:#1A1A1A}
+.cal-event.drop{background:#fff;color:#1A1A1A;border:1px solid #D8D2C4}
+.cal-event.drop-risk{background:#FBEADF;color:#8A3A12;border:1.5px solid #B4481A;font-weight:600}
+.cal-event.drop-done{background:transparent;color:#8C877C;border:1px dashed #D8D2C4}
 </style>
 </head>
 <body>
@@ -796,22 +844,21 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="team-grid" id="team-grid"></div>
   </div>
   <div class="tab" id="tab-queue">
-    <div class="sec-hdr">
+    <div class="sec-hdr" style="flex-wrap:wrap;gap:12px">
       <div>
         <div class="sec-title">Video Queue</div>
         <span id="queue-stats" style="font-size:12px;color:var(--td)"></span>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <select id="queue-sort" onchange="renderQueue()" style="font-family:var(--mono);font-size:13px;padding:5px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--tm);cursor:pointer">
-          <option value="client-due">Sort: Client Due Date</option>
-          <option value="internal">Sort: Internal Deadline</option>
-          <option value="stage">Sort: Stage</option>
-        </select>
-        <select id="queue-filter-client" onchange="renderQueue()" style="font-family:var(--mono);font-size:13px;padding:5px 10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--tm);cursor:pointer">
-          <option value="">All Clients</option>
-        </select>
-        <span id="queue-controls-hint" style="font-size:12px;color:var(--tm)"></span>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <select id="queue-filter-client" class="q2-ctl" onchange="renderQueue()" aria-label="Client"><option value="">All clients</option></select>
+        <label class="q2-toggle"><input type="checkbox" id="queue-show-old" onchange="queueShowOld=this.checked;renderQueue()"> Show older approved drops <span id="queue-old-count"></span></label>
       </div>
+    </div>
+    <div class="q2-legend">
+      <span><span class="q2-prog"><i></i></span>In progress</span>
+      <span><span class="q2-prog"><i class="c"></i></span>With client</span>
+      <span><span class="q2-prog"><i class="d"></i></span>Approved &amp; sent</span>
+      <span>· Approved drops hide 7 days after they go out</span>
     </div>
     <div id="queue-body"></div>
   </div>
@@ -827,12 +874,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
     <div class="cal-grid" id="cal-wrap"></div>
     <div class="cal-legend">
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#4A7459"></div>Project deadline (on track)</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#C8760A"></div>Project deadline (≤3 days)</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#B8434A"></div>Project deadline (overdue)</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--video)"></div>Video deadline</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#7C5CD6"></div>Shoot day</div>
-      <div class="cal-legend-item" style="margin-left:auto">drag a chip to move its date</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#1A1A1A"></div>Shoot</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fff;border:1px solid #B5AE9F"></div>Drop goes to client</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#B4481A"></div>Drop at risk</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:transparent;border:1px dashed #B5AE9F"></div>Approved</div>
+      <div class="cal-legend-item" style="margin-left:auto">drag a drop to move its go-out date</div>
     </div>
   </div>
 
@@ -936,6 +982,20 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
 </div>
 
+<div class="modal-ov" id="qmove-ov" onclick="if(event.target===this)closeDropMove()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="qmove-title">
+    <div class="modal-title" id="qmove-title" style="font-size:18px">Move videos</div>
+    <div style="font-size:13px;color:var(--tm);margin-bottom:10px">Tick the videos to move. Giving them a new go-out date puts them in their own drop; an existing drop's date merges them into it.</div>
+    <div class="q2-move-list" id="qmove-list"></div>
+    <div class="fg"><label for="qmove-date">New go-out date</label><input type="date" id="qmove-date"></div>
+    <div class="fg"><label for="qmove-editby">Edit by <span style="text-transform:none;letter-spacing:0;color:var(--td)">(optional)</span></label><input type="date" id="qmove-editby"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeDropMove()">Cancel</button>
+      <button class="btn-new" onclick="applyDropMove()">Move</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal-card" role="dialog" aria-modal="true">
@@ -984,7 +1044,10 @@ const STAGES = [
   {key:'delivered',  label:'Delivered',         owner:''},
 ];
 
-const VIDEO_STAGES = ['Edit','QC','Sarosh Review','Delivered'];
+const VIDEO_STAGES = ['Edit','QC','Sarosh Review','With client','Approved & sent'];
+// Video stage numbers. 3 used to be 'Delivered'; since 2026-10-21 it is 'With client'
+// and finished work is 4 (see docs/superpowers/sql/2026-10-21-queue-drops.sql).
+const V_CLIENT = 3, V_DONE = 4;
 
 const EDIT_TYPES = {
   flush:   {label:'Flush',   hours:2,    color:'#00B368'},
@@ -1012,6 +1075,7 @@ const TEAM = [
   {id:3, name:'Ayesha',       role:'Social Media Manager',   initials:'AY', isEditor:true,  partTime:true, ownedStages:[0], waName:'Ayesha', email:'saddiqa9211@gmail.com',  isAdmin:false},
   {id:4, name:'Tanzeel',      role:'Video Editor',           initials:'TZ', isEditor:true,  ownedStages:[], waName:'Tanzeel', email:'tanzeeltariq2002@gmail.com', isAdmin:false},
   {id:5, name:'Osama',        role:'Video Editor',           initials:'OS', isEditor:true,  ownedStages:[], waName:'Osama',   email:'osamairshad18@gmail.com',    isAdmin:false},
+  {id:8, name:'Arkam',        role:'Video Editor (Intern)',  initials:'AK', isEditor:true,  ownedStages:[], waName:'Arkam',   email:'', isAdmin:false},
   {id:7, name:'Arsal',        role:'Videographer',           initials:'AR', isEditor:false, ownedStages:[3,5], waName:'Arsal',  email:'arsalmoizsp3@gmail.com',  isAdmin:false},
 ];
 
@@ -1075,7 +1139,7 @@ async function loadData(opts = {}){
     videos: (vidData||[]).filter(v => v.project_id === p.id).map(v => ({
       id: v.id, name: v.name, type: v.type, assigneeId: v.assignee_id,
       stage: v.stage, deadline: v.deadline, clientDueDate: v.client_due_date||null, revisions: v.revisions, clientRevs: v.client_revisions||0,
-      deliveredAt: v.delivered_at, startedAt: v.started_at||null, completedAt: v.completed_at||null,
+      deliveredAt: v.delivered_at, sentAt: v.sent_at||null, startedAt: v.started_at||null, completedAt: v.completed_at||null,
       actualHours: v.actual_hours||null, latencyScore: v.latency_score||null,
       draft: v.draft||false
     }))
@@ -1101,7 +1165,7 @@ async function syncVideo(v, projId){
   const { error } = await db.from('videos').upsert({
     id: v.id, project_id: projId, name: v.name, type: v.type,
     assignee_id: v.assigneeId, stage: v.stage, deadline: v.deadline, client_due_date: v.clientDueDate||null,
-    revisions: v.revisions, client_revisions: v.clientRevs||0, delivered_at: v.deliveredAt,
+    revisions: v.revisions, client_revisions: v.clientRevs||0, delivered_at: v.deliveredAt, sent_at: v.sentAt||null,
     started_at: v.startedAt||null, completed_at: v.completedAt||null,
     actual_hours: v.actualHours||null, latency_score: v.latencyScore||null,
     draft: v.draft||false
@@ -1443,7 +1507,7 @@ function checkDeadlineNotifs(){
     }
     // video deadlines today
     (p.videos||[]).forEach(v => {
-      if(v.deadline === todayStr && v.stage < 3){
+      if(v.deadline === todayStr && v.stage < V_CLIENT){
         const key = `vid-dl-${v.id}`;
         if(!fired.includes(key)){
           const editor = TEAM.find(t => t.id === v.assigneeId);
@@ -1596,8 +1660,8 @@ function updateSideBadges(){
   }
   if(q && currentUser){
     const mine = isAdmin()
-      ? allVideosFlat().filter(v => v.stage === 2 && !v.draft).length
-      : allVideosFlat().filter(v => v.assigneeId === currentUser.id && v.stage < 3 && !v.draft).length;
+      ? buildDrops().filter(d => d.risk).length
+      : allVideosFlat().filter(v => v.assigneeId === currentUser.id && v.stage < V_CLIENT && !v.draft).length;
     q.textContent = mine || '';
   }
 }
@@ -1655,7 +1719,7 @@ function kCardHTML(p, si){
   let videoHTML = '';
   if(isProduction && p.videos.filter(v=>!v.draft).length > 0){
     const liveVids = p.videos.filter(v=>!v.draft);
-    const delivered = liveVids.filter(v => v.stage === 3).length;
+    const delivered = liveVids.filter(v => v.stage === V_DONE).length;
     const pct = Math.round((delivered / liveVids.length) * 100);
     const typeSummary = Object.entries(
       liveVids.reduce((acc,v) => { acc[v.type] = (acc[v.type]||0)+1; return acc; }, {})
@@ -2012,7 +2076,7 @@ function renderPanelBody(id){
     // Video list
     html += `
       <div class="panel-section">
-        <div class="panel-section-title">Videos <span style="color:var(--tm)">${p.videos.filter(v=>!v.draft).length} total · ${p.videos.filter(v=>v.stage===3).length} delivered</span></div>
+        <div class="panel-section-title">Videos <span style="color:var(--tm)">${p.videos.filter(v=>!v.draft).length} total · ${p.videos.filter(v=>v.stage===V_DONE).length} delivered</span></div>
         <div class="video-list">
           ${p.videos.filter(v=>!v.draft).length === 0
             ? `<div style="font-size:12px;color:var(--tm);font-style:italic;padding:6px 0">No videos yet — add below</div>`
@@ -2041,8 +2105,8 @@ function renderPanelBody(id){
 
 function videoRowHTML(p, v){
   const dd = daysFromNow(v.deadline);
-  const isOD = dd < 0 && v.stage < 3;
-  const stageCls = ['s0','s1','s2','s3'][v.stage];
+  const isOD = dd < 0 && v.stage < V_CLIENT;
+  const stageCls = ['s0','s1','s2','s3','s4'][v.stage];
 
   const editors = TEAM.filter(t => t.isEditor);
   const editorOpts = editors.map(e => {
@@ -2064,7 +2128,7 @@ function videoRowHTML(p, v){
 
   // Start / Submit / In-progress UI for Edit stage
   let timingBadge = '';
-  let advBtn = `<button class="btn-sm adv" ${v.stage===3?'disabled':''} onclick="advanceVideo(${p.id},'${v.id}')">→</button>`;
+  let advBtn = `<button class="btn-sm adv" ${v.stage===V_DONE?'disabled':''} onclick="advanceVideo(${p.id},'${v.id}')">→</button>`;
   if(v.stage === 0){
     if(!v.startedAt){
       timingBadge = `<button class="btn-sm start" onclick="startVideo(${p.id},'${v.id}')">▶ Start</button>`;
@@ -2104,7 +2168,7 @@ function videoRowHTML(p, v){
       <span class="v-dl${isOD?' od':''}" onclick="editVideoDl(${p.id},'${v.id}',this)">${daysLabel(dd)}</span>
       ${timingBadge}
       <div class="v-actions">
-        ${v.stage === 3
+        ${v.stage >= V_CLIENT
           ? `<button class="btn-sm" onclick="clientVideoRevision(${p.id},'${v.id}')">↩ Client</button>`
           : `<button class="btn-sm" ${v.stage===0?'disabled':''} onclick="moveVideoBack(${p.id},'${v.id}')">←</button>`
         }
@@ -2132,7 +2196,7 @@ async function assignVideo(projId, vidId, editorId){
 async function advanceVideo(projId, vidId){
   const p = projects.find(x => x.id === projId);
   const v = p?.videos.find(x => x.id === vidId);
-  if(!v || v.stage >= 3) return;
+  if(!v || v.stage >= V_DONE) return;
   // Record timing when submitting from Edit stage
   if(v.stage === 0 && v.startedAt && !v.completedAt){
     v.completedAt = new Date().toISOString();
@@ -2150,14 +2214,15 @@ async function advanceVideo(projId, vidId){
     }
   }
   let next = v.stage + 1;
-  if(next === 2 && !p.saroshReview) next = 3;
+  if(next === 2 && !p.saroshReview) next = V_CLIENT;
   v.stage = next;
-  if(v.stage === 3){ v.deliveredAt = today.toISOString().split('T')[0]; }
-  if(p.videos.length > 0 && p.videos.every(x => x.stage === 3)){
+  if(v.stage === V_CLIENT){ v.sentAt = new Date().toISOString(); }
+  if(v.stage === V_DONE){ v.deliveredAt = today.toISOString().split('T')[0]; }
+  if(p.videos.length > 0 && p.videos.filter(x => !x.draft).every(x => x.stage === V_DONE)){
     p.stage = 7;
     closePanel();
     syncProject(p);
-    showWaPing(`🎉 *Delivered:* ${p.client} · ${p.name} — all videos done and sent to client!`);
+    toast(`${p.client} · ${p.name} — all videos approved`);
   } else {
     if(v.stage === 1) showWaPing(`${waTag(2)} ✅ *QC Ready:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — ready for QC — due ${fmtDue(v.deadline)}`);
     if(v.stage === 2) showWaPing(`${waTag(1)} 👀 *Sarosh Review:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — ready for your review — due ${fmtDue(v.deadline)}`);
@@ -2170,7 +2235,7 @@ async function advanceVideo(projId, vidId){
 async function moveVideoBack(projId, vidId){
   const p = projects.find(x => x.id === projId);
   const v = p?.videos.find(x => x.id === vidId);
-  if(!v || v.stage <= 0 || v.stage === 3) return; // Delivered uses clientVideoRevision
+  if(!v || v.stage <= 0 || v.stage >= V_CLIENT) return; // With client / Approved use clientVideoRevision
   let prev = v.stage - 1;
   if(prev === 2 && !p.saroshReview) prev = 1;
   // Return to Edit = internal revision
@@ -2192,11 +2257,12 @@ async function moveVideoBack(projId, vidId){
 async function clientVideoRevision(projId, vidId){
   const p = projects.find(x => x.id === projId);
   const v = p?.videos.find(x => x.id === vidId);
-  if(!v || v.stage !== 3) return;
+  if(!v || v.stage < V_CLIENT) return;
   if(!await uiConfirm(`Mark "${v.name}" as a client revision? This sends it back to Edit.`, {ok:'Client revision'})) return;
   v.clientRevs = (v.clientRevs||0) + 1;
   v.stage = 0;
   v.deliveredAt = null;
+  v.sentAt = null;
   v.startedAt = null;
   v.completedAt = null;
   renderAll();
@@ -2470,7 +2536,7 @@ function renderClients(){
     const cid = client.replace(/\s+/g,'_');
     const nextActions = {0:'Pull references',1:'Build ideation deck',2:'Finalise discovery deck',3:'Arsal to complete shoot plan',4:'Awaiting Sarosh approval',5:'Execute shoot day',6:'Videos in edit pipeline'};
     const totalVids = cps.reduce((s,p) => s + p.videos.length, 0);
-    const deliveredVids = cps.reduce((s,p) => s + p.videos.filter(v=>v.stage===3).length, 0);
+    const deliveredVids = cps.reduce((s,p) => s + p.videos.filter(v=>v.stage===V_DONE).length, 0);
     return `
     <div class="cl-card" style="animation-delay:${idx*.07}s">
       <div class="cl-body">
@@ -2510,7 +2576,7 @@ function renderMyStats(){
   let onTimeHtml = '';
   if(m.isEditor){
     const delivered = projects.flatMap(p => p.videos.filter(v =>
-      v.assigneeId === m.id && v.stage === 3 && v.deliveredAt && v.deadline &&
+      v.assigneeId === m.id && v.stage === V_DONE && v.deliveredAt && v.deadline &&
       v.deliveredAt.startsWith(curMonth)
     ));
     const onTime = delivered.filter(v => v.deliveredAt <= v.deadline).length;
@@ -2521,16 +2587,16 @@ function renderMyStats(){
   }
 
   // Active videos in progress
-  const active = projects.flatMap(p => p.videos.filter(v => v.assigneeId === m.id && v.stage < 3)).length;
+  const active = projects.flatMap(p => p.videos.filter(v => v.assigneeId === m.id && v.stage < V_CLIENT)).length;
   const activeCls = active === 0 ? 'd' : active <= 2 ? 'g' : active <= 4 ? 'y' : 'r';
 
   // Revision flags (internal > 2, active)
-  const flags = projects.flatMap(p => p.videos.filter(v => v.assigneeId === m.id && v.revisions > 2 && v.stage < 3)).length;
+  const flags = projects.flatMap(p => p.videos.filter(v => v.assigneeId === m.id && v.revisions > 2 && v.stage < V_CLIENT)).length;
   const flagCls = flags === 0 ? 'g' : flags === 1 ? 'y' : 'r';
 
   // Delivered this month
   const deliveredCount = projects.flatMap(p => p.videos.filter(v =>
-    v.assigneeId === m.id && v.stage === 3 && v.deliveredAt && v.deliveredAt.startsWith(curMonth)
+    v.assigneeId === m.id && v.stage === V_DONE && v.deliveredAt && v.deliveredAt.startsWith(curMonth)
   )).length;
 
   const hour = today.getHours();
@@ -2566,7 +2632,7 @@ function renderTeam(){
         const free = Math.max(0, Math.round((cap - h) * 10) / 10);
         const badge = rem === 0 ? (h > 0 ? `${h}h queued` : 'off hours') : pct >= 100 ? 'FULL' : `${free}h left today`;
         // List their assigned videos
-        const vids = projects.flatMap(p => p.videos.filter(v => v.assigneeId === e.id && v.stage < 3).map(v => ({...v, client:p.client})));
+        const vids = projects.flatMap(p => p.videos.filter(v => v.assigneeId === e.id && v.stage < V_CLIENT).map(v => ({...v, client:p.client})));
         const vidList = vids.map(v => `<span class="type-badge ${v.type}" style="margin-right:3px">${escHtml(v.client)} ${EDIT_TYPES[v.type].label}</span>`).join('');
         return `<div class="cap-row" style="animation-delay:${i*.06}s">
           <div class="cap-name">${e.name}</div>
@@ -2637,7 +2703,7 @@ function renderTeam(){
     let flagSection = '';
     if(member.isEditor){
       const flagged = projects.flatMap(p => p.videos.filter(v =>
-        v.assigneeId === member.id && v.revisions > 2 && v.stage < 3
+        v.assigneeId === member.id && v.revisions > 2 && v.stage < V_CLIENT
       ).map(v => ({...v, client: p.client})));
       if(flagged.length > 0){
         flagSection = `<div class="latency-section">
@@ -2730,7 +2796,7 @@ function showPersonDrilldown(id){
   if(m.isEditor){
     // ── EDITOR DRILLDOWN ──
     const myVids = allVids.filter(v => v.assigneeId === id);
-    const deliveredMonth = myVids.filter(v => v.stage === 3 && v.deliveredAt?.startsWith(curMonth));
+    const deliveredMonth = myVids.filter(v => v.stage === V_DONE && v.deliveredAt?.startsWith(curMonth));
     const scoredMonth = myVids.filter(v => v.latencyScore != null && v.completedAt?.startsWith(curMonth));
     const avgLatency = scoredMonth.length ? Math.round(scoredMonth.reduce((s,v)=>s+v.latencyScore,0)/scoredMonth.length*100)/100 : null;
     const totalIntRevs = myVids.reduce((s,v)=>s+(v.revisions||0),0);
@@ -2749,7 +2815,7 @@ function showPersonDrilldown(id){
       <div class="pd-stat"><div class="pd-stat-lbl">Currently Active</div><div class="pd-stat-val">${active.length}</div><div class="pd-stat-sub">${inReview.length} in QC/Review</div></div>`;
 
     const activeList = active.map(v=>`<div class="pd-list-item"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span><span style="flex:1">${v.client} · ${v.name}</span>${v.startedAt?`<span style="font-size:12px;color:var(--accent)">⏱ ${workingHoursBetween(v.startedAt,new Date().toISOString()).toFixed(1)}h in</span>`:'<span style="font-size:12px;color:var(--td)">not started</span>'}</div>`).join('') || `<div class="pd-empty">No active edits</div>`;
-    const flagList = flagged.map(v=>`<div class="pd-list-item"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span><span style="flex:1">${v.client} · ${v.name}</span><span style="font-size:12px;color:var(--red)">${v.revisions} int${v.clientRevs>0?` · ${v.clientRevs} cl`:''}</span><span style="font-size:12px;color:var(--td);margin-left:6px">${v.stage===3?'Delivered':VIDEO_STAGES[v.stage]}</span></div>`).join('') || '';
+    const flagList = flagged.map(v=>`<div class="pd-list-item"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span><span style="flex:1">${v.client} · ${v.name}</span><span style="font-size:12px;color:var(--red)">${v.revisions} int${v.clientRevs>0?` · ${v.clientRevs} cl`:''}</span><span style="font-size:12px;color:var(--td);margin-left:6px">${v.stage===V_DONE?'Delivered':VIDEO_STAGES[v.stage]}</span></div>`).join('') || '';
 
     listsHTML = `
       <div class="pd-list-title">Active Edits</div>${activeList}
@@ -2760,7 +2826,7 @@ function showPersonDrilldown(id){
     const pendingReview = allVids.filter(v => v.stage === 2);
     const pendingApproval = projects.filter(p => p.stage === 4);
     const sentBack = allVids.filter(v => (v.revisions||0) > 0); // videos that came back from review (proxy)
-    const deliveredAll = allVids.filter(v => v.stage === 3 && v.deliveredAt?.startsWith(curMonth));
+    const deliveredAll = allVids.filter(v => v.stage === V_DONE && v.deliveredAt?.startsWith(curMonth));
 
     statsHTML = `
       <div class="pd-stat"><div class="pd-stat-lbl">Pending His Review</div><div class="pd-stat-val ${pendingReview.length > 2 ? 'r' : pendingReview.length > 0 ? 'y' : 'g'}">${pendingReview.length}</div><div class="pd-stat-sub">in Sarosh Review now</div></div>
@@ -2839,7 +2905,7 @@ function renderEfficiency(){
   const editors = TEAM.filter(t => t.isEditor && !t.partTime);
   const editorOnTime = editors.map(e => {
     const delivered = projects.flatMap(p => p.videos.filter(v =>
-      v.assigneeId === e.id && v.stage === 3 && v.deliveredAt && v.deadline
+      v.assigneeId === e.id && v.stage === V_DONE && v.deliveredAt && v.deadline
     ));
     if(!delivered.length) return {name: e.name, rate: null, onTime: 0, total: 0};
     const onTime = delivered.filter(v => new Date(v.deliveredAt) <= new Date(v.deadline)).length;
@@ -2850,7 +2916,7 @@ function renderEfficiency(){
   const curMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
   const editorDels = editors.map(e => {
     const c = projects.flatMap(p => p.videos.filter(v =>
-      v.assigneeId === e.id && v.stage === 3 && v.deliveredAt && v.deliveredAt.startsWith(curMonth)
+      v.assigneeId === e.id && v.stage === V_DONE && v.deliveredAt && v.deliveredAt.startsWith(curMonth)
     )).length;
     return {name: e.name, c};
   });
@@ -2941,7 +3007,7 @@ function renderEfficiency(){
                 <span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span>
                 <span style="font-size:13px;color:var(--fg);flex:1">${v.client} · ${v.name}</span>
                 <span style="font-size:11px;color:var(--red);font-weight:600">${v.revisions} int${v.clientRevs>0?` · ${v.clientRevs} client`:''}</span>
-                <span style="font-size:11px;color:var(--td)">${v.stage === 3 ? 'Delivered' : VIDEO_STAGES[v.stage]}</span>
+                <span style="font-size:11px;color:var(--td)">${v.stage === V_DONE ? 'Delivered' : VIDEO_STAGES[v.stage]}</span>
               </div>`).join('')}
           </div>`).join('')}
       </div>
@@ -2963,7 +3029,7 @@ function renderEfficiency(){
   const allVids = projects.flatMap(p => p.videos.map(v => ({...v, client: p.client, projectDeadline: p.deadline})));
 
   // 1. Videos delivered this week
-  const deliveredThisWeek = allVids.filter(v => v.stage === 3 && inWeek(v.deliveredAt));
+  const deliveredThisWeek = allVids.filter(v => v.stage === V_DONE && inWeek(v.deliveredAt));
   const deliveredCount = deliveredThisWeek.length;
 
   // 2. Currently in pipeline (Edit + QC + Sarosh Review)
@@ -2975,15 +3041,15 @@ function renderEfficiency(){
   // 4. Top editor this week by deliveries
   const editorDelsWeek = TEAM.filter(t => t.isEditor && !t.partTime).map(e => ({
     name: e.name.split(' ')[0],
-    count: allVids.filter(v => v.assigneeId === e.id && v.stage === 3 && inWeek(v.deliveredAt)).length
+    count: allVids.filter(v => v.assigneeId === e.id && v.stage === V_DONE && inWeek(v.deliveredAt)).length
   })).filter(e => e.count > 0).sort((a,b) => b.count - a.count);
   const topEditor = editorDelsWeek.length ? `${editorDelsWeek[0].name} (${editorDelsWeek[0].count})` : 'No deliveries yet';
 
   // 5. Client revisions received this week (any video with clientRevs > 0 currently back in pipeline)
-  const clientRevActive = allVids.filter(v => (v.clientRevs||0) > 0 && v.stage < 3);
+  const clientRevActive = allVids.filter(v => (v.clientRevs||0) > 0 && v.stage < V_CLIENT);
 
   // 6. Active internal revision flags
-  const flaggedActive = allVids.filter(v => v.revisions > 2 && v.stage < 3);
+  const flaggedActive = allVids.filter(v => v.revisions > 2 && v.stage < V_CLIENT);
 
   const summaryVal = (v, cls='') => `<div class="sum-item-val${cls?' '+cls:''}">${v}</div>`;
   document.getElementById('summary-grid').innerHTML = `
@@ -3201,7 +3267,7 @@ function toggleTeamPerson(id){
 
 function teamKeepTabsHtml(){
   const cards = TEAM.filter(m => m.id !== currentUser.id).map(m => {
-    const vids = allVideosFlat().filter(v => v.assigneeId === m.id && v.stage < 3 && !v.draft);
+    const vids = allVideosFlat().filter(v => v.assigneeId === m.id && v.stage < V_CLIENT && !v.draft);
     const loops = openLoops(m.id);
     const stale = loops.filter(isStaleTask).length;
     const open = loops.length + vids.length;
@@ -3291,7 +3357,7 @@ function teamKeepTabsHtml(){
 function nudgeMember(id){
   const m = TEAM.find(x => x.id === id); if(!m) return;
   const loops = openLoops(id);
-  const vids = allVideosFlat().filter(v => v.assigneeId === id && v.stage < 3 && !v.draft);
+  const vids = allVideosFlat().filter(v => v.assigneeId === id && v.stage < V_CLIENT && !v.draft);
   const lines = [
     ...vids.map(v => `• ${v.name} (${v.projClient}) — ${VIDEO_STAGES[v.stage]}`),
     ...loops.map(t => `• ${t.title}${isStaleTask(t) ? ` (asked ${relAge(t.createdAt)} ago)` : ''}`)
@@ -3843,24 +3909,20 @@ function renderCalendar(){
 
   const todayStr = today.toISOString().split('T')[0];
 
+  // Calendar shows two things only (2026-10-21): shoots, and drops on the day
+  // they go to the client. Project deadlines and per-video edit deadlines
+  // live in the Queue.
   projects.forEach(p => {
-    const dot = cColor(p.client);
-    // Project deadline
-    if(p.deadline && p.stage < 7){
-      const dd = daysFromNow(p.deadline);
-      const cls = dd < 0 ? 'proj-over' : dd <= 3 ? 'proj-warn' : 'proj-safe';
-      addEv(p.deadline, {cls, dot, label:`${p.client} · ${p.name}`, kind:'proj', id:p.id});
-    }
-    // Shoot day — show on the actual shoot date if set
     if(p.shootDate && p.stage < 7){
-      addEv(p.shootDate, {cls:'shoot-day', dot, label:`Shoot · ${p.client} · ${p.name}`, kind:'shoot', id:p.id});
+      addEv(p.shootDate, {cls:'shoot-day', dot:cColor(p.client), label:`Shoot · ${p.client} · ${p.name}`, kind:'shoot', id:p.id});
     }
-    // Video deadlines
-    p.videos.forEach(v => {
-      if(v.deadline && v.stage < 3){
-        addEv(v.deadline, {cls:'vid-dl', dot, label:`${v.name} · ${p.client}`, kind:'vid', id:v.id, pid:p.id});
-      }
-    });
+  });
+  buildDrops().forEach(d => {
+    if(!d.iso) return;
+    const n = d.videos.length;
+    const multi = projects.filter(p => p.client === d.client && p.videos.some(v => !v.draft)).length > 1;
+    const cls = d.allDone ? 'drop-done' : d.risk ? 'drop-risk' : 'drop';
+    addEv(d.iso, {cls, dot:cColor(d.client), label:`${d.client}${multi ? ' · ' + d.project.name : ''} · ${d.label} · ${n} video${n === 1 ? '' : 's'}`, kind:'drop', id:d.project.id, pid:d.iso});
   });
 
   // Sarosh's own tasks deliberately do NOT render here (2026-07-21) — they
@@ -3944,6 +4006,15 @@ async function calDrop(e, iso){
     renderCalendar(); renderKanban();
     await syncProject(p); return;
   }
+  if(d.kind === 'drop'){
+    const p = projects.find(x => String(x.id) === String(d.id));
+    if(!p || d.pid === iso) return;
+    const vids = p.videos.filter(v => !v.draft && v.clientDueDate === d.pid);
+    vids.forEach(v => { v.clientDueDate = iso; });
+    renderCalendar(); renderQueue();
+    for(const v of vids) await syncVideo(v, p.id);
+    return;
+  }
   if(d.kind === 'vid'){
     const p = projects.find(x => x.id === parseInt(d.pid) || x.id === d.pid);
     const v = p?.videos.find(x => x.id === d.id);
@@ -3966,213 +4037,323 @@ function calNext(){
   renderCalendar();
 }
 
-// ─── VIDEO QUEUE ──────────────────────────────────────────────────────────────
+// ─── VIDEO QUEUE · DROPS ──────────────────────────────────────────────────────
+// A "drop" is the set of videos in one project that share a client due date
+// (their go-out date). Dates stay on the videos, so editing a drop's date
+// updates every video in it, and moving a video to another date moves it to
+// that drop. Videos with no client due date form a "No out date" drop.
+
+let queueShowOld = false;
+let _queueMove = null;
+
+function isoToday(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function dayDiff(iso){ // whole calendar days from today (negative = past)
+  if(!iso) return null;
+  const [y,m,d] = iso.slice(0,10).split('-').map(Number);
+  const t = new Date();
+  return Math.round((new Date(y, m-1, d) - new Date(t.getFullYear(), t.getMonth(), t.getDate())) / 86400000);
+}
+function fmtDropDate(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-').map(Number);
+  return new Date(y, m-1, d).toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'});
+}
+function isNotStarted(v){ return v.stage === 0 && !v.startedAt; }
+
+function buildDrops(){
+  const drops = [];
+  projects.forEach(p => {
+    const vids = p.videos.filter(v => !v.draft);
+    if(!vids.length) return;
+    const byDate = {};
+    vids.forEach(v => { const k = v.clientDueDate || ''; (byDate[k] = byDate[k] || []).push(v); });
+    const dated = Object.keys(byDate).filter(Boolean).sort();
+    dated.forEach((iso, i) => drops.push(makeDrop(p, iso, byDate[iso], `Drop ${i+1}`)));
+    if(byDate['']) drops.push(makeDrop(p, null, byDate[''], `Drop ${dated.length+1}`));
+  });
+  return drops;
+}
+
+function makeDrop(p, iso, vids, label){
+  const pending = vids.filter(v => v.stage < V_CLIENT);
+  const withClient = vids.filter(v => v.stage === V_CLIENT);
+  const allDone = vids.every(v => v.stage === V_DONE);
+  const days = dayDiff(iso);
+  const dls = (pending.length ? pending : vids).map(v => v.deadline).filter(Boolean).sort();
+  const editBy = dls[0] || null;
+  const editLate = pending.some(v => v.deadline && dayDiff(v.deadline) < 0);
+  const stale = withClient.some(v => v.sentAt && (Date.now() - new Date(v.sentAt)) > 48 * 3600000);
+  let status, risk = false;
+  if(allDone) status = 'Approved';
+  else if(!iso) status = 'No out date';
+  else if(!pending.length){ status = stale ? 'Client silent 48h+ · chase' : 'Waiting on client'; risk = stale; }
+  else {
+    const when = days < 0 ? `${-days}d late` : days === 0 ? 'Out today' : days === 1 ? 'Out tomorrow' : `Out in ${days} days`;
+    status = (editLate && days > 1 ? 'Edit overdue' : when) + ` · ${pending.length} to finish`;
+    risk = days <= 1 || editLate;
+  }
+  const lastDone = vids.map(v => v.deliveredAt).filter(Boolean).sort().pop();
+  const ref = iso || lastDone;
+  const old = allDone && !!ref && dayDiff(ref) < -7; // approved drops hide a week after going out
+  return { project:p, client:p.client, iso, label, videos:vids, pending:pending.length, allDone, risk, status, editBy, old, days };
+}
+
+function queueNote(v){
+  const r = v.clientRevs || 0;
+  if(v.stage === V_DONE) return {t:'Approved', warn:false};
+  if(v.stage === V_CLIENT){
+    let t = 'With client', warn = false;
+    if(v.sentAt){
+      const h = (Date.now() - new Date(v.sentAt)) / 3600000;
+      t = h < 1 ? 'Sent just now' : h < 24 ? `Sent ${Math.floor(h)}h ago` : `Sent ${Math.floor(h/24)}d ago`;
+      if(h > 48){ t += ' · chase'; warn = true; }
+    }
+    if(r) t += ` · rev ${r}`;
+    return {t, warn};
+  }
+  if(r >= 3) return {t:`Client rev ${r} · billable`, warn:true};
+  const parts = []; let warn = false;
+  if(r) parts.push(`Client rev ${r}`);
+  const dl = v.deadline ? dayDiff(v.deadline) : null;
+  if(dl !== null && dl < 0){ parts.push(`Edit ${-dl}d overdue`); warn = true; }
+  else if(dl === 0){ parts.push('Edit due today'); warn = true; }
+  return {t: parts.join(' · '), warn};
+}
 
 function renderQueue(){
   const body = document.getElementById('queue-body');
   if(!body) return;
-
-  const sortEl = document.getElementById('queue-sort');
-  const filterEl = document.getElementById('queue-filter-client');
-  // Hide sort/filter controls for limited users
   const admin = isAdmin();
-  if(sortEl) sortEl.style.display = admin ? '' : 'none';
-  if(filterEl) filterEl.style.display = admin ? '' : 'none';
-  const sortBy = sortEl ? sortEl.value : 'client-due';
+
+  const filterEl = document.getElementById('queue-filter-client');
   const filterClient = filterEl ? filterEl.value : '';
-
-  // Populate client filter dropdown (once)
-  const clients = [...new Set(projects.map(p => p.client))].sort();
-  if(filterEl && filterEl.options.length <= 1){
-    clients.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c; opt.textContent = c;
-      filterEl.appendChild(opt);
-    });
+  if(filterEl){
+    const clients = [...new Set(projects.map(p => p.client))].sort();
+    filterEl.innerHTML = '<option value="">All clients</option>' +
+      clients.map(c => `<option value="${escHtml(c)}"${c === filterClient ? ' selected' : ''}>${escHtml(c)}</option>`).join('');
+    filterEl.style.display = admin ? '' : 'none';
   }
 
-  // Flatten all non-draft videos across all projects
-  let allVids = projects.flatMap(p =>
-    p.videos.filter(v => !v.draft).map(v => ({ ...v, projectId: p.id, projectName: p.name, client: p.client }))
-  );
-
-  // Limited users only see their assigned videos
-  if(!isAdmin() && currentUser){
-    allVids = allVids.filter(v => v.assigneeId === currentUser.id);
+  let drops = buildDrops();
+  if(filterClient) drops = drops.filter(d => d.client === filterClient);
+  const oldCount = drops.filter(d => d.old).length;
+  if(!queueShowOld) drops = drops.filter(d => !d.old);
+  if(!admin && currentUser){
+    drops = drops.map(d => ({...d, videos: d.videos.filter(v => v.assigneeId === currentUser.id)})).filter(d => d.videos.length);
   }
+  const oc = document.getElementById('queue-old-count');
+  if(oc) oc.textContent = oldCount ? `(${oldCount})` : '';
 
-  // Apply client filter
-  if(filterClient) allVids = allVids.filter(v => v.client === filterClient);
-
-  // Stats
-  const unstarted = allVids.filter(v => !v.assigneeId && v.stage === 0).length;
-  const inProg = allVids.filter(v => v.assigneeId && v.stage < 3).length;
-  const done = allVids.filter(v => v.stage === 3).length;
+  const soon = drops.filter(d => !d.allDone && d.iso && d.days >= 0 && d.days <= 6);
+  const riskN = drops.filter(d => d.risk).length;
   const statsEl = document.getElementById('queue-stats');
-  if(statsEl) statsEl.textContent = `${unstarted} unstarted · ${inProg} in progress · ${done} delivered`;
+  if(statsEl) statsEl.textContent =
+    `${soon.length} drop${soon.length === 1 ? '' : 's'} going out in the next 7 days · ` +
+    `${soon.reduce((n, d) => n + d.videos.length, 0)} videos · ${riskN} need${riskN === 1 ? 's' : ''} attention`;
 
-  // Sort. In-edit videos surface first, unstarted sit below them, delivered
-  // sink to the bottom (same principle as done tasks in My Week); the chosen
-  // sort applies within each band.
-  const band = v => v.stage === 3 ? 2 : (v.assigneeId || v.stage > 0) ? 0 : 1;
-  allVids.sort((a, b) => {
-    const bd = band(a) - band(b);
-    if(bd) return bd;
-    if(sortBy === 'client-due'){
-      if(!a.clientDueDate && !b.clientDueDate) return 0;
-      if(!a.clientDueDate) return 1;
-      if(!b.clientDueDate) return -1;
-      return a.clientDueDate.localeCompare(b.clientDueDate);
-    }
-    if(sortBy === 'internal'){
-      if(!a.deadline && !b.deadline) return 0;
-      if(!a.deadline) return 1;
-      if(!b.deadline) return -1;
-      return a.deadline.localeCompare(b.deadline);
-    }
-    if(sortBy === 'stage') return a.stage - b.stage;
-    return 0;
-  });
-
-  // Group by client
-  const grouped = {};
-  allVids.forEach(v => {
-    if(!grouped[v.client]) grouped[v.client] = [];
-    grouped[v.client].push(v);
-  });
-
-  if(allVids.length === 0){
-    body.innerHTML = '<div class="queue-empty">No videos in queue. Create a project and add videos.</div>';
+  if(!drops.length){
+    body.innerHTML = '<div class="queue-empty">No videos in the queue. Create a project and add videos.</div>';
     return;
   }
 
-  body.innerHTML = Object.entries(grouped).map(([client, vids]) => {
-    const color = CLIENT_COLORS[client] || CLIENT_COLORS['default'];
-    const rows = vids.map(v => renderQueueRow(v)).join('');
-    return `<div class="queue-client-group">
-      <div class="queue-client-header">
-        <div class="queue-client-dot" style="background:${color}"></div>
-        <div class="queue-client-name">${client}</div>
-        <div class="queue-client-count">${vids.length} video${vids.length>1?'s':''}</div>
+  // Most urgent first: dated active drops by date, then undated, then approved.
+  const rank = d => d.allDone ? 2 : d.iso ? 0 : 1;
+  drops.sort((a, b) => rank(a) - rank(b) || (a.iso || '').localeCompare(b.iso || ''));
+  const groups = new Map();
+  drops.forEach(d => { if(!groups.has(d.client)) groups.set(d.client, []); groups.get(d.client).push(d); });
+
+  body.innerHTML = [...groups.entries()].map(([client, ds]) => {
+    const multi = new Set(ds.map(d => d.project.id)).size > 1;
+    const vidCount = ds.reduce((n, d) => n + d.videos.length, 0);
+    return `<section class="q2-client">
+      <div class="q2-client-hdr">
+        <span class="q2-client-name">${escHtml(client)}</span>
+        <span class="q2-client-meta">${vidCount} video${vidCount === 1 ? '' : 's'} · ${ds.length} drop${ds.length === 1 ? '' : 's'}</span>
       </div>
-      <table class="queue-table">
-        <thead><tr>
-          <th>Video</th><th>Type</th><th>Client Due</th>
-          <th>Internal Deadline</th><th>Buffer</th><th>Assigned To</th><th>Stage</th>
-          ${!isAdmin() ? '<th>Actions</th>' : ''}
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
+      <div class="q2-wrap"><table class="q2-table">
+        <thead><tr><th style="width:36%">Video</th><th>Type</th><th>Editor</th><th>Stage</th><th></th></tr></thead>
+        ${ds.map(d => renderDrop(d, multi)).join('')}
+      </table></div>
+    </section>`;
   }).join('');
 }
 
-function renderQueueRow(v){
-  const isUnstarted = !v.assigneeId && v.stage === 0;
-  const stagePill = v.stage === 3
-    ? `<span class="queue-stage-pill s3">Delivered</span>`
-    : isUnstarted
-    ? `<span class="queue-stage-pill unstarted">Unstarted</span>`
-    : `<span class="queue-stage-pill s${v.stage}">${VIDEO_STAGES[v.stage]}</span>`;
+function renderDrop(d, multi){
+  const admin = isAdmin();
+  const p = d.project;
+  const label = (multi ? `${escHtml(p.name)} · ` : '') + d.label;
+  const isoArg = d.iso || '';
+  const prog = `<span class="q2-prog" aria-label="${d.videos.length - d.pending} of ${d.videos.length} with client or approved">${
+    d.videos.map(v => `<i class="${v.stage === V_DONE ? 'd' : v.stage === V_CLIENT ? 'c' : ''}"></i>`).join('')}</span>`;
 
-  // Buffer
-  let bufferHtml = '<span class="queue-buffer d">—</span>';
-  if(v.clientDueDate && v.deadline){
-    const diff = Math.round((new Date(v.clientDueDate) - new Date(v.deadline)) / 86400000);
-    const cls = diff >= 5 ? 'g' : diff >= 2 ? 'y' : 'r';
-    const label = diff === 0 ? 'Same day' : diff > 0 ? `${diff}d buffer` : `${Math.abs(diff)}d late`;
-    bufferHtml = `<span class="queue-buffer ${cls}">${label}</span>`;
+  if(d.allDone){
+    return `<tbody><tr class="q2-fold"><td colspan="5"><div class="q2-bandrow">
+      <span class="q2-dlbl" style="color:var(--tm)">${label}</span>
+      <span class="mono" style="font-size:12.5px">${d.iso ? 'Out ' + fmtDropDate(d.iso) : ''}</span>
+      ${prog}<span style="font-size:12.5px">${d.videos.length} approved &amp; sent</span>
+    </div></td></tr></tbody>`;
   }
 
-  // Client due date — editable for admins
-  const clientDueHtml = isAdmin()
-    ? `<input type="date" class="queue-date-input${v.clientDueDate?' set':''}" value="${v.clientDueDate||''}"
-        onchange="updateQueueClientDue('${v.projectId}','${v.id}',this.value)" />`
-    : v.clientDueDate
-    ? `<span style="font-size:13px;color:var(--text)">${new Date(v.clientDueDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>`
-    : `<span style="font-size:12px;color:var(--td)">Not set</span>`;
+  const outField = admin
+    ? `<input type="date" class="q2-date" value="${isoArg}" onchange="setDropDate(${p.id},'${isoArg}',this.value)" aria-label="Go-out date">`
+    : `<span class="mono">${d.iso ? fmtDropDate(d.iso) : 'not set'}</span>`;
+  const editField = admin
+    ? `<input type="date" class="q2-date" value="${d.editBy || ''}" onchange="setDropEditBy(${p.id},'${isoArg}',this.value)" aria-label="Edit-by date">`
+    : `<span class="mono">${d.editBy ? fmtDropDate(d.editBy) : '—'}</span>`;
 
-  // Internal deadline — editable for admins
-  const internalDeadlineHtml = isAdmin()
-    ? `<input type="date" class="queue-date-input${v.deadline?' set':''}" value="${v.deadline||''}"
-        onchange="updateQueueDeadline('${v.projectId}','${v.id}',this.value)" />`
-    : v.deadline
-    ? `<span style="font-size:13px;color:var(--text)">${new Date(v.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>`
-    : `<span style="font-size:12px;color:var(--td)">Not set</span>`;
+  const band = (v) => v.stage === V_DONE ? 2 : v.stage === V_CLIENT ? 1 : 0;
+  const rows = d.videos.map((v, i) => ({v, i})).sort((a, b) => band(a.v) - band(b.v) || a.i - b.i)
+    .map(({v}) => renderQueueRow(p, v)).join('');
 
-  // Assignee — editable for admins
+  return `<tbody>
+    <tr class="q2-band${d.risk ? ' risk' : ''}"><td colspan="5"><div class="q2-bandrow">
+      <span class="q2-dlbl">${label}</span>
+      <span class="q2-dfield">Out ${outField}</span>
+      <span class="q2-dfield">Edit by ${editField}</span>
+      ${prog}
+      <span class="q2-status${d.risk ? ' risk' : ''}">${d.status}</span>
+      ${admin ? `<button class="q2-btn" onclick="openDropMove(${p.id},'${isoArg}')">Move videos</button>` : ''}
+    </div></td></tr>
+    ${rows}
+  </tbody>`;
+}
+
+function renderQueueRow(p, v){
+  const admin = isAdmin();
+  const rowCls = v.stage === V_DONE ? 'q2-row-done' : v.stage === V_CLIENT ? 'q2-row-client' : '';
+  const note = queueNote(v);
+  const stageKey = isNotStarted(v) ? 'ns' : String(v.stage);
+  const STAGE_OPTS = [['ns','Not started'],['0','Edit'],['1','QC'],['2','Sarosh review'],['3','With client'],['4','Approved & sent']];
+
   const editors = TEAM.filter(t => t.isEditor);
-  const assigneeHtml = isAdmin()
-    ? `<select class="queue-assignee-select${v.assigneeId?' set':''}"
-        onchange="updateQueueAssignee('${v.projectId}','${v.id}',this.value)">
-        <option value="">Unassigned</option>
-        ${editors.map(e => `<option value="${e.id}"${v.assigneeId===e.id?' selected':''}>${e.name}</option>`).join('')}
+  const editorCell = admin
+    ? `<select class="q2-sel" aria-label="Editor" onchange="setQueueEditor(${p.id},'${v.id}',this.value)">
+        <option value=""${!v.assigneeId ? ' selected' : ''}>Unassigned</option>
+        ${editors.map(e => `<option value="${e.id}"${v.assigneeId === e.id ? ' selected' : ''}>${escHtml(e.name)}</option>`).join('')}
       </select>`
-    : (() => {
-        const editor = TEAM.find(t => t.id === v.assigneeId);
-        return editor
-          ? `<span style="font-size:13px;color:var(--text)">${editor.name}</span>`
-          : `<span style="font-size:12px;color:var(--td)">Unassigned</span>`;
-      })();
+    : escHtml(getTeam(v.assigneeId).name);
 
-  // Action buttons for the assigned editor (non-admin)
-  let actionsHtml = '';
-  if(!isAdmin() && currentUser && v.assigneeId === currentUser.id && v.stage < 3){
-    if(v.stage === 0){
-      if(!v.startedAt){
-        actionsHtml = `<button class="btn-sm start" onclick="startVideo('${v.projectId}','${v.id}')">▶ Start</button>`;
+  let stageCell;
+  if(admin){
+    stageCell = `<select class="q2-sel" aria-label="Stage" onchange="setQueueStage(${p.id},'${v.id}',this.value)">
+      ${STAGE_OPTS.map(([val, lbl]) => `<option value="${val}"${val === stageKey ? ' selected' : ''}>${lbl}</option>`).join('')}
+    </select>`;
+  } else {
+    // Editors keep their Start / Submit buttons
+    let act = '';
+    if(currentUser && v.assigneeId === currentUser.id && v.stage < V_CLIENT){
+      if(v.stage === 0){
+        act = !v.startedAt
+          ? `<button class="btn-sm start" onclick="startVideo('${p.id}','${v.id}')">▶ Start</button>`
+          : `<button class="btn-sm submit" onclick="advanceVideo(${p.id},'${v.id}')">Submit ✓</button>`;
       } else {
-        const hrs = workingHoursBetween(v.startedAt, new Date().toISOString());
-        const nowH = new Date().getHours() + new Date().getMinutes()/60;
-        const isWorkHours = nowH >= 10.5 && nowH < 19 && new Date().getDay() !== 0 && new Date().getDay() !== 6;
-        const workMins = Math.round(hrs * 60);
-        const hrsLabel = !isWorkHours ? 'paused' : hrs < 1 ? (workMins < 1 ? 'just started' : workMins + 'm in') : hrs.toFixed(1) + 'h in';
-        actionsHtml = `<span class="v-inprogress" style="margin-right:5px">⏱ ${hrsLabel}</span><button class="btn-sm submit" onclick="advanceVideo('${v.projectId}','${v.id}')">Submit ✓</button>`;
+        act = `<button class="btn-sm adv" onclick="advanceVideo(${p.id},'${v.id}')">→ Done</button>`;
       }
-    } else {
-      actionsHtml = `<button class="btn-sm adv" onclick="advanceVideo('${v.projectId}','${v.id}')">→ Done</button>`;
     }
+    stageCell = `<span style="margin-right:8px">${isNotStarted(v) ? 'Not started' : VIDEO_STAGES[v.stage]}</span>${act}`;
   }
 
-  return `<tr class="queue-row${isUnstarted?' unstarted':''}">
-    <td class="queue-cell"><div class="queue-vid-name editable" title="Click to rename" onclick="beginRenameVideo(this,'${v.projectId}','${v.id}')">${escHtml(v.name)}</div><div class="queue-vid-project">${escHtml(v.projectName)}</div></td>
-    <td class="queue-cell"><span class="type-badge ${v.type}">${EDIT_TYPES[v.type].label}</span></td>
-    <td class="queue-cell">${clientDueHtml}</td>
-    <td class="queue-cell">${internalDeadlineHtml}</td>
-    <td class="queue-cell">${bufferHtml}</td>
-    <td class="queue-cell">${assigneeHtml}</td>
-    <td class="queue-cell">${stagePill}</td>
-    ${!isAdmin() ? `<td class="queue-cell">${actionsHtml}</td>` : ''}
+  return `<tr class="${rowCls}">
+    <td><div class="q2-vn editable" title="Click to rename" onclick="beginRenameVideo(this,'${p.id}','${v.id}')">${escHtml(v.name)}</div></td>
+    <td><span class="q2-type">${EDIT_TYPES[v.type]?.label || v.type}</span></td>
+    <td class="keep">${editorCell}</td>
+    <td class="keep">${stageCell}</td>
+    <td${note.warn ? ' class="keep"' : ''}><span class="q2-note${note.warn ? ' warn' : ''}">${note.t}</span></td>
   </tr>`;
 }
 
-async function updateQueueClientDue(projId, vidId, value){
-  const p = projects.find(x => x.id === parseInt(projId) || x.id === projId);
-  const v = p?.videos.find(x => x.id === vidId);
+function _findVid(projId, vidId){
+  const p = projects.find(x => String(x.id) === String(projId));
+  return { p, v: p?.videos.find(x => x.id === vidId) };
+}
+
+async function setQueueStage(projId, vidId, val){
+  const { p, v } = _findVid(projId, vidId);
   if(!v) return;
-  v.clientDueDate = value || null;
-  renderQueue();
+  const prev = v.stage;
+  const next = val === 'ns' ? 0 : parseInt(val, 10);
+  // Back from the client into the edit pipeline = one client revision round
+  if(prev >= V_CLIENT && next < V_CLIENT){
+    v.clientRevs = (v.clientRevs || 0) + 1;
+    v.deliveredAt = null; v.sentAt = null; v.completedAt = null;
+    if(v.clientRevs >= 3) toast(`${v.name}: client revision ${v.clientRevs} — billable`);
+  }
+  if(val === 'ns'){ v.startedAt = null; v.completedAt = null; }
+  else if(next === 0 && !v.startedAt) v.startedAt = new Date().toISOString();
+  if(next === V_CLIENT && prev !== V_CLIENT) v.sentAt = new Date().toISOString();
+  if(next === V_DONE && prev !== V_DONE) v.deliveredAt = isoToday();
+  if(next === V_CLIENT && prev === V_DONE) v.deliveredAt = null;
+  v.stage = next;
+
+  // Keep the project's phase in step: all approved = Delivered, otherwise back to In Production
+  const live = p.videos.filter(x => !x.draft);
+  const allDone = live.length && live.every(x => x.stage === V_DONE);
+  if(allDone && p.stage < 7){ p.stage = 7; syncProject(p); toast(`${p.client} · ${p.name} — all videos approved`); }
+  else if(!allDone && p.stage === 7){ p.stage = 6; syncProject(p); }
+
+  renderAll();
   await syncVideo(v, p.id);
 }
 
-async function updateQueueDeadline(projId, vidId, value){
-  const p = projects.find(x => x.id === parseInt(projId) || x.id === projId);
-  const v = p?.videos.find(x => x.id === vidId);
+async function setQueueEditor(projId, vidId, value){
+  const { p, v } = _findVid(projId, vidId);
   if(!v) return;
-  v.deadline = value || null;
-  renderQueue();
+  v.assigneeId = value ? parseInt(value, 10) : null;
+  renderAll();
   await syncVideo(v, p.id);
 }
 
-async function updateQueueAssignee(projId, vidId, value){
-  const p = projects.find(x => x.id === parseInt(projId) || x.id === projId);
-  const v = p?.videos.find(x => x.id === vidId);
-  if(!v) return;
-  const editorId = value ? parseInt(value) : null;
-  v.assigneeId = editorId;
-  if(editorId) showWaPing(`${waTag(editorId)} 📋 *Assigned:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — due ${fmtDue(v.deadline)}`);
-  renderQueue();
-  await syncVideo(v, p.id);
+async function setDropDate(projId, oldIso, newIso){
+  const p = projects.find(x => String(x.id) === String(projId));
+  if(!p) return;
+  const vids = p.videos.filter(v => !v.draft && (v.clientDueDate || '') === (oldIso || ''));
+  vids.forEach(v => { v.clientDueDate = newIso || null; });
+  renderAll();
+  for(const v of vids) await syncVideo(v, p.id);
+}
+
+async function setDropEditBy(projId, iso, newIso){
+  if(!newIso) return;
+  const p = projects.find(x => String(x.id) === String(projId));
+  if(!p) return;
+  const inDrop = p.videos.filter(v => !v.draft && (v.clientDueDate || '') === (iso || ''));
+  const pending = inDrop.filter(v => v.stage < V_CLIENT);
+  const vids = pending.length ? pending : inDrop;
+  vids.forEach(v => { v.deadline = newIso; });
+  renderAll();
+  for(const v of vids) await syncVideo(v, p.id);
+}
+
+function openDropMove(projId, iso){
+  const p = projects.find(x => String(x.id) === String(projId));
+  if(!p) return;
+  const vids = p.videos.filter(v => !v.draft && (v.clientDueDate || '') === (iso || ''));
+  _queueMove = { projId: p.id, iso: iso || '' };
+  document.getElementById('qmove-title').textContent = `Move videos · ${p.client} · ${p.name}`;
+  document.getElementById('qmove-list').innerHTML = vids.map(v =>
+    `<label><input type="checkbox" value="${v.id}"> ${escHtml(v.name)} <span style="color:var(--td);font-size:12px">${isNotStarted(v) ? 'Not started' : VIDEO_STAGES[v.stage]}</span></label>`).join('');
+  document.getElementById('qmove-date').value = '';
+  document.getElementById('qmove-editby').value = '';
+  document.getElementById('qmove-ov').classList.add('open');
+}
+function closeDropMove(){ document.getElementById('qmove-ov').classList.remove('open'); _queueMove = null; }
+
+async function applyDropMove(){
+  if(!_queueMove) return;
+  const date = document.getElementById('qmove-date').value;
+  const editBy = document.getElementById('qmove-editby').value;
+  const ids = [...document.querySelectorAll('#qmove-list input:checked')].map(i => i.value);
+  if(!ids.length){ toast('Tick at least one video'); return; }
+  if(!date){ toast('Pick the go-out date for these videos'); return; }
+  const p = projects.find(x => x.id === _queueMove.projId);
+  const vids = p.videos.filter(v => ids.includes(v.id));
+  vids.forEach(v => { v.clientDueDate = date; if(editBy) v.deadline = editBy; });
+  closeDropMove();
+  renderAll();
+  for(const v of vids) await syncVideo(v, p.id);
 }
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
