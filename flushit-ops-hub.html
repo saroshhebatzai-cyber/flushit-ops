@@ -77,7 +77,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .side-out:hover{color:var(--red);border-color:var(--red)}
 .side-meta{font-family:var(--mono);font-size:11px;color:var(--td)}
 .sidebar #capture-input{width:100%;margin:4px 0}
-.hdr{grid-area:hdr;min-width:0;position:sticky;top:0;z-index:100;background:rgba(244,240,230,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px}
+.hdr{grid-area:hdr;min-width:0;position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px}
 .hdr-title{font-family:var(--display);font-weight:800;font-size:22px;color:var(--text)}
 .hdr-icon-btn{font-size:14px;padding:5px 9px;background:transparent;color:var(--td);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer}
 .menu-btn{display:none;background:transparent;border:1px solid var(--border);border-radius:var(--rs);padding:4px 9px;cursor:pointer;color:var(--tm)}
@@ -393,7 +393,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .modal-btn.ok.danger{background:var(--red-deep);border-color:var(--red-deep);color:#fff}
 
 /* WHATSAPP PING */
-.wa-backdrop{position:fixed;inset:0;background:rgba(26,26,26,.35);backdrop-filter:blur(4px);z-index:2099;opacity:0;pointer-events:none;transition:opacity .25s}
+.wa-backdrop{position:fixed;inset:0;background:rgba(26,26,26,.35);z-index:2099;opacity:0;pointer-events:none;transition:opacity .25s}
 .wa-backdrop.show{opacity:1;pointer-events:all}
 .wa-ping{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.94);background:var(--dark);border:none;border-radius:var(--r);padding:22px 24px;z-index:2100;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.22,1,.36,1);min-width:360px;max-width:500px;box-shadow:0 6px 24px rgba(26,26,26,.2)}
 .wa-ping.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:all}
@@ -1151,6 +1151,7 @@ async function loadData(opts = {}){
 }
 
 async function syncProject(p){
+  markSelfWrite('projects', p);
   const { error } = await db.from('projects').upsert({
     id: p.id, client: p.client, name: p.name, stage: p.stage,
     manager_id: p.managerId, deadline: p.deadline, days_in_stage: p.daysInStage,
@@ -1162,6 +1163,7 @@ async function syncProject(p){
 }
 
 async function syncVideo(v, projId){
+  markSelfWrite('videos', v);
   const { error } = await db.from('videos').upsert({
     id: v.id, project_id: projId, name: v.name, type: v.type,
     assignee_id: v.assigneeId, stage: v.stage, deadline: v.deadline, client_due_date: v.clientDueDate||null,
@@ -2190,7 +2192,7 @@ async function assignVideo(projId, vidId, editorId){
   renderPanelBody(projId);
   renderTeam();
   await syncVideo(v, projId);
-  if(editorId) showWaPing(`${waTag(parseInt(editorId))} 📋 *Assigned:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — due ${fmtDue(v.deadline)}`);
+  // (pop-up removed 2026-10-21 — no WhatsApp pings while the hub is single-user)
 }
 
 async function advanceVideo(projId, vidId){
@@ -2224,8 +2226,8 @@ async function advanceVideo(projId, vidId){
     syncProject(p);
     toast(`${p.client} · ${p.name} — all videos approved`);
   } else {
-    if(v.stage === 1) showWaPing(`${waTag(2)} ✅ *QC Ready:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — ready for QC — due ${fmtDue(v.deadline)}`);
-    if(v.stage === 2) showWaPing(`${waTag(1)} 👀 *Sarosh Review:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — ready for your review — due ${fmtDue(v.deadline)}`);
+    // (pop-up removed 2026-10-21 — no WhatsApp pings while the hub is single-user)
+    // (pop-up removed 2026-10-21 — no WhatsApp pings while the hub is single-user)
   }
   renderAll();
   if(currentPanelId === projId) renderPanelBody(projId);
@@ -2246,7 +2248,7 @@ async function moveVideoBack(projId, vidId){
     v.deliveredAt = null;
     v.startedAt = null;
     v.completedAt = null;
-    if(v.revisions > 2) showWaPing(`${waTag(v.assigneeId)} ⚠️ *Internal Rev ${v.revisions}:* ${p.client} · ${v.name} (${EDIT_TYPES[v.type].label}) — flagged, ${v.revisions} internal revisions`);
+    if(v.revisions > 2) toast(`${v.name}: internal revision ${v.revisions} — flagged`);
   }
   v.stage = prev;
   renderAll();
@@ -4265,6 +4267,19 @@ function renderQueueRow(p, v){
   </tr>`;
 }
 
+// Redraw what the user is looking at now; the hidden tabs catch up a frame later.
+let _restRenderQueued = false;
+function renderQueueFast(){
+  renderQueue(); updateSideBadges();
+  if(_restRenderQueued) return;
+  _restRenderQueued = true;
+  requestAnimationFrame(() => setTimeout(() => {
+    _restRenderQueued = false;
+    renderKanban(); renderClients(); renderTeam(); renderEfficiency(); renderCalendar(); updateStats();
+    if(currentPanelId) renderPanelBody(currentPanelId);
+  }, 0));
+}
+
 function _findVid(projId, vidId){
   const p = projects.find(x => String(x.id) === String(projId));
   return { p, v: p?.videos.find(x => x.id === vidId) };
@@ -4294,7 +4309,7 @@ async function setQueueStage(projId, vidId, val){
   if(allDone && p.stage < 7){ p.stage = 7; syncProject(p); toast(`${p.client} · ${p.name} — all videos approved`); }
   else if(!allDone && p.stage === 7){ p.stage = 6; syncProject(p); }
 
-  renderAll();
+  renderQueueFast();
   await syncVideo(v, p.id);
 }
 
@@ -4302,7 +4317,7 @@ async function setQueueEditor(projId, vidId, value){
   const { p, v } = _findVid(projId, vidId);
   if(!v) return;
   v.assigneeId = value ? parseInt(value, 10) : null;
-  renderAll();
+  renderQueueFast();
   await syncVideo(v, p.id);
 }
 
@@ -4311,7 +4326,7 @@ async function setDropDate(projId, oldIso, newIso){
   if(!p) return;
   const vids = p.videos.filter(v => !v.draft && (v.clientDueDate || '') === (oldIso || ''));
   vids.forEach(v => { v.clientDueDate = newIso || null; });
-  renderAll();
+  renderQueueFast();
   for(const v of vids) await syncVideo(v, p.id);
 }
 
@@ -4323,7 +4338,7 @@ async function setDropEditBy(projId, iso, newIso){
   const pending = inDrop.filter(v => v.stage < V_CLIENT);
   const vids = pending.length ? pending : inDrop;
   vids.forEach(v => { v.deadline = newIso; });
-  renderAll();
+  renderQueueFast();
   for(const v of vids) await syncVideo(v, p.id);
 }
 
@@ -4352,7 +4367,7 @@ async function applyDropMove(){
   const vids = p.videos.filter(v => ids.includes(v.id));
   vids.forEach(v => { v.clientDueDate = date; if(editBy) v.deadline = editBy; });
   closeDropMove();
-  renderAll();
+  renderQueueFast();
   for(const v of vids) await syncVideo(v, p.id);
 }
 
