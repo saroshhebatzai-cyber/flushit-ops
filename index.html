@@ -4161,9 +4161,11 @@ function renderQueue(){
     return;
   }
 
-  // Most urgent first: dated active drops by date, then undated, then approved.
-  const rank = d => d.allDone ? 2 : d.iso ? 0 : 1;
-  drops.sort((a, b) => rank(a) - rank(b) || (a.iso || '').localeCompare(b.iso || ''));
+  // Order by what needs work, not just by date:
+  // 0 work left (dated) · 1 work left, no out date · 2 waiting on client · 3 waiting, no date · 4 approved.
+  // Within a group: at-risk first, then soonest go-out date.
+  const rank = d => d.allDone ? 4 : d.pending ? (d.iso ? 0 : 1) : (d.iso ? 2 : 3);
+  drops.sort((a, b) => rank(a) - rank(b) || (b.risk - a.risk) || (a.iso || '9999').localeCompare(b.iso || '9999'));
   const groups = new Map();
   drops.forEach(d => { if(!groups.has(d.client)) groups.set(d.client, []); groups.get(d.client).push(d); });
 
